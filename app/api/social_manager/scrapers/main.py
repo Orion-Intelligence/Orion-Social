@@ -9,19 +9,22 @@ SESSION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 from playwright.sync_api import sync_playwright
 from api.social_manager.login_session.session_manager import SessionManager
-from api.social_manager.scrapers.instagram import InstagramScraper
-from api.social_manager.scrapers.facebook import FacebookScraper
-from api.social_manager.scrapers.behance_scraper import BehanceScraper
-from api.social_manager.scrapers.vimeo import VimeoScraper
+# from app.api.social_manager.scrapers.instagram import InstagramScraper
+# from app.api.social_manager.scrapers.facebook import FacebookScraper
+# from app.api.social_manager.scrapers.behance_scraper import BehanceScraper
+# from app.api.social_manager.scrapers.vimeo import VimeoScraper
+from api.social_manager.scrapers._twitter import twitter
+
 
 SESSION_FILE_MAP = {
     "InstagramScraper": "instagram_session.json.gz",
     "FacebookScraper": "FacebookScraper_session.json.gz",
+    "twitter":"twitter_session.json.gz",
+
 }
 
 
 def run_scraper(scraper, page):
-    from playwright.sync_api import sync_playwright
     print(f"\n{'='*50}")
     print(f">> Running scraper: {scraper.__class__.__name__}")
     print(f"{'='*50}")
@@ -88,9 +91,11 @@ def run_scraper(scraper, page):
 
 def main():
     scrapers = [
-        InstagramScraper(username="nazarali870", max_followers=30, max_following=30),
+        #InstagramScraper(username="nazarali870", max_followers=30, max_following=30),
         #FacebookScraper(username="100081288807680", max_followers=30, max_following=10),
         #BehanceScraper(username="grapheine",max_followers=30,max_following=30),
+        twitter("elonmusk")
+
     ]
 
     if not scrapers:

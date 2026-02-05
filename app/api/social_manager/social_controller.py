@@ -11,6 +11,8 @@ from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
+from api.social_manager.scrapers._tiktok import tiktok
+from api.social_manager.scrapers._twitter import twitter
 
 SESSION_DIR = os.path.dirname(os.path.abspath(__file__))
 SESSION_FILE_MAP = {
@@ -45,6 +47,10 @@ class social_controller:
             return BehanceScraper(username, max_followers, max_following)
         elif platform == SOCIAL_PLATFORMS.VIMEO:
             return VimeoScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.TIKTOK:
+            return tiktok(username)
+        elif platform == SOCIAL_PLATFORMS.TWITTER:
+            return twitter(username)
         return None
 
     def _block_media(self, route):

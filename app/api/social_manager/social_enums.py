@@ -16,6 +16,8 @@ class SOCIAL_PLATFORMS:
     FACEBOOK = "facebook"
     BEHANCE = "behance"
     VIMEO = "vimeo"
+    TIKTOK = "tiktok"
+    TWITTER = "twitter"
 
 
 class SOCIAL_CONTENT_TYPES:
