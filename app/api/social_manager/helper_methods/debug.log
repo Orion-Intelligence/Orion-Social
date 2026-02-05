@@ -1,0 +1,11 @@
+url: https://twitter.com/TKBILAL_
+error: None
+r: 403
+code: 403
+response: {"errors":[{"message":"Bad guest token","code":239}]}
+
+url: https://api.memory.lol/v1/tw/TKBILAL_
+error: None
+r: 200
+code: 200
+response: {"accounts":[]}

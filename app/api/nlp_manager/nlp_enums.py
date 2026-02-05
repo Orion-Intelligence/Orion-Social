@@ -1,9 +1,0 @@
-class NLP_REQUEST_COMMANDS:
-    S_INIT = 1
-    S_PARSE = 2
-    S_PARSE_AI = 3
-    S_SUMMARIZE_AI = 4
-    S_CHAT_AI = 5
-    S_EMBED = 6
-    S_EMBED_INDEX = 7
-    S_TRANSLATE = 8

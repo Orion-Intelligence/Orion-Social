@@ -1,8 +1,8 @@
-name: trusted-micros
+name: trusted-social
 
 services:
   api:
-    container_name: trusted-micros-api
+    container_name: trusted-social-api
     build:
       context: ./
       dockerfile: dockerFiles/app_docker
@@ -14,12 +14,10 @@ services:
       - .env
     environment:
       LLM_URL: "http://host.docker.internal:11434/api/chat"
-      ZAP_ADDR: "http://trusted-micros-zap:8090"
-      ZAP_API_KEY: ""
     extra_hosts:
-      - "host.docker.internal:172.15.0.1"
+      - "host.docker.internal:172.25.0.1"
     ports:
-      - "8010:8010"
+      - "8020:8020"
     volumes:
       - ./app/api:/app/api:cached
       - ./app/raw:/app/raw:cached
@@ -28,18 +26,16 @@ services:
         limits:
           memory: 36G
     depends_on:
-      zap:
-        condition: service_healthy
       redis_server:
         condition: service_started
     healthcheck:
-      test: [ "CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8010' || exit 1" ]
+      test: [ "CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8020' || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
 
   redis_server:
-    container_name: trusted-micros-redis
+    container_name: trusted-social-redis
     image: redis:7.4.0
     logging:
       driver: none
@@ -66,28 +62,8 @@ services:
       timeout: 5s
       retries: 3
 
-  zap:
-    container_name: trusted-micros-zap
-    image: zaproxy/zap-stable:latest
-    user: zap
-    command: >
-      zap.sh -daemon -host 0.0.0.0 -port 8090
-      -config api.disablekey=true
-      -config api.addrs.addr.name=.*
-      -config api.addrs.addr.regex=true
-    restart: always
-    networks:
-      - backend
-      - shared_bridge
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8090/JSON/core/view/version/"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
-
   tor-extend-1:
-    container_name: trusted-micros_tor_instace_1
+    container_name: trusted-social_tor_instace_1
     image: barneybuffet/tor:latest
     env_file:
       - .env
@@ -104,7 +80,7 @@ services:
       TOR_PROXYL: "true"
       TOR_PROXY_PORT: "0.0.0.0:9352"
       TOR_PROXY_SOCKET: "true"
-      TOR_PROXY_ACCEPT: "accept 172.15.0.0/24,accept 127.0.0.1,accept 10.0.0.0/8,accept 172.16.0.0/12,accept 192.168.0.0/16"
+      TOR_PROXY_ACCEPT: "accept 172.25.0.0/24,accept 127.0.0.1,accept 10.0.0.0/8,accept 172.16.0.0/12,accept 192.168.0.0/16"
       TOR_CONTROL: "true"
       TOR_CONTROL_PORT: "0.0.0.0:9353"
       TOR_CONTROL_SOCKET: "true"
@@ -113,7 +89,7 @@ services:
       TOR_RELAY: "false"
     networks:
       backend:
-        ipv4_address: 172.15.0.10
+        ipv4_address: 172.25.0.10
     healthcheck:
       test: [ "CMD-SHELL", "curl --proxy http://localhost:9352 http://example.com || exit 1" ]
       interval: 120s
@@ -132,4 +108,4 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.15.0.0/24
+        - subnet: 172.25.0.0/24

@@ -2,7 +2,7 @@ from playwright.sync_api import Page
 
 from api.social_manager.scrapers.base_scraper import BaseScraper
 from api.social_manager.models import social_model
-from api.social_manager.cross_platform_mapping import cross_platform_mapper
+from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
 
 
 class FacebookScraper(BaseScraper):
