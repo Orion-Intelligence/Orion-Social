@@ -1,0 +1,4 @@
+class S_SCANNER:
+    ENABLE_SCAN_CACHE = False
+    EXPIRY_TTL = 15 * 60
+
