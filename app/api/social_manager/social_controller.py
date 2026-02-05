@@ -18,6 +18,7 @@ SESSION_DIR = os.path.dirname(os.path.abspath(__file__))
 SESSION_FILE_MAP = {
     "InstagramScraper": "instagram_session.json.gz",
     "FacebookScraper": "FacebookScraper_session.json.gz",
+    "twitter":"twitter_session.json.gz",
 }
 
 BROWSER_ARGS = [
