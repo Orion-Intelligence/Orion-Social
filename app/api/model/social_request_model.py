@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from api.social_manager.social_enums import SCRAPE_SCOPE
 
 
 class SocialReconRequest(BaseModel):
@@ -27,7 +26,6 @@ class SocialFollowingRequest(BaseModel):
 class SocialTarget(BaseModel):
     usernames: List[str] = Field(..., min_length=1)
     platform: str
-    scope: int = Field(default=SCRAPE_SCOPE.ALL_DATA, ge=1, le=7)
     max_followers: int = Field(default=50, ge=1, le=5000)
     max_following: int = Field(default=50, ge=1, le=5000)
 

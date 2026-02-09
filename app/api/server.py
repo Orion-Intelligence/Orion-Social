@@ -13,7 +13,7 @@ from .model.social_request_model import (
 )
 from .progress_controller import progress_controller
 from .social_manager.social_controller import social_controller
-from .social_manager.social_enums import SOCIAL_REQUEST_COMMANDS, SCRAPE_SCOPE
+from .social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
 logging.basicConfig(
     level=logging.INFO,
@@ -128,7 +128,6 @@ class APIService:
             {
                 "platform": t.platform,
                 "usernames": t.usernames,
-                "scope": t.scope,
                 "max_followers": t.max_followers,
                 "max_following": t.max_following
             }
@@ -142,11 +141,10 @@ class APIService:
         state = self.social_controller_instance.get_scrape_status(scrape_key)
 
         if state["status"] == "done":
-            return {"scrape_key": scrape_key, "result": state["result"]}
+            return state["data"]
 
         if state["status"] == "pending":
             return {
-                "scrape_key": scrape_key,
                 "status": "pending",
                 "progress": state.get("progress", 0),
                 "step": state.get("step", "")
@@ -169,7 +167,6 @@ class APIService:
         asyncio.create_task(run())
 
         return {
-            "scrape_key": scrape_key,
             "status": "pending",
             "progress": 0,
             "step": "queued"
@@ -182,11 +179,10 @@ class APIService:
         state = self.social_controller_instance.get_scrape_status(scrape_key)
 
         if state["status"] == "done":
-            return {"scrape_key": scrape_key, "result": state["result"]}
+            return state["data"]
 
         if state["status"] == "pending":
             return {
-                "scrape_key": scrape_key,
                 "status": "pending",
                 "progress": state.get("progress", 0),
                 "step": state.get("step", "")
@@ -203,7 +199,6 @@ class APIService:
         asyncio.create_task(run())
 
         return {
-            "scrape_key": scrape_key,
             "status": "pending",
             "progress": 0,
             "step": "queued"
@@ -216,11 +211,10 @@ class APIService:
         state = self.social_controller_instance.get_scrape_status(scrape_key)
 
         if state["status"] == "done":
-            return {"scrape_key": scrape_key, "result": state["result"]}
+            return state["data"]
 
         if state["status"] == "pending":
             return {
-                "scrape_key": scrape_key,
                 "status": "pending",
                 "progress": state.get("progress", 0),
                 "step": state.get("step", "")
@@ -238,7 +232,6 @@ class APIService:
         asyncio.create_task(run())
 
         return {
-            "scrape_key": scrape_key,
             "status": "pending",
             "progress": 0,
             "step": "queued"
@@ -251,11 +244,10 @@ class APIService:
         state = self.social_controller_instance.get_scrape_status(scrape_key)
 
         if state["status"] == "done":
-            return {"scrape_key": scrape_key, "result": state["result"]}
+            return state["data"]
 
         if state["status"] == "pending":
             return {
-                "scrape_key": scrape_key,
                 "status": "pending",
                 "progress": state.get("progress", 0),
                 "step": state.get("step", "")
@@ -273,7 +265,6 @@ class APIService:
         asyncio.create_task(run())
 
         return {
-            "scrape_key": scrape_key,
             "status": "pending",
             "progress": 0,
             "step": "queued"

@@ -13,7 +13,7 @@ class BaseScraper(ABC):
         self._username = username
         self._max_followers = max_followers
         self._max_following = max_following
-        self._scope = SCRAPE_SCOPE.ALL_DATA
+        self._scope = SCRAPE_SCOPE.FOLLOWERS_FOLLOWING
 
     def set_scope(self, scope: int):
         self._scope = scope
@@ -51,22 +51,19 @@ class BaseScraper(ABC):
         include_profile = self._scope in [
             SCRAPE_SCOPE.PROFILE_ONLY,
             SCRAPE_SCOPE.PROFILE_FOLLOWERS,
-            SCRAPE_SCOPE.PROFILE_FOLLOWING,
-            SCRAPE_SCOPE.ALL_DATA
+            SCRAPE_SCOPE.PROFILE_FOLLOWING
         ]
 
         include_followers = self._scope in [
             SCRAPE_SCOPE.FOLLOWERS_ONLY,
             SCRAPE_SCOPE.FOLLOWERS_FOLLOWING,
-            SCRAPE_SCOPE.PROFILE_FOLLOWERS,
-            SCRAPE_SCOPE.ALL_DATA
+            SCRAPE_SCOPE.PROFILE_FOLLOWERS
         ]
 
         include_following = self._scope in [
             SCRAPE_SCOPE.FOLLOWING_ONLY,
             SCRAPE_SCOPE.FOLLOWERS_FOLLOWING,
-            SCRAPE_SCOPE.PROFILE_FOLLOWING,
-            SCRAPE_SCOPE.ALL_DATA
+            SCRAPE_SCOPE.PROFILE_FOLLOWING
         ]
 
         if include_profile:
