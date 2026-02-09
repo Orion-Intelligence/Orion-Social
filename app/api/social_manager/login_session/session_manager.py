@@ -6,8 +6,20 @@ from playwright.sync_api import Page
 
 class SessionManager:
 
-    def __init__(self, session_file: str = "session_data.json.gz"):
-        self.session_file = session_file
+    def __init__(self, scraper_name: str):
+        # Base directory = social_manager/
+        base_dir = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
+        )
+
+        # sessions directory
+        self.session_dir = os.path.join(base_dir, "sessions")
+        os.makedirs(self.session_dir, exist_ok=True)
+
+        # dynamic session filename
+        filename = f"{scraper_name.lower()}_session.json.gz"
+        self.session_file = os.path.join(self.session_dir, filename)
+
         self._pending_local = {}
         self._pending_session = {}
 
@@ -32,7 +44,7 @@ class SessionManager:
             }
 
             with gzip.open(self.session_file, "wt", encoding="utf-8") as f:
-                f.write(json.dumps(state))
+                json.dump(state, f)
 
             return True
         except Exception:
@@ -49,8 +61,8 @@ class SessionManager:
             if state.get("cookies"):
                 page.context.add_cookies(state["cookies"])
 
-            self._pending_local = state.get("local_storage", {})
-            self._pending_session = state.get("session_storage", {})
+            self._pending_local = state.get("local_storage", {}) or {}
+            self._pending_session = state.get("session_storage", {}) or {}
 
             return True
         except Exception:
@@ -59,10 +71,10 @@ class SessionManager:
     def apply_storage(self, page: Page) -> bool:
         try:
             for k, v in self._pending_local.items():
-                page.evaluate(f"() => localStorage.setItem('{k}', '{v}')")
+                page.evaluate("([k, v]) => localStorage.setItem(k, v)", [k, v])
 
             for k, v in self._pending_session.items():
-                page.evaluate(f"() => sessionStorage.setItem('{k}', '{v}')")
+                page.evaluate("([k, v]) => sessionStorage.setItem(k, v)", [k, v])
 
             return True
         except Exception:
