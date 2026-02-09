@@ -80,7 +80,7 @@ def main():
         #tiktok(username="bilalshahid669"),
         #twitter(username="elonmusk"),
         #DuckDuckGoScraper("Usman Ali"),
-        ImageScraper(name="Elon Musk", platform="facebook", limit=20)
+        ImageScraper(name="Elon Musk", limit=20)
 
 
     ]

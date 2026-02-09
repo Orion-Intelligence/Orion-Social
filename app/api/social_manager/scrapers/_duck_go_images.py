@@ -8,20 +8,14 @@ from api.social_manager.helper_methods.cross_platform_mapping import cross_platf
 class ImageScraper(BaseScraper):
     requires_login = False
 
-    def __init__(self, name: str, platform: str, limit: int = 100):
+    def __init__(self, name: str, limit: int = 100):
         super().__init__()
         self._name = name
-        self._platform = platform.lower()
         self._limit = limit
-
-        if self._platform not in ["facebook", "instagram"]:
-            raise ValueError("platform must be 'facebook' or 'instagram'")
 
     @property
     def base_url(self) -> str:
-
-        query = f'site:{self._platform}.com "{self._name}"'
-        return f"https://duckduckgo.com/?q={query}&iax=images&ia=images"
+        return f"https://duckduckgo.com/?q={self._name}&iax=images&ia=images"
 
     @property
     def seed_url(self) -> str:
@@ -29,7 +23,7 @@ class ImageScraper(BaseScraper):
 
     @property
     def name(self) -> str:
-        return f"{self._platform.capitalize()} Image Search"
+        return "Image Search"
 
     def parse_page(self, page: Page):
 
@@ -54,16 +48,16 @@ class ImageScraper(BaseScraper):
                 break
 
         print(f"\nTotal Images Found: {len(image_urls)}")
-
         print(image_urls)
-
         card = social_model(
             m_username=self._name,
-            m_platform=self._platform,
-            m_content_type=[f"{self._platform}_images"],
+            m_platform="images",
+            m_content_type=["images"],
             m_image_urls=image_urls,
             m_content=f"Total Images Found: {len(image_urls)}"
         )
+
+        print(card)
 
         self.data.append(card.model_dump())
         cross_platform_mapper.add_card(card)
