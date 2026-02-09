@@ -1,10 +1,11 @@
+
 import asyncio
 import logging
 import concurrent.futures
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 
-from .model.social_request_model import SocialReconRequest
+from .model.social_request_model import SocialReconRequest, SocialScrapeRequest
 from .progress_controller import progress_controller
 from .social_manager.social_controller import social_controller
 from .social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
@@ -31,9 +32,10 @@ class APIService:
         self.waiting_lock = asyncio.Lock()
 
         self.progress = progress_controller.get_instance()
-        self.social_instance = social_controller()
+        self.social_controller_instance = social_controller()
 
         self.app.add_api_route("/social/recon", self.social_recon, methods=["POST"])
+        self.app.add_api_route("/social/scrape", self.social_scrape, methods=["POST"])
 
         loop.create_task(self.log_queue_size())
 
@@ -110,6 +112,59 @@ class APIService:
         except Exception as exc:
             raise HTTPException(status_code=500, detail="Error running recon") from exc
 
+
+    async def social_scrape(self, request: SocialScrapeRequest):
+        logger.info("Received request at /social/scrape")
+
+        targets = [
+            {
+                "platform": t.platform,
+                "usernames": t.usernames,
+                "max_followers": t.max_followers,
+                "max_following": t.max_following
+            }
+            for t in request.targets
+        ]
+
+        if not targets:
+            raise HTTPException(status_code=400, detail="Targets are required")
+
+        scrape_key = str(hash(str(targets)))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return {"scrape_key": scrape_key, "result": state["result"]}
+
+        if state["status"] == "pending":
+            return {
+                "scrape_key": scrape_key,
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        data = {
+            "scrape_key": scrape_key,
+            "targets": targets,
+            "compare_results": True,
+            "similarity_threshold": 70
+        }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.invoke_trigger,
+                SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE,
+                data
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "scrape_key": scrape_key,
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
 
 api_service = APIService()
 app = api_service.app
