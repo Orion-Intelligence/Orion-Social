@@ -3,6 +3,8 @@ from typing import List
 
 class SocialReconRequest(BaseModel):
     query: str = Field(..., min_length=1)
+
+
 class SocialTarget(BaseModel):
     usernames: List[str] = Field(..., min_length=1)
     platform: str
