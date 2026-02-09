@@ -12,6 +12,7 @@ from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
+from api.social_manager.models import social_model
 
 BROWSER_ARGS = [
     "--no-sandbox",
@@ -52,7 +53,6 @@ class social_controller:
             route.continue_()
 
     def _update_progress(self, scrape_key: str, progress: int, step: str):
-        """Update progress state for a scrape operation."""
         if scrape_key:
             self._scrape_states[scrape_key] = {
                 "status": "pending",
@@ -152,18 +152,28 @@ class social_controller:
                     max_followers,
                     max_following,
                     SCRAPE_SCOPE.FOLLOWERS_FOLLOWING,
-                    scrape_key=None  # Don't update progress for sub-tasks
+                    scrape_key=None
                 )
 
                 results.append(result)
+
+                if result and "error" not in result:
+                    card = social_model(
+                        m_platform=result.get("platform", platform),
+                        m_username=result.get("username", username),
+                        m_followers=result.get("followers", []),
+                        m_following=result.get("following", []),
+                        m_mutual_usernames=result.get("mutual", [])
+                    )
+                    cross_platform_mapper.add_card(card)
+
                 completed += 1
 
         analysis = cross_platform_mapper.get_full_analysis(70)
 
         return {
             "results": results,
-            "analysis": analysis,
-            "total_scraped": len(results)
+            "analysis": analysis
         }
 
     def invoke_trigger(self, command, data):
