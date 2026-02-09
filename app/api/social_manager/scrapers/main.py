@@ -13,12 +13,17 @@ app_dir = os.path.dirname(
 sys.path.insert(0, app_dir)
 
 from api.social_manager.login_session.session_manager import SessionManager
+from api.social_manager.scrapers._duck_go_images import ImageScraper
+
 from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers._tiktok import tiktok
 from api.social_manager.scrapers._twitter import twitter
+from api.social_manager.scrapers._duck_go import DuckDuckGoScraper
+
+
 
 
 def run_scraper(scraper):
@@ -70,10 +75,12 @@ def main():
 
     scrapers = [
         #InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
-        FacebookScraper(username="saqibali.jaspal", max_followers=30, max_following=10),
+        #FacebookScraper(username="saqibali.jaspal", max_followers=30, max_following=10),
         # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
-        #tiktok(username="bilalshahid669")
-        #twitter(username="elonmusk")
+        #tiktok(username="bilalshahid669"),
+        #twitter(username="elonmusk"),
+        #DuckDuckGoScraper("Usman Ali"),
+        ImageScraper(name="Elon Musk", platform="facebook", limit=20)
 
 
     ]
