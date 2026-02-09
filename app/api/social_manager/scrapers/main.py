@@ -65,8 +65,8 @@ def run_scraper(scraper):
 def main():
 
     scrapers = [
-        # InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
-        FacebookScraper(username="100081288807680", max_followers=30, max_following=10),
+        InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
+        #FacebookScraper(username="100081288807680", max_followers=30, max_following=10),
         # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
     ]
 
