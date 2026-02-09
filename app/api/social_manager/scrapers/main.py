@@ -17,6 +17,8 @@ from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
+from api.social_manager.scrapers._tiktok import tiktok
+from api.social_manager.scrapers._twitter import twitter
 
 
 def run_scraper(scraper):
@@ -49,9 +51,11 @@ def run_scraper(scraper):
                 print(">> No session found. Login manually...")
                 page.goto(scraper.base_url, wait_until="domcontentloaded")
                 input("Press ENTER after login...")
+
+                page.goto(scraper.seed_url, wait_until="domcontentloaded")
+                page.wait_for_timeout(5000)
                 session.save(page)
                 print(">> Session saved successfully!")
-                page.goto(scraper.seed_url, wait_until="domcontentloaded")
 
         else:
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
@@ -65,9 +69,13 @@ def run_scraper(scraper):
 def main():
 
     scrapers = [
-        InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
+        #InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
         #FacebookScraper(username="100081288807680", max_followers=30, max_following=10),
         # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
+        #tiktok(username="bilalshahid669")
+        twitter(username="elonmusk")
+
+
     ]
 
     if not scrapers:
