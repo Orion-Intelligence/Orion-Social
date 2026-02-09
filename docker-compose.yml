@@ -70,19 +70,19 @@ services:
     volumes:
       - ./config/tor/torrc_1.txt:/etc/tor/torrc:rw
     ports:
-      - "0.0.0.0:9352:9352"
-      - "0.0.0.0:9353:9353"
+      - "0.0.0.0:9552:9552"
+      - "0.0.0.0:9553:9553"
     environment:
       PUID: "20002"
       PGID: "20003"
       TOR_CONFIG_OVERWRITE: "true"
       TOR_LOG_CONFIG: "true"
       TOR_PROXYL: "true"
-      TOR_PROXY_PORT: "0.0.0.0:9352"
+      TOR_PROXY_PORT: "0.0.0.0:9552"
       TOR_PROXY_SOCKET: "true"
       TOR_PROXY_ACCEPT: "accept 172.25.0.0/24,accept 127.0.0.1,accept 10.0.0.0/8,accept 172.16.0.0/12,accept 192.168.0.0/16"
       TOR_CONTROL: "true"
-      TOR_CONTROL_PORT: "0.0.0.0:9353"
+      TOR_CONTROL_PORT: "0.0.0.0:9553"
       TOR_CONTROL_SOCKET: "true"
       TOR_CONTROL_PASSWORD: ${TOR_PASSWORD}
       TOR_CONTROL_COOKIE: "true"
@@ -91,7 +91,7 @@ services:
       backend:
         ipv4_address: 172.25.0.10
     healthcheck:
-      test: [ "CMD-SHELL", "curl --proxy http://localhost:9352 http://example.com || exit 1" ]
+      test: [ "CMD-SHELL", "curl --proxy http://localhost:9552 http://example.com || exit 1" ]
       interval: 120s
       timeout: 10s
       retries: 3

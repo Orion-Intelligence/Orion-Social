@@ -6,3 +6,6 @@ playwright
 sherlock-project
 maigret
 rapidfuzz
+holehe
+socialscan
+email-validator

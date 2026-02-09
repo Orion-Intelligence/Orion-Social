@@ -66,12 +66,12 @@ class APIService:
     async def social_recon(self, params: SocialReconRequest):
         try:
             mode = getattr(params, "mode", "default")
-            job_id = str(hash(f"recon:{params.username}:{mode}"))
+            job_id = str(hash(f"recon:{params.query}:{mode}"))
 
             state = self.progress.get(job_id)
 
             if state["status"] == "done":
-                return {"job_id": job_id, "result": state.get("result")}
+                return {"job_id": job_id, "result": state.get("result").get("data")}
 
             if state["status"] == "pending":
                 return {
@@ -91,7 +91,7 @@ class APIService:
             self.progress.init(job_id)
             self.progress.update(job_id, 0, "queued")
 
-            data = {"job_id": job_id, "username": params.username, "mode": mode}
+            data = {"job_id": job_id, "username": params.query, "mode": mode}
 
             asyncio.create_task(
                 self._run_with_timeout(

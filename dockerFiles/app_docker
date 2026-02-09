@@ -3,8 +3,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
-    APT_LISTCHANGES_FRONTEND=none \
-    TRIVY_CACHE_DIR=/root/.cache/trivy
+    APT_LISTCHANGES_FRONTEND=none
 
 RUN set -eux; \
     apt-get -o Acquire::Retries=3 update; \
@@ -43,12 +42,6 @@ RUN set -eux; \
       openjdk-21-jdk-headless \
       unzip \
     ; \
-    install -d -m 0755 /usr/share/keyrings /etc/apt/sources.list.d; \
-    curl -fsSL https://get.trivy.dev/deb/public.key | gpg --dearmor -o /usr/share/keyrings/trivy.gpg; \
-    echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://get.trivy.dev/deb generic main" \
-      > /etc/apt/sources.list.d/trivy.list; \
-    apt-get -o Acquire::Retries=3 update; \
-    apt-get -o Acquire::Retries=3 install -y --no-install-recommends trivy; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
@@ -60,6 +53,11 @@ RUN ARCH="$(dpkg --print-architecture)" && \
 
 RUN subfinder -version
 
+RUN curl -fsSL https://raw.githubusercontent.com/sundowndev/phoneinfoga/master/support/scripts/install | bash \
+ && mv ./phoneinfoga /usr/local/bin/phoneinfoga \
+ && chmod +x /usr/local/bin/phoneinfoga \
+ && phoneinfoga version
+
 RUN python3 -m ensurepip \
  && pip install --upgrade pip \
  && pip install playwright \
@@ -68,18 +66,10 @@ RUN python3 -m ensurepip \
 COPY app/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
-RUN python -m spacy download en_core_web_trf
-
 COPY app /app
-RUN pip install --no-cache-dir sentence-transformers torch transformers \
- && python - <<'PY'
-from sentence_transformers import SentenceTransformer
-m = SentenceTransformer("BAAI/bge-small-en-v1.5")
-m.save("/app/raw/model/semantic")
-PY
-
 COPY config /app
+
 WORKDIR /app
 
 EXPOSE 8010
-CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8010"]
+CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8020"]

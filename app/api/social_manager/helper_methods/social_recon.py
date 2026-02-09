@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shutil
 import subprocess
 import time
 
@@ -94,7 +95,21 @@ class social_recon:
 
         return profiles
 
-    def parse(self, username: str, mode: str = "default", job_id: str | None = None):
+    def run_holehe(self, email: str):
+        if not shutil.which("holehe"):
+            return None
+        result = subprocess.run(["holehe", email], capture_output=True, text=True)
+        found = []
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            m = re.match(r"^\[\+\]\s*([^:]+):\s*(.+)$", line)
+            if m:
+                found.append({"service": m.group(1).strip(), "result": m.group(2).strip()})
+            elif "found" in line.lower() or line.startswith("[+]"):
+                found.append({"line": line})
+        return {"returncode": result.returncode, "found": found}
+
+    def parse_username(self, username: str, mode: str = "default", job_id: str | None = None):
         if job_id:
             self._progress.update(job_id, 5, "sherlock")
 
@@ -125,17 +140,29 @@ class social_recon:
             if plat_lower in focused_lower:
                 if job_id:
                     self._progress.update(job_id, int((done / total) * 90), f"maigret:{plat}:{uname}")
-                data = self.run_maigret_on_platform(uname, plat)
+                raw = self.run_maigret_on_platform(uname, plat)
+                if isinstance(raw, dict):
+                    k = next((kk for kk in raw.keys() if kk.lower() == plat_lower), None)
+                    if k is not None:
+                        data = raw[k]
+                    elif len(raw) == 1:
+                        data = next(iter(raw.values()))
+                    else:
+                        data = raw
+                else:
+                    data = raw
 
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
             results.append(
                 {
-                    "platform": plat,
-                    "username": uname,
-                    "social_handle": uname,
-                    "url": p.get("url"),
-                    "timestamp": timestamp,
+                    "metadata": {
+                        "platform": plat,
+                        "username": uname,
+                        "social_handle": uname,
+                        "url": p.get("url"),
+                        "timestamp": timestamp,
+                    },
                     "data": data,
                 }
             )
@@ -148,9 +175,141 @@ class social_recon:
 
         return results
 
+    def parse_email(self, email: str, mode: str = "default", job_id: str | None = None):
+        email = (email or "").strip().lower()
+
+        if job_id:
+            self._progress.update(job_id, 5, "email:holehe")
+
+        holehe_data = self.run_holehe(email)
+        pivot_username = None
+        if holehe_data:
+            for item in holehe_data.get("found") or []:
+                if item:
+                    url = item.get("result") or ""
+                    m = re.search(r"gravatar\.com/([^/?#\s]+)", url)
+                    if m:
+                        pivot_username = m.group(1).strip().lower()
+                        break
+                    srv = item.get("service") or ""
+                    m = re.search(r"FullName\s+([^\s/]+)", srv)
+                    if m:
+                        pivot_username = m.group(1).strip().lower()
+                        break
+
+        if not pivot_username and "@" in email:
+            pivot_username = email.split("@", 1)[0].strip().lower() or None
+
+        pivot_results = None
+        if pivot_username:
+            try:
+                pivot_results = self.parse_username(pivot_username, mode=mode, job_id=None)
+            except Exception:
+                pivot_results = None
+
+        if pivot_results:
+            for r in pivot_results:
+                d = r["data"]
+                if d and len(d) == 1:
+                    r["data"] = next(iter(d.values()))
+
+        if job_id:
+            self._progress.update(job_id, 95, "finalizing")
+
+        return pivot_results
+
+    def parse_phone(self, phone: str, mode: str = "default", job_id: str | None = None):
+        p = (phone or "").strip()
+
+        if job_id:
+            self._progress.update(job_id, 5, "phone:scan")
+
+        rc = 127
+        out = ""
+        err = ""
+        cmd = []
+
+        if shutil.which("phoneinfoga"):
+            cmd = ["phoneinfoga", "scan", "--number", p]
+            r = subprocess.run(cmd, capture_output=True, text=True)
+            rc = r.returncode
+            out = (r.stdout or "").strip()
+            err = (r.stderr or "").strip()
+            out = re.sub(r"\x1b\[[0-9;]*m", "", out).strip()
+            err = re.sub(r"\x1b\[[0-9;]*m", "", err).strip()
+
+        if rc != 0:
+            ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            if job_id:
+                self._progress.update(job_id, 95, "finalizing")
+            return {
+                "result": {
+                    "phone": p,
+                    "timestamp": ts,
+                    "status": {"code": rc},
+                    "results": {"error": err or out or "phoneinfoga not available"},
+                    "debug": {"cmd": " ".join(cmd)},
+                    "data": [],
+                }
+            }
+
+        parsed = {
+            "number": p,
+            "country": None,
+            "formats": {},
+            "urls": [],
+            "data": [],
+        }
+
+        for line in out.splitlines():
+            s = line.strip()
+            if not s:
+                continue
+            if s.startswith("Country:"):
+                parsed["country"] = s.split(":", 1)[1].strip()
+            elif s.startswith("E164:"):
+                parsed["formats"]["e164"] = s.split(":", 1)[1].strip()
+            elif s.startswith("International:"):
+                parsed["formats"]["international"] = s.split(":", 1)[1].strip()
+            elif s.startswith("Local:"):
+                parsed["formats"]["local"] = s.split(":", 1)[1].strip()
+            elif "URL:" in s:
+                parsed["urls"].append(s.split("URL:", 1)[1].strip())
+            elif ":" in s and not s.endswith(":"):
+                parsed["data"].append(s)
+
+        seen = set()
+        urls_dedup = []
+        for u in parsed["urls"]:
+            if u not in seen:
+                seen.add(u)
+                urls_dedup.append(u)
+        parsed["urls"] = urls_dedup
+
+        if job_id:
+            self._progress.update(job_id, 95, "finalizing")
+
+        return {"result": parsed}
+
+    def parse(self, value: str, mode: str = "default", job_id: str | None = None):
+        v = (value or "").strip()
+        if not v:
+            return []
+
+        is_email = "@" in v and re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", v) is not None
+        if is_email:
+            return self.parse_email(v, mode=mode, job_id=job_id)
+
+        digits = re.sub(r"\D+", "", v)
+        is_phone = re.match(r"^\+?[\d\s().\-]{7,}$", v) is not None and len(digits) >= 7
+        if is_phone:
+            return self.parse_phone(v, mode=mode, job_id=job_id)
+
+        return self.parse_username(v, mode=mode, job_id=job_id)
+
 
 if __name__ == "__main__":
     recon = social_recon()
-    username = "grok"
-    results = recon.parse(username, mode="default", job_id=None)
+    data = "+923324935230"
+    results = recon.parse(data, mode="default", job_id=None)
     print(json.dumps(results, indent=2, ensure_ascii=False))
