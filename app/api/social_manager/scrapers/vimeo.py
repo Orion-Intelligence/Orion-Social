@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 from playwright.sync_api import Page
 
 from api.social_manager.scrapers.base_scraper import BaseScraper
@@ -10,11 +10,8 @@ class VimeoScraper(BaseScraper):
 
     requires_login = False
 
-    def __init__(self, username: str, max_followers: int, max_following: int):
-        super().__init__()
-        self._username = username
-        self._max_followers = max_followers
-        self._max_following = max_following
+    def __init__(self, username: str, max_followers: int = 50, max_following: int = 50):
+        super().__init__(username, max_followers, max_following)
 
     @property
     def base_url(self) -> str:
@@ -23,6 +20,14 @@ class VimeoScraper(BaseScraper):
     @property
     def seed_url(self) -> str:
         return f"https://vimeo.com/{self._username}"
+
+    @property
+    def followers_url(self) -> str:
+        return f"https://vimeo.com/{self._username}/following/followers"
+
+    @property
+    def following_url(self) -> str:
+        return f"https://vimeo.com/{self._username}/following"
 
     @property
     def name(self) -> str:
@@ -61,31 +66,32 @@ class VimeoScraper(BaseScraper):
 
         return collected[:max_items]
 
-    def parse_page(self, page: Page) -> Dict[str, Any]:
-        username = page.locator("div.sc-aa85dd4c-2 span div.sc-aa85dd4c-7").first.inner_text().strip()
+    def scrape_profile(self, page: Page) -> Dict[str, Any]:
+        page.goto(self.seed_url, wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
 
-        followers_anchor = page.locator("a[href*='following/followers']")
-        followers_link = followers_anchor.get_attribute("href")
+        username_el = page.locator("div.sc-aa85dd4c-2 span div.sc-aa85dd4c-7").first
+        username = username_el.inner_text().strip() if username_el.count() > 0 else self._username
 
-        following_anchor = page.locator("a[href$='/following']")
-        following_link = following_anchor.get_attribute("href")
+        name_el = page.query_selector('h1')
+        name = name_el.inner_text().strip() if name_el else ""
 
-        followers_data = self._collect_paginated_data(page, followers_link, self._max_followers)
-        following_data = self._collect_paginated_data(page, following_link, self._max_following)
-        mutual = list(set(followers_data) & set(following_data))
+        bio_el = page.query_selector('div.sc-aa85dd4c-5')
+        bio = bio_el.inner_text().strip() if bio_el else ""
 
-        card = social_model(
-            m_username=username,
-            m_weblink=[followers_link, following_link],
-            m_content_type=["vimeo_followers", "vimeo_following", "vimeo_mutual"],
-            m_network="clearnet",
-            m_platform="vimeo",
-            m_followers=followers_data,
-            m_following=following_data,
-            m_mutual_usernames=mutual
-        )
+        location_el = page.query_selector('span.sc-aa85dd4c-8')
+        location = location_el.inner_text().strip() if location_el else ""
 
-        self.data.append(card.model_dump())
-        cross_platform_mapper.add_card(card)
+        return {
+            "username": username,
+            "real_name": name,
+            "bio": bio,
+            "location": location,
+            "profile_url": self.seed_url
+        }
 
-        return card.model_dump()
+    def scrape_followers(self, page: Page) -> List[str]:
+        return self._collect_paginated_data(page, self.followers_url, self._max_followers)
+
+    def scrape_following(self, page: Page) -> List[str]:
+        return self._collect_paginated_data(page, self.following_url, self._max_following)

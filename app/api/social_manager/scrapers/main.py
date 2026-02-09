@@ -74,13 +74,13 @@ def run_scraper(scraper):
 def main():
 
     scrapers = [
-        #InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
+        InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
         #FacebookScraper(username="saqibali.jaspal", max_followers=30, max_following=10),
         # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
         #tiktok(username="bilalshahid669"),
         #twitter(username="elonmusk"),
         #DuckDuckGoScraper("Usman Ali"),
-        ImageScraper(name="Elon Musk", limit=20)
+        #ImageScraper(name="Elon Musk", limit=20)
 
 
     ]

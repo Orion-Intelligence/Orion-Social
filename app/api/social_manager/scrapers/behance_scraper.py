@@ -1,5 +1,5 @@
 import time
-from typing import Dict, Any
+from typing import Dict, Any, List
 from playwright.sync_api import Page
 
 from api.social_manager.scrapers.base_scraper import BaseScraper
@@ -11,11 +11,8 @@ class BehanceScraper(BaseScraper):
 
     requires_login = False
 
-    def __init__(self, username: str, max_followers: int, max_following: int):
-        super().__init__()
-        self._username = username
-        self._max_followers = max_followers
-        self._max_following = max_following
+    def __init__(self, username: str, max_followers: int = 50, max_following: int = 50):
+        super().__init__(username, max_followers, max_following)
 
     @property
     def base_url(self) -> str:
@@ -31,7 +28,7 @@ class BehanceScraper(BaseScraper):
 
     @property
     def seed_url(self) -> str:
-        return "https://www.behance.net"
+        return f"https://www.behance.net/{self._username}"
 
     @property
     def name(self) -> str:
@@ -79,22 +76,40 @@ class BehanceScraper(BaseScraper):
 
         return list(collected)[:max_items]
 
-    def parse_page(self, page: Page) -> Dict[str, Any]:
-        followers = self._collect_names(page, url=self.follower_url, max_items=self._max_followers)
-        following = self._collect_names(page, url=self.following_url, max_items=self._max_following)
-        mutual_usernames = list(set(followers) & set(following))
+    def scrape_profile(self, page: Page) -> Dict[str, Any]:
+        page.goto(self.seed_url, wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
 
-        card = social_model(
-            m_weblink=[self.follower_url, self.following_url],
-            m_content_type=["behance_followers", "behance_following", "behance_mutual"],
-            m_network="clearnet",
-            m_platform="behance",
-            m_followers=followers,
-            m_following=following,
-            m_mutual_usernames=mutual_usernames
-        )
+        name_el = page.query_selector('h1.ProfileCard-userFullName-f5A')
+        name = name_el.inner_text().strip() if name_el else ""
 
-        self.data.append(card.model_dump())
-        cross_platform_mapper.add_card(card)
+        username_el = page.query_selector('span.ProfileCard-userName-qCN')
+        username = username_el.inner_text().strip() if username_el else self._username
 
-        return card.model_dump()
+        bio_el = page.query_selector('p.ProfileCard-line-Fpm')
+        bio = bio_el.inner_text().strip() if bio_el else ""
+
+        location_el = page.query_selector('span.ProfileCard-location-MhL')
+        location = location_el.inner_text().strip() if location_el else ""
+
+        followers_el = page.query_selector('a[href$="/followers"] span.ProfileCard-count-jFB')
+        followers_count = followers_el.inner_text().strip() if followers_el else ""
+
+        following_el = page.query_selector('a[href$="/following"] span.ProfileCard-count-jFB')
+        following_count = following_el.inner_text().strip() if following_el else ""
+
+        return {
+            "username": username,
+            "real_name": name,
+            "bio": bio,
+            "location": location,
+            "total_followers": followers_count,
+            "total_following": following_count,
+            "profile_url": self.seed_url
+        }
+
+    def scrape_followers(self, page: Page) -> List[str]:
+        return self._collect_names(page, url=self.follower_url, max_items=self._max_followers)
+
+    def scrape_following(self, page: Page) -> List[str]:
+        return self._collect_names(page, url=self.following_url, max_items=self._max_following)

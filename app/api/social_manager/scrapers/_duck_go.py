@@ -1,3 +1,4 @@
+from typing import Dict, Any, List
 from playwright.sync_api import Page
 
 
@@ -7,18 +8,18 @@ from api.social_manager.helper_methods.cross_platform_mapping import cross_platf
 
 class DuckDuckGoScraper(BaseScraper):
 
-    def __init__(self, username: str, platform: str = "instagram.com"):
-        super().__init__()
+    def __init__(self, username: str, platform: str = "instagram.com", max_followers: int = 0, max_following: int = 0):
+        super().__init__(username, max_followers, max_following)
         self._search_username = username
         self._platform = platform
 
     @property
     def base_url(self) -> str:
-        return "https://duckduckgo.com"
+        return "https://html.duckduckgo.com/html"
 
     @property
     def seed_url(self) -> str:
-        return "https://duckduckgo.com"
+        return "https://html.duckduckgo.com/html"
 
     @property
     def name(self) -> str:
@@ -27,84 +28,82 @@ class DuckDuckGoScraper(BaseScraper):
     def _build_search_query(self) -> str:
         return f'site:{self._platform} "{self._search_username}"'
 
-    def print_results(self) -> None:
-        if not self.data:
-            print(f"\n[{self.name}] No data collected yet.")
-            return
+    def scrape_profile(self, page: Page) -> Dict[str, Any]:
+        return {}
 
-        print("\n" + "=" * 80)
-        print(f"[{self.name}] SEARCH RESULTS")
-        print("=" * 80)
-        print(f"{'#':<4} {'@Username':<30} {'Real Name':<40}")
-        print("-" * 80)
+    def scrape_followers(self, page: Page) -> List[str]:
+        return []
 
-        for idx, data in enumerate(self.data, 1):
-            username = data.get('m_username', 'N/A')
-            real_name = data.get('m_real_name', 'N/A')
-            print(f"{idx:<4} {username:<30} {real_name:<40}")
+    def scrape_following(self, page: Page) -> List[str]:
+        return []
 
-        print("=" * 80 + "\n")
-
-    def parse_page(self, page: Page) -> None:
+    def parse_page(self, page: Page) -> Dict[str, Any]:
         search_query = self._build_search_query()
-        search_url = f"{self.base_url}/?q={search_query.replace(' ', '+').replace(':', '%3A').replace('"', '%22')}"
+        encoded_query = search_query.replace(" ", "+").replace(":", "%3A").replace('"', "%22")
+        search_url = f"{self.base_url}/?q={encoded_query}"
 
-        print(f"[{self.name}] Searching for: {search_query}")
+        page.goto(search_url, wait_until="domcontentloaded")
+        page.wait_for_timeout(2000)
 
-        page.goto(search_url, wait_until="networkidle")
-        page.wait_for_selector('article[data-testid="result"]', timeout=15000)
-
-        print(f"[{self.name}] Collecting results from page 1...")
         self._extract_results(page)
 
         try:
-            more_button = page.query_selector('button#more-results')
-            if more_button:
-                print(f"[{self.name}] Clicking 'More results' button...")
-                more_button.click()
-                page.wait_for_selector('article[data-testid="result"]', timeout=15000)
+            next_button = page.query_selector('input.btn[value="Next"]')
+            if next_button:
+                next_button.click()
                 page.wait_for_timeout(2000)
-
-                print(f"[{self.name}] Collecting results from page 2...")
                 self._extract_results(page)
-            else:
-                print(f"[{self.name}] 'More results' button not found")
-        except Exception as e:
-            print(f"[{self.name}] Error: {str(e)}")
+        except Exception:
+            pass
 
-        print(f"[{self.name}] Total collected: {len(self.data)}")
+        print(self.data)
+        return {
+            "platform": "duckduckgo",
+            "query": self._search_username,
+            "target_platform": self._platform,
+            "results": self.data,
+            "total_results": len(self.data)
+        }
 
     def _extract_results(self, page: Page) -> None:
         try:
-            result_articles = page.query_selector_all('article[data-testid="result"]')
-            print(f"[{self.name}] Found {len(result_articles)} results")
+            result_links = page.query_selector_all('div.result__body')
 
-            for article in result_articles:
+            for result in result_links:
                 try:
-                    url_element = article.query_selector('a[data-testid="result-extras-url-link"]')
-                    if not url_element:
+                    title_element = result.query_selector('a.result__a')
+                    if not title_element:
                         continue
 
-                    url_text = url_element.text_content().strip()
+                    href = title_element.get_attribute('href')
+                    title_text = title_element.text_content().strip()
+
+                    snippet_element = result.query_selector('a.result__snippet')
+                    snippet_text = snippet_element.text_content().strip() if snippet_element else ""
+
+                    url_element = result.query_selector('a.result__url')
+                    url_text = url_element.text_content().strip() if url_element else ""
+
                     username = None
-                    if '›' in url_text:
-                        username = url_text.split('›')[-1].strip()
+                    if '/' in url_text:
+                        parts = url_text.rstrip('/').split('/')
+                        username = parts[-1] if parts else None
 
                     real_name = None
-                    snippet_element = article.query_selector('div[data-result="snippet"]')
-                    if snippet_element:
-                        snippet_text = snippet_element.text_content().strip()
-                        if ' from ' in snippet_text:
-                            real_name_part = snippet_text.split(' from ')[-1]
-                            if '(' in real_name_part:
-                                real_name = real_name_part.split('(')[0].strip()
+                    if '(' in title_text and ')' in title_text:
+                        real_name = title_text.split('(')[0].strip()
+                    elif ' - ' in title_text:
+                        real_name = title_text.split(' - ')[0].strip()
+                    elif '@' in title_text:
+                        real_name = title_text.split('@')[0].strip()
 
-                    if not real_name:
-                        title_element = article.query_selector('h2.LnpumSThxEWMIsDdAT17 a')
-                        if title_element:
-                            title_text = title_element.text_content().strip()
-                            if '(' in title_text:
-                                real_name = title_text.split('(')[0].strip()
+                    if not real_name and snippet_text:
+                        if ' from ' in snippet_text.lower():
+                            parts = snippet_text.lower().split(' from ')
+                            if len(parts) > 1:
+                                name_part = parts[-1]
+                                if '(' in name_part:
+                                    real_name = name_part.split('(')[0].strip().title()
 
                     if username and real_name:
                         existing = [d for d in self.data if d.get('m_username') == username]
@@ -113,15 +112,14 @@ class DuckDuckGoScraper(BaseScraper):
                                 m_username=username,
                                 m_real_name=real_name,
                                 m_platform=self._platform,
-                                m_weblink=[url_element.get_attribute('href')],
+                                m_weblink=[href] if href else [],
                             )
 
-                            print(f"  → {real_name} (@{username})")
                             self.data.append(card.model_dump())
                             cross_platform_mapper.add_card(card)
 
-                except Exception as e:
+                except Exception:
                     continue
 
-        except Exception as e:
-            print(f"[{self.name}] Error extracting results: {str(e)}")
+        except Exception:
+            pass

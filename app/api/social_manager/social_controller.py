@@ -4,7 +4,8 @@ from playwright.sync_api import sync_playwright
 
 from api.social_manager.social_enums import (
     SOCIAL_PLATFORMS,
-    SOCIAL_REQUEST_COMMANDS
+    SOCIAL_REQUEST_COMMANDS,
+    SCRAPE_SCOPE
 )
 from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
 from api.social_manager.login_session.session_manager import SessionManager
@@ -12,7 +13,6 @@ from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
-
 
 BROWSER_ARGS = [
     "--no-sandbox",
@@ -30,16 +30,21 @@ class social_controller:
     def __init__(self):
         self._scrape_states: Dict[str, Dict[str, Any]] = {}
 
-    def _get_scraper(self, platform, username, max_followers, max_following):
+    def _get_scraper(self, platform, username, max_followers, max_following, scope=SCRAPE_SCOPE.ALL_DATA):
+        scraper = None
         if platform == SOCIAL_PLATFORMS.INSTAGRAM:
-            return InstagramScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.FACEBOOK:
-            return FacebookScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.BEHANCE:
-            return BehanceScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.VIMEO:
-            return VimeoScraper(username, max_followers, max_following)
-        return None
+            scraper = InstagramScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.FACEBOOK:
+            scraper = FacebookScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.BEHANCE:
+            scraper = BehanceScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.VIMEO:
+            scraper = VimeoScraper(username, max_followers, max_following)
+
+        if scraper and hasattr(scraper, 'set_scope'):
+            scraper.set_scope(scope)
+
+        return scraper
 
     def _block_media(self, route):
         if route.request.resource_type in BLOCKED_RESOURCES:
@@ -74,9 +79,9 @@ class social_controller:
             "data": scraper.parse_page(page)
         }
 
-    def _scrape_user(self, platform, username, max_followers, max_following):
+    def _scrape_user(self, platform, username, max_followers, max_following, scope=SCRAPE_SCOPE.ALL_DATA):
 
-        scraper = self._get_scraper(platform, username, max_followers, max_following)
+        scraper = self._get_scraper(platform, username, max_followers, max_following, scope)
 
         if not scraper:
             return {
@@ -94,6 +99,45 @@ class social_controller:
             finally:
                 browser.close()
 
+    def scrape_profile(self, scrape_key: str, platform: str, username: str):
+        self._scrape_states[scrape_key] = {
+            "status": "pending",
+            "progress": 0,
+            "step": f"scraping profile: {username}"
+        }
+        result = self._scrape_user(platform, username, 0, 0, SCRAPE_SCOPE.PROFILE_ONLY)
+        self._scrape_states[scrape_key] = {
+            "status": "done",
+            "result": result
+        }
+        return result
+
+    def scrape_followers(self, scrape_key: str, platform: str, username: str, max_followers: int):
+        self._scrape_states[scrape_key] = {
+            "status": "pending",
+            "progress": 0,
+            "step": f"scraping followers: {username}"
+        }
+        result = self._scrape_user(platform, username, max_followers, 0, SCRAPE_SCOPE.FOLLOWERS_ONLY)
+        self._scrape_states[scrape_key] = {
+            "status": "done",
+            "result": result
+        }
+        return result
+
+    def scrape_following(self, scrape_key: str, platform: str, username: str, max_following: int):
+        self._scrape_states[scrape_key] = {
+            "status": "pending",
+            "progress": 0,
+            "step": f"scraping following: {username}"
+        }
+        result = self._scrape_user(platform, username, 0, max_following, SCRAPE_SCOPE.FOLLOWING_ONLY)
+        self._scrape_states[scrape_key] = {
+            "status": "done",
+            "result": result
+        }
+        return result
+
     def _scrape_multiple(self, scrape_key, targets):
 
         cross_platform_mapper.clear_cards()
@@ -108,7 +152,6 @@ class social_controller:
             max_following = target["max_following"]
 
             for username in target["usernames"]:
-
                 self._scrape_states[scrape_key] = {
                     "status": "pending",
                     "progress": int((completed / total_tasks) * 100),

@@ -1,14 +1,19 @@
-
 import asyncio
 import logging
 import concurrent.futures
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 
-from .model.social_request_model import SocialReconRequest, SocialScrapeRequest
+from .model.social_request_model import (
+    SocialReconRequest,
+    SocialScrapeRequest,
+    SocialProfileRequest,
+    SocialFollowersRequest,
+    SocialFollowingRequest
+)
 from .progress_controller import progress_controller
 from .social_manager.social_controller import social_controller
-from .social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
+from .social_manager.social_enums import SOCIAL_REQUEST_COMMANDS, SCRAPE_SCOPE
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,6 +41,9 @@ class APIService:
 
         self.app.add_api_route("/social/recon", self.social_recon, methods=["POST"])
         self.app.add_api_route("/social/scrape", self.social_scrape, methods=["POST"])
+        self.app.add_api_route("/social/profile", self.social_profile, methods=["POST"])
+        self.app.add_api_route("/social/followers", self.social_followers, methods=["POST"])
+        self.app.add_api_route("/social/following", self.social_following, methods=["POST"])
 
         loop.create_task(self.log_queue_size())
 
@@ -120,6 +128,7 @@ class APIService:
             {
                 "platform": t.platform,
                 "usernames": t.usernames,
+                "scope": t.scope,
                 "max_followers": t.max_followers,
                 "max_following": t.max_following
             }
@@ -165,6 +174,111 @@ class APIService:
             "progress": 0,
             "step": "queued"
         }
+
+    async def social_profile(self, request: SocialProfileRequest):
+        logger.info("Received request at /social/profile")
+
+        scrape_key = str(hash(f"profile:{request.platform}:{request.username}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return {"scrape_key": scrape_key, "result": state["result"]}
+
+        if state["status"] == "pending":
+            return {
+                "scrape_key": scrape_key,
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_profile,
+                scrape_key,
+                request.platform,
+                request.username
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "scrape_key": scrape_key,
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def social_followers(self, request: SocialFollowersRequest):
+        logger.info("Received request at /social/followers")
+
+        scrape_key = str(hash(f"followers:{request.platform}:{request.username}:{request.max_followers}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return {"scrape_key": scrape_key, "result": state["result"]}
+
+        if state["status"] == "pending":
+            return {
+                "scrape_key": scrape_key,
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_followers,
+                scrape_key,
+                request.platform,
+                request.username,
+                request.max_followers
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "scrape_key": scrape_key,
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def social_following(self, request: SocialFollowingRequest):
+        logger.info("Received request at /social/following")
+
+        scrape_key = str(hash(f"following:{request.platform}:{request.username}:{request.max_following}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return {"scrape_key": scrape_key, "result": state["result"]}
+
+        if state["status"] == "pending":
+            return {
+                "scrape_key": scrape_key,
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_following,
+                scrape_key,
+                request.platform,
+                request.username,
+                request.max_following
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "scrape_key": scrape_key,
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
 
 api_service = APIService()
 app = api_service.app

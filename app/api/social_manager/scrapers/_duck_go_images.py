@@ -1,3 +1,5 @@
+from typing import Dict, Any, List
+from urllib.parse import quote_plus
 from playwright.sync_api import Page
 
 from api.social_manager.scrapers.base_scraper import BaseScraper
@@ -8,14 +10,15 @@ from api.social_manager.helper_methods.cross_platform_mapping import cross_platf
 class ImageScraper(BaseScraper):
     requires_login = False
 
-    def __init__(self, name: str, limit: int = 100):
-        super().__init__()
+    def __init__(self, name: str, limit: int = 100, max_followers: int = 0, max_following: int = 0):
+        super().__init__(name, max_followers, max_following)
         self._name = name
         self._limit = limit
 
     @property
     def base_url(self) -> str:
-        return f"https://duckduckgo.com/?q={self._name}&iax=images&ia=images"
+        encoded_query = quote_plus(self._name)
+        return f"https://duckduckgo.com/?q={encoded_query}&t=h_&iax=images&ia=images"
 
     @property
     def seed_url(self) -> str:
@@ -23,35 +26,66 @@ class ImageScraper(BaseScraper):
 
     @property
     def name(self) -> str:
-        return "Image Search"
+        return "DuckDuckGoImages"
 
-    def parse_page(self, page: Page):
+    def scrape_profile(self, page: Page) -> Dict[str, Any]:
+        return {}
 
-        page.wait_for_selector("ol li figure img", timeout=10000)
+    def scrape_followers(self, page: Page) -> List[str]:
+        return []
 
-        imgs = page.eval_on_selector_all(
-            "ol li figure img",
-            "els => els.map(e => e.src)"
-        )
+    def scrape_following(self, page: Page) -> List[str]:
+        return []
+
+    def parse_page(self, page: Page) -> Dict[str, Any]:
+        page.wait_for_timeout(3000)
 
         image_urls = []
-        for img in imgs:
-            if not img:
-                continue
 
-            img = img if img.startswith("http") else "https:" + img
+        try:
+            page.wait_for_selector("img.tile--img__img", timeout=15000)
 
-            if img not in image_urls:
-                image_urls.append(img)
+            for _ in range(3):
+                page.mouse.wheel(0, 2000)
+                page.wait_for_timeout(1500)
 
-            if len(image_urls) >= self._limit:
-                break
+            imgs = page.eval_on_selector_all(
+                "img.tile--img__img",
+                "els => els.map(e => e.getAttribute('data-src') || e.src).filter(s => s)"
+            )
 
-        print(f"\nTotal Images Found: {len(image_urls)}")
+            for img in imgs:
+                if not img:
+                    continue
+
+                if img.startswith("//"):
+                    img = "https:" + img
+                elif not img.startswith("http"):
+                    continue
+
+                if img not in image_urls:
+                    image_urls.append(img)
+
+                if len(image_urls) >= self._limit:
+                    break
+
+        except Exception:
+            try:
+                imgs = page.eval_on_selector_all(
+                    "img",
+                    "els => els.map(e => e.src).filter(s => s && s.startsWith('http') && !s.includes('duckduckgo'))"
+                )
+                for img in imgs:
+                    if img not in image_urls:
+                        image_urls.append(img)
+                    if len(image_urls) >= self._limit:
+                        break
+            except Exception:
+                pass
         print(image_urls)
         card = social_model(
             m_username=self._name,
-            m_platform="images",
+            m_platform="duckduckgo_images",
             m_content_type=["images"],
             m_image_urls=image_urls,
             m_content=f"Total Images Found: {len(image_urls)}"
@@ -61,3 +95,10 @@ class ImageScraper(BaseScraper):
 
         self.data.append(card.model_dump())
         cross_platform_mapper.add_card(card)
+
+        return {
+            "platform": "duckduckgo_images",
+            "query": self._name,
+            "images": image_urls,
+            "total_images": len(image_urls)
+        }
