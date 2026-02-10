@@ -24,6 +24,7 @@ class social_model(BaseModel):
     m_channel_url: Optional[str] = None
     m_platform: str
 
+    m_post_datetime: Optional[str] = None
     m_post_comments: Optional[str] = None
     m_post_likes: Optional[str] = None
     m_post_shares: Optional[str] = None

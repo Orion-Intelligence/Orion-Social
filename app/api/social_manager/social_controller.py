@@ -12,6 +12,7 @@ from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
+from api.social_manager.scrapers._twitter import TwitterScraper
 from api.social_manager.models import social_model
 
 BROWSER_ARGS = [
@@ -40,6 +41,8 @@ class social_controller:
             scraper = BehanceScraper(username, max_followers, max_following)
         elif platform == SOCIAL_PLATFORMS.VIMEO:
             scraper = VimeoScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.TWITTER:
+            scraper = TwitterScraper(username, max_followers, max_following)
 
         if scraper and hasattr(scraper, 'set_scope'):
             scraper.set_scope(scope)
@@ -90,6 +93,36 @@ class social_controller:
 
         return data
 
+    def _run_posts_scraper(self, scraper, page, max_posts: int, scrape_key: str = None):
+
+        if getattr(scraper, "requires_login", False):
+            self._update_progress(scrape_key, 10, "loading session")
+
+            session = SessionManager(scraper.__class__.__name__)
+
+            if not session.load(page):
+                return {
+                    "error": "login_required",
+                    "platform": scraper.name
+                }
+
+            self._update_progress(scrape_key, 20, "navigating to profile")
+            page.goto(scraper.seed_url, wait_until="domcontentloaded")
+            session.apply_storage(page)
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_timeout(3000)
+
+        else:
+            self._update_progress(scrape_key, 20, "navigating to profile")
+            page.goto(scraper.seed_url, wait_until="domcontentloaded")
+            page.wait_for_timeout(3000)
+
+        self._update_progress(scrape_key, 50, "scraping posts")
+        posts_data = scraper.scrape_posts(page, max_posts)
+        self._update_progress(scrape_key, 90, "finalizing")
+
+        return posts_data
+
     def _scrape_user(self, platform, username, max_followers, max_following, scope=SCRAPE_SCOPE.FOLLOWERS_FOLLOWING, scrape_key: str = None):
 
         scraper = self._get_scraper(platform, username, max_followers, max_following, scope)
@@ -128,6 +161,39 @@ class social_controller:
         result = self._scrape_user(platform, username, 0, max_following, SCRAPE_SCOPE.FOLLOWING_ONLY, scrape_key)
         self._scrape_states[scrape_key] = {"status": "done", "data": result}
         return result
+
+    def scrape_posts(self, scrape_key: str, platform: str, username: str, max_posts: int):
+        self._update_progress(scrape_key, 0, "initializing")
+
+        scraper = self._get_scraper(platform, username, 0, 0, None)
+
+        if not scraper:
+            result = {"error": f"Unsupported platform: {platform}"}
+            self._scrape_states[scrape_key] = {"status": "done", "data": result}
+            return result
+
+        self._update_progress(scrape_key, 5, "launching browser")
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=BROWSER_ARGS)
+            page = browser.new_page()
+            page.route("**/*", self._block_media)
+
+            try:
+                posts_data = self._run_posts_scraper(scraper, page, max_posts, scrape_key)
+
+                result = {
+                    "username": username,
+                    "platform": platform,
+                    "posts": posts_data,
+                    "total_count": len(posts_data) if isinstance(posts_data, list) else 0
+                }
+
+                self._scrape_states[scrape_key] = {"status": "done", "data": result}
+                return result
+
+            finally:
+                browser.close()
 
     def _scrape_multiple(self, scrape_key, targets):
 

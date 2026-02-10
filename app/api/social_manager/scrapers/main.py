@@ -20,7 +20,7 @@ from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers._tiktok import tiktok
-from api.social_manager.scrapers._twitter import twitter
+from api.social_manager.scrapers._twitter import TwitterScraper
 from api.social_manager.scrapers._duck_go import DuckDuckGoScraper
 
 
@@ -78,6 +78,7 @@ def main():
         #FacebookScraper(username="saqibali.jaspal", max_followers=30, max_following=10),
         # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
         #tiktok(username="bilalshahid669"),
+        #TwitterScraper(username="elonmusk", max_followers=10, max_following=10),
         #twitter(username="elonmusk"),
         #DuckDuckGoScraper("Usman Ali"),
         #ImageScraper(name="Elon Musk", limit=20)

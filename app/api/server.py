@@ -9,7 +9,7 @@ from .model.social_request_model import (
     SocialScrapeRequest,
     SocialProfileRequest,
     SocialFollowersRequest,
-    SocialFollowingRequest
+    SocialFollowingRequest, SocialPostsRequest
 )
 from .progress_controller import progress_controller
 from .social_manager.social_controller import social_controller
@@ -44,6 +44,7 @@ class APIService:
         self.app.add_api_route("/social/profile", self.social_profile, methods=["POST"])
         self.app.add_api_route("/social/followers", self.social_followers, methods=["POST"])
         self.app.add_api_route("/social/following", self.social_following, methods=["POST"])
+        self.app.add_api_route("/social/posts", self.social_posts, methods=["POST"])
 
         loop.create_task(self.log_queue_size())
 
@@ -260,6 +261,39 @@ class APIService:
                 request.platform,
                 request.username,
                 request.max_following
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def social_posts(self, request: SocialPostsRequest):
+        logger.info("Received request at /social/posts")
+
+        scrape_key = str(hash(f"posts:{request.platform}:{request.username}:{request.max_posts}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return state["data"]
+
+        if state["status"] == "pending":
+            return {
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_posts,
+                scrape_key,
+                request.platform,
+                request.username,
+                request.max_posts
             )
 
         asyncio.create_task(run())
