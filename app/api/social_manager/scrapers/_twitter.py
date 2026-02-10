@@ -52,8 +52,8 @@ class TwitterScraper(BaseScraper):
             "username": username,
             "real_name": real_name,
             "bio": bio_text,
-            "joined_date": joined_date,
             "location": location,
+            "total_posts": "",
             "total_followers": total_followers,
             "total_following": total_following,
             "profile_url": self.seed_url
@@ -121,7 +121,7 @@ class TwitterScraper(BaseScraper):
                 post_data["comments"] = reply_loc.inner_text().strip() if reply_loc.count() else "0"
 
                 retweet_loc = tweet.locator('[data-testid="retweet"]')
-                post_data["retweets"] = retweet_loc.inner_text().strip() if retweet_loc.count() else "0"
+                post_data["shares"] = retweet_loc.inner_text().strip() if retweet_loc.count() else "0"
 
                 like_loc = tweet.locator('[data-testid="like"]')
                 post_data["likes"] = like_loc.inner_text().strip() if like_loc.count() else "0"
@@ -156,7 +156,7 @@ class TwitterScraper(BaseScraper):
                 m_post_datetime=post.get("datetime", ""),
                 m_post_comments=post.get("comments", "0"),
                 m_post_likes=post.get("likes", "0"),
-                m_retweets=post.get("retweets", "0"),
+                m_retweets=post.get("shares", "0"),
                 m_post_views=post.get("views", "0"),
                 m_channel_url=post.get("media_url", ""),
                 m_network=self.seed_url
@@ -171,7 +171,7 @@ class TwitterScraper(BaseScraper):
             "total_posts": len(posts_data)
         }
 
-    def _scroll_and_collect_users(self, page: Page, max_users: int) -> List[Dict[str, str]]:
+    def _scroll_and_collect_users(self, page: Page, max_users: int) -> List[str]:
         page.wait_for_timeout(3000)
 
         try:
@@ -202,20 +202,8 @@ class TwitterScraper(BaseScraper):
                     continue
 
                 seen_usernames.add(username)
-
-                real_name_loc = cell.locator('span.css-1jxf684').filter(has_not_text="@").first
-                real_name = real_name_loc.inner_text() if real_name_loc.count() > 0 else ""
-
-                bio_loc = cell.locator('div[dir="auto"]').last
-                bio = bio_loc.inner_text() if bio_loc.count() > 0 else ""
-
-                user_data = {
-                    "username": username,
-                    "real_name": real_name,
-                    "bio": bio
-                }
-
-                collected_users.append(user_data)
+                clean_username = username.lstrip('@')
+                collected_users.append(clean_username)
 
             if len(collected_users) == prev_count:
                 no_progress_rounds += 1
@@ -230,12 +218,12 @@ class TwitterScraper(BaseScraper):
 
         return collected_users
 
-    def scrape_followers(self, page: Page) -> List[Dict[str, str]]:
+    def scrape_followers(self, page: Page) -> List[str]:
         followers_url = f"{self.seed_url}/verified_followers"
         page.goto(followers_url, wait_until="domcontentloaded")
         return self._scroll_and_collect_users(page, self._max_followers)
 
-    def scrape_following(self, page: Page) -> List[Dict[str, str]]:
+    def scrape_following(self, page: Page) -> List[str]:
         following_url = f"{self.seed_url}/following"
         page.goto(following_url, wait_until="domcontentloaded")
         return self._scroll_and_collect_users(page, self._max_following)

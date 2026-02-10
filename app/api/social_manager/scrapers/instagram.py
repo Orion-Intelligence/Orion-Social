@@ -84,23 +84,49 @@ class InstagramScraper(BaseScraper):
             "username": username,
             "real_name": real_name,
             "bio": bio_text,
+            "location": "",
             "total_posts": total_posts,
             "total_followers": followers_count,
             "total_following": following_count,
             "profile_url": self.seed_url
         }
 
+    def _dismiss_popups(self, page: Page):
+        popup_selectors = [
+            "button:has-text('Not Now')",
+            "button:has-text('Not now')",
+            "button:has-text('Cancel')",
+            "button:has-text('Decline')",
+            "[role='dialog'] button[type='button']",
+            "div[role='dialog'] svg[aria-label='Close']",
+        ]
+        for selector in popup_selectors:
+            try:
+                loc = page.locator(selector).first
+                if loc.count() > 0 and loc.is_visible():
+                    loc.click(timeout=2000)
+                    page.wait_for_timeout(500)
+            except:
+                pass
+
+    def _click_link(self, page: Page, selector: str):
+        self._dismiss_popups(page)
+        try:
+            page.click(selector, timeout=5000)
+        except:
+            page.locator(selector).first.evaluate("el => el.click()")
+
     def scrape_followers(self, page: Page) -> List[str]:
         page.goto(self.seed_url, wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
-        page.click("a[href$='/followers/']")
+        self._click_link(page, "a[href$='/followers/']")
         page.wait_for_timeout(3000)
         return self._scroll_and_collect(page, self._max_followers)
 
     def scrape_following(self, page: Page) -> List[str]:
         page.goto(self.seed_url, wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
-        page.click("a[href$='/following/']")
+        self._click_link(page, "a[href$='/following/']")
         page.wait_for_timeout(3000)
         return self._scroll_and_collect(page, self._max_following)
 
@@ -211,6 +237,8 @@ class InstagramScraper(BaseScraper):
                 post_data["caption"] = caption_text.strip()
                 post_data["likes"] = likes_count
                 post_data["comments"] = comments_count
+                post_data["shares"] = "0"
+                post_data["views"] = "0"
 
                 video_loc = page.locator("video")
                 if video_loc.count() > 0:
@@ -235,7 +263,9 @@ class InstagramScraper(BaseScraper):
                     "media_url": "",
                     "media_type": "unknown",
                     "likes": "0",
-                    "comments": "0"
+                    "comments": "0",
+                    "shares": "0",
+                    "views": "0"
                 })
 
         return collected_posts

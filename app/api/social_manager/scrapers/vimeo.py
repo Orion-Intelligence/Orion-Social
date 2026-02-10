@@ -87,6 +87,9 @@ class VimeoScraper(BaseScraper):
             "real_name": name,
             "bio": bio,
             "location": location,
+            "total_posts": "",
+            "total_followers": "",
+            "total_following": "",
             "profile_url": self.seed_url
         }
 
