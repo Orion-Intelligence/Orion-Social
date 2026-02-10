@@ -83,7 +83,6 @@ class VimeoScraper(BaseScraper):
         location = location_el.inner_text().strip() if location_el else ""
 
         return {
-            "username": username,
             "real_name": name,
             "bio": bio,
             "location": location,

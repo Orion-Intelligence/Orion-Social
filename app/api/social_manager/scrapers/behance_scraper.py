@@ -99,7 +99,6 @@ class BehanceScraper(BaseScraper):
         following_count = following_el.inner_text().strip() if following_el else ""
 
         return {
-            "username": username,
             "real_name": name,
             "bio": bio,
             "location": location,

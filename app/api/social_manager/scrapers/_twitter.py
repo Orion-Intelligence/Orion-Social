@@ -49,7 +49,6 @@ class TwitterScraper(BaseScraper):
         total_following = loc.inner_text() if loc.count() > 0 else ""
 
         return {
-            "username": username,
             "real_name": real_name,
             "bio": bio_text,
             "location": location,

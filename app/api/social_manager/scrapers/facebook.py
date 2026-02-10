@@ -108,7 +108,6 @@ class FacebookScraper(BaseScraper):
         bio = bio_el.inner_text().strip() if bio_el else ""
 
         return {
-            "username": self._username,
             "real_name": name,
             "bio": bio,
             "location": "",

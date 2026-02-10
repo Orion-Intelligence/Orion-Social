@@ -81,7 +81,6 @@ class InstagramScraper(BaseScraper):
         bio_text = bio.inner_text() if bio.count() > 0 else ""
 
         return {
-            "username": username,
             "real_name": real_name,
             "bio": bio_text,
             "location": "",

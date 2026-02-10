@@ -13,6 +13,7 @@ from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers._twitter import TwitterScraper
+from api.social_manager.scrapers._tiktok import TikTokScraper
 from api.social_manager.models import social_model
 
 BROWSER_ARGS = [
@@ -43,6 +44,8 @@ class social_controller:
             scraper = VimeoScraper(username, max_followers, max_following)
         elif platform == SOCIAL_PLATFORMS.TWITTER:
             scraper = TwitterScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.TIKTOK:
+            scraper = TikTokScraper(username, max_followers, max_following)
 
         if scraper and hasattr(scraper, 'set_scope'):
             scraper.set_scope(scope)
