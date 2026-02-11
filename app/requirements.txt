@@ -9,3 +9,6 @@ rapidfuzz
 holehe
 socialscan
 email-validator
+ddgs
+requests
+beautifulsoup4

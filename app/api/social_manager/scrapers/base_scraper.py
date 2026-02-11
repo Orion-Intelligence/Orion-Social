@@ -45,19 +45,19 @@ class BaseScraper(ABC):
     def scrape_following(self, page: Page) -> List[str]:
         pass
 
-    def parse_page(self, page: Page, scope: int) -> Dict[str, Any]:
+    def parse_page(self, page: Page) -> Dict[str, Any]:
         try:
             result = {}
 
-            include_profile = scope in [
+            include_profile = self._scope in [
                 SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY,
             ]
 
-            include_followers = scope in [
+            include_followers = self._scope in [
                 SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY,
             ]
 
-            include_following = scope in [
+            include_following = self._scope in [
                 SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY,
             ]
 

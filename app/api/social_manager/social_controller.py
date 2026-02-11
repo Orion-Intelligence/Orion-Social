@@ -11,6 +11,9 @@ from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
+from api.social_manager.scrapers.twitter import TwitterScraper
+from api.social_manager.scrapers.tiktok import TikTokScraper
+from api.social_manager.scrapers.duck_go import scrape_usernames, scrape_images
 from api.social_manager.models import social_model
 
 
@@ -37,6 +40,10 @@ class social_controller:
             return BehanceScraper(username, max_followers, max_following)
         if platform == SOCIAL_PLATFORMS.VIMEO:
             return VimeoScraper(username, max_followers, max_following)
+        if platform == SOCIAL_PLATFORMS.TWITTER:
+            return TwitterScraper(username, max_followers, max_following)
+        if platform == SOCIAL_PLATFORMS.TIKTOK:
+            return TikTokScraper(username, max_followers, max_following)
         return None
 
     def _run_scraper(self, scraper, page) -> Dict[str, Any]:
@@ -49,7 +56,21 @@ class social_controller:
             page.reload(wait_until="domcontentloaded")
         else:
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
-        return {"status": "success", "platform": scraper.name, "data": scraper.parse_page(page, self.command)}
+        return {"status": "success", "platform": scraper.name, "data": scraper.parse_page(page)}
+
+    def _run_posts_scraper(self, scraper, page, max_posts: int) -> Dict[str, Any]:
+        if getattr(scraper, "requires_login", False):
+            session = SessionManager(playwright_session.session_file_for(scraper))
+            if not session.load(page):
+                return {"status": "login_required", "platform": scraper.name}
+            page.goto(scraper.seed_url, wait_until="domcontentloaded")
+            session.apply_storage(page)
+            page.reload(wait_until="domcontentloaded")
+        else:
+            page.goto(scraper.seed_url, wait_until="domcontentloaded")
+        if hasattr(scraper, "scrape_posts"):
+            return {"status": "success", "platform": scraper.name, "data": scraper.scrape_posts(page, max_posts)}
+        return {"status": "error", "message": "posts_not_supported", "platform": scraper.name}
 
     def _scrape_user(self, platform, username, max_followers, max_following) -> Dict[str, Any]:
         scraper = self._get_scraper(platform, username, max_followers, max_following)
@@ -59,6 +80,17 @@ class social_controller:
         with playwright_session() as s:
             self._progress.update(self.job_id, 30, f"loading:{platform}:{username}")
             result = self._run_scraper(scraper, s.page)
+            self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")
+        return result
+
+    def _scrape_posts(self, platform, username, max_posts: int) -> Dict[str, Any]:
+        scraper = self._get_scraper(platform, username, 0, 0)
+        if not scraper:
+            return {"status": "error", "message": f"Unsupported platform: {platform}"}
+        self._progress.update(self.job_id, 10, f"initializing:{platform}:{username}")
+        with playwright_session() as s:
+            self._progress.update(self.job_id, 30, f"loading:{platform}:{username}")
+            result = self._run_posts_scraper(scraper, s.page, max_posts)
             self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")
         return result
 
@@ -119,6 +151,36 @@ class social_controller:
             self.init_job(data.get("job_id"), command)
             try:
                 result = self._scrape_user(data.get("platform"), data.get("username"), data.get("max_followers", 0), data.get("max_following", 0))
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_POSTS:
+            self.init_job(data.get("job_id"), command)
+            try:
+                result = self._scrape_posts(data.get("platform"), data.get("username"), data.get("max_posts", 0))
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_DDG_USERNAMES:
+            self.init_job(data.get("job_id"), command)
+            try:
+                result = {"status": "success", "platform": "duckduckgo", "data": scrape_usernames(data.get("username"), data.get("platform"), limit=10)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_DDG_IMAGES:
+            self.init_job(data.get("job_id"), command)
+            try:
+                result = {"status": "success", "platform": "duckduckgo", "data": scrape_images(data.get("username"), data.get("platform"), limit=10)}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:

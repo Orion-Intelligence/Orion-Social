@@ -8,8 +8,11 @@ class SOCIAL_REQUEST_COMMANDS(IntEnum):
     FOLLOWERS_FOLLOWING = 4
     PROFILE_FOLLOWERS = 5
     PROFILE_FOLLOWING = 6
-    S_SCRAPE_MULTIPLE = 6
-    S_RECON_USER = 11
+    S_SCRAPE_MULTIPLE = 7
+    S_RECON_USER = 8
+    S_POSTS = 9
+    S_DDG_USERNAMES = 10
+    S_DDG_IMAGES = 11
 
 
 class SOCIAL_PLATFORMS:
@@ -17,6 +20,10 @@ class SOCIAL_PLATFORMS:
     FACEBOOK = "facebook"
     BEHANCE = "behance"
     VIMEO = "vimeo"
+    TWITTER = "twitter"
+    TIKTOK = "tiktok"
+    YOUTUBE = "youtube"
+    DUCKDUCKGO = "duckduckgo"
 
 
 class SOCIAL_CONTENT_TYPES:

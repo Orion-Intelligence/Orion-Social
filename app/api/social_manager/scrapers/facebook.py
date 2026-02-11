@@ -105,9 +105,12 @@ class FacebookScraper(BaseScraper):
         bio = bio_el.inner_text().strip() if bio_el else ""
 
         return {
-            "username": self._username,
             "real_name": name,
             "bio": bio,
+            "location": "",
+            "total_posts": "",
+            "total_followers": "",
+            "total_following": "",
             "profile_url": self.seed_url
         }
 
