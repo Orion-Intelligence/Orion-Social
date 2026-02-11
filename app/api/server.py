@@ -4,7 +4,13 @@ import concurrent.futures
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 
-from .model.social_request_model import SocialReconRequest
+from .model.social_request_model import (
+    SocialReconRequest,
+    SocialScrapeRequest,
+    SocialProfileRequest,
+    SocialFollowersRequest,
+    SocialFollowingRequest
+)
 from .progress_controller import progress_controller
 from .social_manager.social_controller import social_controller
 from .social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
@@ -31,9 +37,13 @@ class APIService:
         self.waiting_lock = asyncio.Lock()
 
         self.progress = progress_controller.get_instance()
-        self.social_instance = social_controller()
+        self.social_controller_instance = social_controller()
 
         self.app.add_api_route("/social/recon", self.social_recon, methods=["POST"])
+        self.app.add_api_route("/social/scrape", self.social_scrape, methods=["POST"])
+        self.app.add_api_route("/social/profile", self.social_profile, methods=["POST"])
+        self.app.add_api_route("/social/followers", self.social_followers, methods=["POST"])
+        self.app.add_api_route("/social/following", self.social_following, methods=["POST"])
 
         loop.create_task(self.log_queue_size())
 
@@ -109,6 +119,156 @@ class APIService:
             raise
         except Exception as exc:
             raise HTTPException(status_code=500, detail="Error running recon") from exc
+
+
+    async def social_scrape(self, request: SocialScrapeRequest):
+        logger.info("Received request at /social/scrape")
+
+        targets = [
+            {
+                "platform": t.platform,
+                "usernames": t.usernames,
+                "max_followers": t.max_followers,
+                "max_following": t.max_following
+            }
+            for t in request.targets
+        ]
+
+        if not targets:
+            raise HTTPException(status_code=400, detail="Targets are required")
+
+        scrape_key = str(hash(str(targets)))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return state["data"]
+
+        if state["status"] == "pending":
+            return {
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        data = {
+            "scrape_key": scrape_key,
+            "targets": targets,
+            "compare_results": True,
+            "similarity_threshold": 70
+        }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.invoke_trigger,
+                SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE,
+                data
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def social_profile(self, request: SocialProfileRequest):
+        logger.info("Received request at /social/profile")
+
+        scrape_key = str(hash(f"profile:{request.platform}:{request.username}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return state["data"]
+
+        if state["status"] == "pending":
+            return {
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_profile,
+                scrape_key,
+                request.platform,
+                request.username
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def social_followers(self, request: SocialFollowersRequest):
+        logger.info("Received request at /social/followers")
+
+        scrape_key = str(hash(f"followers:{request.platform}:{request.username}:{request.max_followers}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return state["data"]
+
+        if state["status"] == "pending":
+            return {
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_followers,
+                scrape_key,
+                request.platform,
+                request.username,
+                request.max_followers
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def social_following(self, request: SocialFollowingRequest):
+        logger.info("Received request at /social/following")
+
+        scrape_key = str(hash(f"following:{request.platform}:{request.username}:{request.max_following}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return state["data"]
+
+        if state["status"] == "pending":
+            return {
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_following,
+                scrape_key,
+                request.platform,
+                request.username,
+                request.max_following
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
 
 
 api_service = APIService()

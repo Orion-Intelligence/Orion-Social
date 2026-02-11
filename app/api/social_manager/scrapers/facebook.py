@@ -1,3 +1,4 @@
+from typing import Dict, Any, List
 from playwright.sync_api import Page
 
 from api.social_manager.scrapers.base_scraper import BaseScraper
@@ -9,13 +10,18 @@ class FacebookScraper(BaseScraper):
 
     requires_login = True
 
-    def __init__(self, username: str, max_followers: int, max_following: int):
-        super().__init__()
-        self._username = username
+    def __init__(self, username: str, max_followers: int = 50, max_following: int = 50):
+        super().__init__(username, max_followers, max_following)
         self._max_friends = max(max_followers, max_following)
 
     @property
     def seed_url(self) -> str:
+        if self._username.isdigit():
+            return f"https://www.facebook.com/profile.php?id={self._username}"
+        return f"https://www.facebook.com/{self._username}"
+
+    @property
+    def friends_url(self) -> str:
         if self._username.isdigit():
             return f"https://www.facebook.com/profile.php?id={self._username}&sk=friends"
         return f"https://www.facebook.com/{self._username}/friends"
@@ -59,7 +65,7 @@ class FacebookScraper(BaseScraper):
             return []
 
     def _collect_friends(self, page: Page, max_items: int):
-        page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
+        page.goto(self.friends_url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(3000)
 
         collected = []
@@ -91,19 +97,25 @@ class FacebookScraper(BaseScraper):
 
         return collected[:max_items]
 
-    def parse_page(self, page: Page):
-        friends = self._collect_friends(page, max_items=self._max_friends)
+    def scrape_profile(self, page: Page) -> Dict[str, Any]:
+        page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(3000)
 
-        card = social_model(
-            m_weblink=[self.seed_url],
-            m_content_type=["facebook_friends"],
-            m_network="clearnet",
-            m_platform="facebook",
-            m_following=friends,
-            m_mutual_usernames=friends
-        )
+        name_el = page.query_selector('h1')
+        name = name_el.inner_text().strip() if name_el else ""
 
-        self.data.append(card.model_dump())
-        cross_platform_mapper.add_card(card)
+        bio_el = page.query_selector('div[data-pagelet="ProfileTilesFeed_0"] span')
+        bio = bio_el.inner_text().strip() if bio_el else ""
 
-        return card.model_dump()
+        return {
+            "username": self._username,
+            "real_name": name,
+            "bio": bio,
+            "profile_url": self.seed_url
+        }
+
+    def scrape_followers(self, page: Page) -> List[str]:
+        return self._collect_friends(page, self._max_friends)
+
+    def scrape_following(self, page: Page) -> List[str]:
+        return self._collect_friends(page, self._max_friends)

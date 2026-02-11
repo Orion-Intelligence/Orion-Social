@@ -303,12 +303,43 @@ class CrossPlatformMapper:
         }
 
     def get_full_analysis(self, threshold: int = 70) -> Dict[str, Any]:
-        return {
-            "summary": self.get_summary(),
-            "following_comparison": self.compare_following_across_platforms(threshold),
-            "identity_groups": self.group_following_across_all_platforms(threshold),
-            "influence_analysis": self.analyze_cross_platform_influence(threshold)
+        comparison = self.compare_following_across_platforms(threshold)
+        identity = self.group_following_across_all_platforms(threshold)
+        influence = self.analyze_cross_platform_influence(threshold)
+
+        result = {
+            "platforms_analyzed": len(self._cards),
+            "threshold": threshold,
+            "cross_platform_matches": [],
+            "platform_comparison": [],
+            "identity_groups": [],
+            "bridge_users": influence.get("bridge_users", []),
+            "top_influencers": influence.get("top_influencers", [])[:5],
+            "statistics": influence.get("statistics", {})
         }
+
+        if comparison.get("status") == "success":
+            for comp in comparison.get("comparisons", []):
+                platform_comp = {
+                    "platforms": [comp["platform_1"], comp["platform_2"]],
+                    "exact_matches": comp.get("exact_matches", []),
+                    "similar_matches": comp.get("similar_matches", []),
+                    f"only_on_{comp['platform_1']}": comp.get(f"only_on_{comp['platform_1']}", []),
+                    f"only_on_{comp['platform_2']}": comp.get(f"only_on_{comp['platform_2']}", [])
+                }
+                result["platform_comparison"].append(platform_comp)
+                
+                if comp.get("exact_matches") or comp.get("similar_matches"):
+                    result["cross_platform_matches"].append({
+                        "platforms": [comp["platform_1"], comp["platform_2"]],
+                        "exact_matches": comp.get("exact_matches", []),
+                        "similar_matches": comp.get("similar_matches", [])
+                    })
+
+        if identity.get("status") == "success":
+            result["identity_groups"] = identity.get("identity_groups", [])
+
+        return result
 
 
 cross_platform_mapper = CrossPlatformMapper()

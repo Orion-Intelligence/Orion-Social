@@ -1,3 +1,4 @@
+from typing import Dict, Any, List
 from playwright.sync_api import Page
 from api.social_manager.scrapers.base_scraper import BaseScraper
 from api.social_manager.models import social_model
@@ -7,11 +8,8 @@ from api.social_manager.helper_methods.cross_platform_mapping import cross_platf
 class InstagramScraper(BaseScraper):
     requires_login = True
 
-    def __init__(self, username: str, max_followers: int, max_following: int):
-        super().__init__()
-        self._username = username
-        self._max_followers = max_followers
-        self._max_following = max_following
+    def __init__(self, username: str, max_followers: int = 50, max_following: int = 50):
+        super().__init__(username, max_followers, max_following)
 
     @property
     def base_url(self) -> str:
@@ -60,7 +58,8 @@ class InstagramScraper(BaseScraper):
 
         return list(collected)[:max_items]
 
-    def parse_page(self, page: Page):
+    def scrape_profile(self, page: Page) -> Dict[str, Any]:
+        page.goto(self.seed_url, wait_until="domcontentloaded")
         page.wait_for_selector("header")
 
         loc = page.locator("header h2, header span._ap3a")
@@ -81,36 +80,26 @@ class InstagramScraper(BaseScraper):
         bio = page.locator("header section span._ap3a._aaco._aacu._aacx._aad7._aade").first
         bio_text = bio.inner_text() if bio.count() > 0 else ""
 
-        page.click("a[href$='/following/']")
-        page.wait_for_timeout(3000)
-        following_users = self._scroll_and_collect(page, self._max_following)
+        return {
+            "username": username,
+            "real_name": real_name,
+            "bio": bio_text,
+            "total_posts": total_posts,
+            "total_followers": followers_count,
+            "total_following": following_count,
+            "profile_url": self.seed_url
+        }
 
+    def scrape_followers(self, page: Page) -> List[str]:
         page.goto(self.seed_url, wait_until="domcontentloaded")
         page.wait_for_timeout(3000)
-
         page.click("a[href$='/followers/']")
         page.wait_for_timeout(3000)
-        followers_users = self._scroll_and_collect(page, self._max_followers)
+        return self._scroll_and_collect(page, self._max_followers)
 
-        mutual = list(set(followers_users) & set(following_users))
-
-        card = social_model(
-            m_username=username,
-            m_real_name=real_name,
-            m_bio=bio_text,
-            m_total_posts=total_posts,
-            m_total_followers=followers_count,
-            m_total_following=following_count,
-            m_weblink=[f"{self.seed_url}/followers/", f"{self.seed_url}/following/"],
-            m_content_type=["instagram_followers", "instagram_following", "instagram_mutual"],
-            m_platform="instagram",
-            m_network="clearnet",
-            m_followers=followers_users,
-            m_following=following_users,
-            m_mutual_usernames=mutual
-        )
-
-        self.data.append(card.model_dump())
-        cross_platform_mapper.add_card(card)
-
-        return card.model_dump()
+    def scrape_following(self, page: Page) -> List[str]:
+        page.goto(self.seed_url, wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
+        page.click("a[href$='/following/']")
+        page.wait_for_timeout(3000)
+        return self._scroll_and_collect(page, self._max_following)
