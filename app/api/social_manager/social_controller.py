@@ -31,20 +31,25 @@ class social_controller:
         self.command = command
         self._progress.update(job_id, 0, "starting")
 
-    def _get_scraper(self, platform, username, max_followers, max_following):
+    def _get_scraper(self, platform, username, max_followers, max_following, scope):
+        scraper = None
         if platform == SOCIAL_PLATFORMS.INSTAGRAM:
-            return InstagramScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.FACEBOOK:
-            return FacebookScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.BEHANCE:
-            return BehanceScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.VIMEO:
-            return VimeoScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.TWITTER:
-            return TwitterScraper(username, max_followers, max_following)
-        if platform == SOCIAL_PLATFORMS.TIKTOK:
-            return TikTokScraper(username, max_followers, max_following)
-        return None
+            scraper = InstagramScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.FACEBOOK:
+            scraper = FacebookScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.BEHANCE:
+            scraper = BehanceScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.VIMEO:
+            scraper = VimeoScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.TWITTER:
+            scraper = TwitterScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.TIKTOK:
+            scraper = TikTokScraper(username, max_followers, max_following)
+
+        if scraper and hasattr(scraper, 'set_scope'):
+            scraper.set_scope(scope)
+
+        return scraper
 
     def _run_scraper(self, scraper, page) -> Dict[str, Any]:
         if getattr(scraper, "requires_login", False):
