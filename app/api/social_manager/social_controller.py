@@ -20,10 +20,12 @@ class social_controller:
         self._recon = social_recon()
         self._progress = progress_controller.get_instance()
         self.job_id = None
+        self.command = None
 
-    def init_job(self, job_id: str):
+    def init_job(self, job_id: str, command):
         self.job_id = job_id
         self._progress.init(job_id)
+        self.command = command
         self._progress.update(job_id, 0, "starting")
 
     def _get_scraper(self, platform, username, max_followers, max_following):
@@ -47,7 +49,7 @@ class social_controller:
             page.reload(wait_until="domcontentloaded")
         else:
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
-        return {"status": "success", "platform": scraper.name, "data": scraper.parse_page(page)}
+        return {"status": "success", "platform": scraper.name, "data": scraper.parse_page(page, self.command)}
 
     def _scrape_user(self, platform, username, max_followers, max_following) -> Dict[str, Any]:
         scraper = self._get_scraper(platform, username, max_followers, max_following)
@@ -90,7 +92,7 @@ class social_controller:
     def invoke_trigger(self, command: int, data: Any = None) -> Any:
         data = data or {}
         if command == SOCIAL_REQUEST_COMMANDS.S_RECON_USER:
-            self.init_job(data.get("job_id"))
+            self.init_job(data.get("job_id"), command)
             try:
                 result = {"status": "success", "platform": "recon", "data": self._recon.parse(data.get("username"), data.get("mode", "default"), job_id=self.job_id)}
                 self._progress.done(self.job_id, result)
@@ -100,7 +102,7 @@ class social_controller:
                 raise
 
         if command == SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE:
-            self.init_job(data.get("job_id"))
+            self.init_job(data.get("job_id"), command)
             try:
                 result = self._scrape_multiple(data.get("targets", []), data.get("compare_results", False), data.get("similarity_threshold", 70))
                 self._progress.done(self.job_id, result)
@@ -114,7 +116,7 @@ class social_controller:
             SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY,
             SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY,
         }:
-            self.init_job(data.get("job_id"))
+            self.init_job(data.get("job_id"), command)
             try:
                 result = self._scrape_user(data.get("platform"), data.get("username"), data.get("max_followers", 0), data.get("max_following", 0))
                 self._progress.done(self.job_id, result)

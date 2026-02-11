@@ -44,6 +44,8 @@ class orion_controller:
             return {"job_id": job_id, "status": "pending", "progress": 0, "step": "queued"}
 
         except HTTPException:
+            self.progress.error(job_id, "timeout")
             raise
         except Exception as exc:
+            self.progress.error(job_id, "timeout")
             raise HTTPException(status_code=500, detail="Error running job") from exc

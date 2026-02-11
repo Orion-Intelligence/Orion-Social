@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from playwright.sync_api import Page
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
@@ -45,39 +45,39 @@ class BaseScraper(ABC):
     def scrape_following(self, page: Page) -> List[str]:
         pass
 
-    def parse_page(self, page: Page) -> Dict[str, Any]:
-        print(":::::::::::: header loaded ::::::::::::", flush=True)
-        print(":::::::::::: header loaded ::::::::::::", flush=True)
-        print(":::::::::::: header loaded ::::::::::::", flush=True)
-        result = {}
+    def parse_page(self, page: Page, scope: int) -> Dict[str, Any]:
+        try:
+            result = {}
 
-        include_profile = self._scope in [
-            SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY,
-        ]
+            include_profile = scope in [
+                SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY,
+            ]
 
-        include_followers = self._scope in [
-            SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY,
-        ]
+            include_followers = scope in [
+                SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY,
+            ]
 
-        include_following = self._scope in [
-            SOCIAL_REQUEST_COMMANDS.PROFILE_FOLLOWING
-        ]
+            include_following = scope in [
+                SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY,
+            ]
 
-        if include_profile:
-            result["profile"] = self.scrape_profile(page)
+            if include_profile:
+                result["profile"] = self.scrape_profile(page)
 
-        if include_followers:
-            result["followers"] = self.scrape_followers(page)
+            if include_followers:
+                result["followers"] = self.scrape_followers(page)
 
-        if include_following:
-            result["following"] = self.scrape_following(page)
+            if include_following:
+                result["following"] = self.scrape_following(page)
 
-        if include_followers and include_following:
-            followers_set = set(result.get("followers", []))
-            following_set = set(result.get("following", []))
-            result["mutual"] = list(followers_set & following_set)
+            if include_followers and include_following:
+                followers_set = set(result.get("followers", []))
+                following_set = set(result.get("following", []))
+                result["mutual"] = list(followers_set & following_set)
 
-        result["platform"] = self.name.lower()
-        result["username"] = self._username
+            result["platform"] = self.name.lower()
+            result["username"] = self._username
 
-        return result
+            return result
+        except Exception:
+            return {}
