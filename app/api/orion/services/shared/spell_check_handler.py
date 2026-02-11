@@ -3,7 +3,7 @@ import re
 import string
 from crawler.constants.constant import SPELL_CHECK_CONSTANTS
 from crawler.constants.strings import STRINGS
-from crawler.crawler_services.shared.helper_method import helper_method
+from api.orion.services.shared.helper_method import helper_method
 
 
 class spell_checker_handler:

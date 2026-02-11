@@ -1,10 +1,10 @@
 from crawler.constants.enums import network_type
-from crawler.crawler_instance.proxies.i2p_controller.i2p_controller import i2p_controller
-from crawler.crawler_instance.proxies.i2p_controller.i2p_enums import I2P_COMMANDS
-from crawler.crawler_instance.proxies.tor_controller.tor_controller import tor_controller
-from crawler.crawler_instance.proxies.tor_controller.tor_enums import TOR_COMMANDS
-from crawler.crawler_services.shared.env_handler import env_handler
-from crawler.crawler_services.shared.helper_method import helper_method
+from api.orion.services.proxies.i2p_controller.i2p_controller import i2p_controller
+from api.orion.services.proxies.i2p_controller.i2p_enums import I2P_COMMANDS
+from api.orion.services.proxies.tor_controller.tor_controller import tor_controller
+from api.orion.services.proxies.tor_controller.tor_enums import TOR_COMMANDS
+from api.orion.services.shared.env_handler import env_handler
+from api.orion.services.shared.helper_method import helper_method
 
 
 class shared_proxy_methods:

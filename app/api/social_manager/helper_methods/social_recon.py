@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import time
 
-from api.progress_controller import progress_controller
+from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.social_enums import SITE_DATA
 
 

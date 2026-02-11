@@ -1,11 +1,10 @@
-from typing import Dict, Any
-from playwright.sync_api import sync_playwright
+import time
+from typing import Dict, Any, List
 
-from api.social_manager.social_enums import (
-    SOCIAL_PLATFORMS,
-    SOCIAL_REQUEST_COMMANDS,
-    SCRAPE_SCOPE
-)
+from api.orion.request_manager.progress_controller import progress_controller
+from api.social_manager.helper_methods.social_recon import social_recon
+from api.social_manager.sessions.playwright_session import playwright_session
+from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS, SOCIAL_PLATFORMS
 from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
 from api.social_manager.login_session.session_manager import SessionManager
 from api.social_manager.scrapers.instagram import InstagramScraper
@@ -14,184 +13,120 @@ from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.models import social_model
 
-BROWSER_ARGS = [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-gpu",
-    "--disable-dev-shm-usage",
-    "--disable-software-rasterizer"
-]
-
-BLOCKED_RESOURCES = {"image", "media", "font"}
-
 
 class social_controller:
 
     def __init__(self):
-        self._scrape_states: Dict[str, Dict[str, Any]] = {}
+        self._recon = social_recon()
+        self._progress = progress_controller.get_instance()
+        self.job_id = None
 
-    def _get_scraper(self, platform, username, max_followers, max_following, scope=SCRAPE_SCOPE.FOLLOWERS_FOLLOWING):
-        scraper = None
+    def init_job(self, job_id: str):
+        self.job_id = job_id
+        self._progress.init(job_id)
+        self._progress.update(job_id, 0, "starting")
+
+    def _get_scraper(self, platform, username, max_followers, max_following):
         if platform == SOCIAL_PLATFORMS.INSTAGRAM:
-            scraper = InstagramScraper(username, max_followers, max_following)
-        elif platform == SOCIAL_PLATFORMS.FACEBOOK:
-            scraper = FacebookScraper(username, max_followers, max_following)
-        elif platform == SOCIAL_PLATFORMS.BEHANCE:
-            scraper = BehanceScraper(username, max_followers, max_following)
-        elif platform == SOCIAL_PLATFORMS.VIMEO:
-            scraper = VimeoScraper(username, max_followers, max_following)
+            return InstagramScraper(username, max_followers, max_following)
+        if platform == SOCIAL_PLATFORMS.FACEBOOK:
+            return FacebookScraper(username, max_followers, max_following)
+        if platform == SOCIAL_PLATFORMS.BEHANCE:
+            return BehanceScraper(username, max_followers, max_following)
+        if platform == SOCIAL_PLATFORMS.VIMEO:
+            return VimeoScraper(username, max_followers, max_following)
+        return None
 
-        if scraper and hasattr(scraper, 'set_scope'):
-            scraper.set_scope(scope)
-
-        return scraper
-
-    def _block_media(self, route):
-        if route.request.resource_type in BLOCKED_RESOURCES:
-            route.abort()
-        else:
-            route.continue_()
-
-    def _update_progress(self, scrape_key: str, progress: int, step: str):
-        if scrape_key:
-            self._scrape_states[scrape_key] = {
-                "status": "pending",
-                "progress": progress,
-                "step": step
-            }
-
-    def _run_scraper(self, scraper, page, scrape_key: str = None):
-
+    def _run_scraper(self, scraper, page) -> Dict[str, Any]:
         if getattr(scraper, "requires_login", False):
-            self._update_progress(scrape_key, 10, "loading session")
-
-            session = SessionManager(scraper.__class__.__name__)
-
+            session = SessionManager(playwright_session.session_file_for(scraper))
             if not session.load(page):
-                return {
-                    "error": "login_required",
-                    "platform": scraper.name
-                }
-
-            self._update_progress(scrape_key, 20, "navigating to profile")
+                return {"status": "login_required", "platform": scraper.name}
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
             session.apply_storage(page)
             page.reload(wait_until="domcontentloaded")
-            page.wait_for_timeout(3000)
-
         else:
-            self._update_progress(scrape_key, 20, "navigating to profile")
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
-            page.wait_for_timeout(3000)
+        return {"status": "success", "platform": scraper.name, "data": scraper.parse_page(page)}
 
-        self._update_progress(scrape_key, 50, "parsing page data")
-        data = scraper.parse_page(page)
-        self._update_progress(scrape_key, 90, "finalizing")
-
-        return data
-
-    def _scrape_user(self, platform, username, max_followers, max_following, scope=SCRAPE_SCOPE.FOLLOWERS_FOLLOWING, scrape_key: str = None):
-
-        scraper = self._get_scraper(platform, username, max_followers, max_following, scope)
-
+    def _scrape_user(self, platform, username, max_followers, max_following) -> Dict[str, Any]:
+        scraper = self._get_scraper(platform, username, max_followers, max_following)
         if not scraper:
-            return {
-                "error": f"Unsupported platform: {platform}"
-            }
-
-        self._update_progress(scrape_key, 5, "launching browser")
-
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=BROWSER_ARGS)
-            page = browser.new_page()
-            page.route("**/*", self._block_media)
-
-            try:
-                return self._run_scraper(scraper, page, scrape_key)
-            finally:
-                browser.close()
-
-    def scrape_profile(self, scrape_key: str, platform: str, username: str):
-        self._update_progress(scrape_key, 0, "initializing")
-        result = self._scrape_user(platform, username, 0, 0, SCRAPE_SCOPE.PROFILE_ONLY, scrape_key)
-        self._scrape_states[scrape_key] = {"status": "done", "data": result}
+            return {"status": "error", "message": f"Unsupported platform: {platform}"}
+        self._progress.update(self.job_id, 10, f"initializing:{platform}:{username}")
+        with playwright_session() as s:
+            self._progress.update(self.job_id, 30, f"loading:{platform}:{username}")
+            result = self._run_scraper(scraper, s.page)
+            self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")
         return result
 
-    def scrape_followers(self, scrape_key: str, platform: str, username: str, max_followers: int):
-        self._update_progress(scrape_key, 0, "initializing")
-        result = self._scrape_user(platform, username, max_followers, 0, SCRAPE_SCOPE.FOLLOWERS_ONLY, scrape_key)
-        self._scrape_states[scrape_key] = {"status": "done", "data": result}
-        return result
-
-    def scrape_following(self, scrape_key: str, platform: str, username: str, max_following: int):
-        self._update_progress(scrape_key, 0, "initializing")
-        result = self._scrape_user(platform, username, 0, max_following, SCRAPE_SCOPE.FOLLOWING_ONLY, scrape_key)
-        self._scrape_states[scrape_key] = {"status": "done", "data": result}
-        return result
-
-    def _scrape_multiple(self, scrape_key, targets):
-
+    def _scrape_multiple(self, targets: List[Dict[str, Any]], compare_results: bool, threshold: int) -> Dict[str, Any]:
         cross_platform_mapper.clear_cards()
-
-        total_tasks = sum(len(t["usernames"]) for t in targets)
-        completed = 0
+        total = sum(len(t.get("usernames", [])) for t in targets) or 1
+        done = 0
         results = []
+        for t in targets:
+            for u in t.get("usernames", []):
+                self._progress.update(self.job_id, int((done / total) * 100), f"scraping:{t.get('platform')}:{u}")
+                time.sleep(1)
+                r = self._scrape_user(t.get("platform"), u, t.get("max_followers", 0), t.get("max_following", 0))
+                results.append(r)
+                if r.get("status") == "success":
+                    d = r.get("data") or {}
+                    cross_platform_mapper.add_card(social_model(
+                        m_platform=r.get("platform"),
+                        m_username=d.get("username", u),
+                        m_followers=d.get("followers", []),
+                        m_following=d.get("following", []),
+                        m_mutual_usernames=d.get("mutual", []),
+                    ))
+                done += 1
+        response = {"status": "success", "scrape_results": results, "total_scraped": len(results)}
+        if compare_results:
+            self._progress.update(self.job_id, 95, "analyzing")
+            response["analysis"] = cross_platform_mapper.get_full_analysis(threshold)
+        return response
 
-        for target in targets:
-            platform = target["platform"]
-            max_followers = target["max_followers"]
-            max_following = target["max_following"]
+    def invoke_trigger(self, command: int, data: Any = None) -> Any:
+        data = data or {}
+        if command == SOCIAL_REQUEST_COMMANDS.S_RECON_USER:
+            self.init_job(data.get("job_id"))
+            try:
+                result = {"status": "success", "platform": "recon", "data": self._recon.parse(data.get("username"), data.get("mode", "default"), job_id=self.job_id)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
 
-            for username in target["usernames"]:
-                base_progress = int((completed / total_tasks) * 100)
-                self._update_progress(scrape_key, base_progress, f"{platform}:{username}")
+        if command == SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE:
+            self.init_job(data.get("job_id"))
+            try:
+                result = self._scrape_multiple(data.get("targets", []), data.get("compare_results", False), data.get("similarity_threshold", 70))
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
 
-                result = self._scrape_user(
-                    platform,
-                    username,
-                    max_followers,
-                    max_following,
-                    SCRAPE_SCOPE.FOLLOWERS_FOLLOWING,
-                    scrape_key=None
-                )
+        if command in {
+            SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY,
+            SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY,
+            SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY,
+        }:
+            self.init_job(data.get("job_id"))
+            try:
+                result = self._scrape_user(data.get("platform"), data.get("username"), data.get("max_followers", 0), data.get("max_following", 0))
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
 
-                results.append(result)
+        return None
 
-                if result and "error" not in result:
-                    card = social_model(
-                        m_platform=result.get("platform", platform),
-                        m_username=result.get("username", username),
-                        m_followers=result.get("followers", []),
-                        m_following=result.get("following", []),
-                        m_mutual_usernames=result.get("mutual", [])
-                    )
-                    cross_platform_mapper.add_card(card)
+    def get_scrape_status(self, job_id: str) -> Dict[str, Any]:
+        return self._progress.get(job_id)
 
-                completed += 1
-
-        analysis = cross_platform_mapper.get_full_analysis(70)
-
-        return {
-            "results": results,
-            "analysis": analysis
-        }
-
-    def invoke_trigger(self, command, data):
-
-        if command != SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE:
-            return None
-
-        scrape_key = data["scrape_key"]
-        self._update_progress(scrape_key, 0, "starting")
-
-        result = self._scrape_multiple(scrape_key, data["targets"])
-
-        self._scrape_states[scrape_key] = {"status": "done", "data": result}
-
-        return result
-
-    def get_scrape_status(self, scrape_key):
-        return self._scrape_states.get(scrape_key, {"status": "new"})
-
-    def clear_scrape_status(self, scrape_key):
-        self._scrape_states.pop(scrape_key, None)
+    def clear_scrape_status(self, job_id: str) -> None:
+        self._progress.error(job_id, "cleared")

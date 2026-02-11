@@ -1,9 +1,6 @@
 from typing import Dict, Any, List
 from playwright.sync_api import Page
-
 from api.social_manager.scrapers.base_scraper import BaseScraper
-from api.social_manager.models import social_model
-from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
 
 
 class FacebookScraper(BaseScraper):
@@ -91,7 +88,7 @@ class FacebookScraper(BaseScraper):
                 page.wait_for_timeout(1500)
             else:
                 no_progress_rounds = 0
-                
+
             page.mouse.wheel(0, 4000)
             page.wait_for_timeout(2000)
 

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 from playwright.sync_api import Page
-from api.social_manager.social_enums import SCRAPE_SCOPE
+from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
 
 class BaseScraper(ABC):
@@ -13,7 +13,7 @@ class BaseScraper(ABC):
         self._username = username
         self._max_followers = max_followers
         self._max_following = max_following
-        self._scope = SCRAPE_SCOPE.FOLLOWERS_FOLLOWING
+        self._scope = SOCIAL_REQUEST_COMMANDS.FOLLOWERS_FOLLOWING
 
     def set_scope(self, scope: int):
         self._scope = scope
@@ -46,24 +46,21 @@ class BaseScraper(ABC):
         pass
 
     def parse_page(self, page: Page) -> Dict[str, Any]:
+        print(":::::::::::: header loaded ::::::::::::", flush=True)
+        print(":::::::::::: header loaded ::::::::::::", flush=True)
+        print(":::::::::::: header loaded ::::::::::::", flush=True)
         result = {}
 
         include_profile = self._scope in [
-            SCRAPE_SCOPE.PROFILE_ONLY,
-            SCRAPE_SCOPE.PROFILE_FOLLOWERS,
-            SCRAPE_SCOPE.PROFILE_FOLLOWING
+            SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY,
         ]
 
         include_followers = self._scope in [
-            SCRAPE_SCOPE.FOLLOWERS_ONLY,
-            SCRAPE_SCOPE.FOLLOWERS_FOLLOWING,
-            SCRAPE_SCOPE.PROFILE_FOLLOWERS
+            SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY,
         ]
 
         include_following = self._scope in [
-            SCRAPE_SCOPE.FOLLOWING_ONLY,
-            SCRAPE_SCOPE.FOLLOWERS_FOLLOWING,
-            SCRAPE_SCOPE.PROFILE_FOLLOWING
+            SOCIAL_REQUEST_COMMANDS.PROFILE_FOLLOWING
         ]
 
         if include_profile:

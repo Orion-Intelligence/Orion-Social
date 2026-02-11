@@ -2,7 +2,7 @@ from time import sleep
 
 import requests
 
-from crawler.crawler_instance.proxies.i2p_controller.i2p_enums import I2P_PROXY, I2P_COMMANDS
+from api.orion.services.proxies.i2p_controller.i2p_enums import I2P_PROXY, I2P_COMMANDS
 from crawler.crawler_services.log_manager.log_controller import log
 from crawler.crawler_services.request_manager.request_handler import request_handler
 

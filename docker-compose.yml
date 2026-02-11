@@ -37,8 +37,6 @@ services:
   redis_server:
     container_name: trusted-social-redis
     image: redis:7.4.0
-    logging:
-      driver: none
     command:
       - redis-server
       - --requirepass

@@ -8,8 +8,8 @@ from crawler.crawler_services.log_manager.log_controller import log
 from crawler.crawler_services.redis_manager.redis_enums import REDIS_COMMANDS
 from crawler.constants.keys import TOR_KEYS
 from crawler.constants.constant import CRAWL_SETTINGS_CONSTANTS
-from crawler.crawler_services.shared.env_handler import env_handler
-from crawler.crawler_instance.proxies.tor_controller.tor_enums import TOR_CONTROL_PROXIES, TOR_PROXIES, TOR_COMMANDS
+from api.orion.services.shared.env_handler import env_handler
+from api.orion.services.proxies.tor_controller.tor_enums import TOR_CONTROL_PROXIES, TOR_PROXIES, TOR_COMMANDS
 from crawler.crawler_services.redis_manager.redis_controller import redis_controller
 from crawler.crawler_services.request_manager.request_handler import request_handler
 
