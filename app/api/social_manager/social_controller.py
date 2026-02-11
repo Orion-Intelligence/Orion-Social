@@ -14,6 +14,7 @@ from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers._twitter import TwitterScraper
 from api.social_manager.scrapers._tiktok import TikTokScraper
+from api.social_manager.scrapers._duck_go import scrape_usernames, scrape_images
 from api.social_manager.models import social_model
 
 BROWSER_ARGS = [
@@ -247,20 +248,49 @@ class social_controller:
 
     def invoke_trigger(self, command, data):
 
-        if command != SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE:
-            return None
+        if command == SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE:
+            scrape_key = data["scrape_key"]
+            self._update_progress(scrape_key, 0, "starting")
+            result = self._scrape_multiple(scrape_key, data["targets"])
+            self._scrape_states[scrape_key] = {"status": "done", "data": result}
+            return result
 
-        scrape_key = data["scrape_key"]
-        self._update_progress(scrape_key, 0, "starting")
+        elif command == SOCIAL_REQUEST_COMMANDS.S_DUCKDUCKGO_USERNAMES:
+            scrape_key = data["scrape_key"]
+            username = data["username"]
+            platform = data["platform"]
+            return self.scrape_duckduckgo_usernames(scrape_key, username, platform)
 
-        result = self._scrape_multiple(scrape_key, data["targets"])
+        elif command == SOCIAL_REQUEST_COMMANDS.S_DUCKDUCKGO_IMAGES:
+            scrape_key = data["scrape_key"]
+            username = data["username"]
+            platform = data["platform"]
+            return self.scrape_duckduckgo_images(scrape_key, username, platform)
 
-        self._scrape_states[scrape_key] = {"status": "done", "data": result}
-
-        return result
+        return None
 
     def get_scrape_status(self, scrape_key):
         return self._scrape_states.get(scrape_key, {"status": "new"})
 
     def clear_scrape_status(self, scrape_key):
         self._scrape_states.pop(scrape_key, None)
+
+    def scrape_duckduckgo_usernames(self, scrape_key: str, username: str, platform: str):
+        self._update_progress(scrape_key, 0, "initializing")
+        self._update_progress(scrape_key, 20, "searching usernames")
+        
+        result = scrape_usernames(username, platform, limit=10)
+        
+        self._update_progress(scrape_key, 90, "finalizing")
+        self._scrape_states[scrape_key] = {"status": "done", "data": result}
+        return result
+
+    def scrape_duckduckgo_images(self, scrape_key: str, username: str, platform: str):
+        self._update_progress(scrape_key, 0, "initializing")
+        self._update_progress(scrape_key, 20, "searching images")
+        
+        result = scrape_images(username, platform, limit=10)
+        
+        self._update_progress(scrape_key, 90, "finalizing")
+        self._scrape_states[scrape_key] = {"status": "done", "data": result}
+        return result

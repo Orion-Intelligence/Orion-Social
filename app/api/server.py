@@ -9,7 +9,10 @@ from .model.social_request_model import (
     SocialScrapeRequest,
     SocialProfileRequest,
     SocialFollowersRequest,
-    SocialFollowingRequest, SocialPostsRequest
+    SocialFollowingRequest,
+    SocialPostsRequest,
+    DuckDuckGoUsernamesRequest,
+    DuckDuckGoImagesRequest
 )
 from .progress_controller import progress_controller
 from .social_manager.social_controller import social_controller
@@ -45,6 +48,8 @@ class APIService:
         self.app.add_api_route("/social/followers", self.social_followers, methods=["POST"])
         self.app.add_api_route("/social/following", self.social_following, methods=["POST"])
         self.app.add_api_route("/social/posts", self.social_posts, methods=["POST"])
+        self.app.add_api_route("/social/duckduckgo/usernames", self.duckduckgo_usernames, methods=["POST"])
+        self.app.add_api_route("/social/duckduckgo/images", self.duckduckgo_images, methods=["POST"])
 
         loop.create_task(self.log_queue_size())
 
@@ -294,6 +299,70 @@ class APIService:
                 request.platform,
                 request.username,
                 request.max_posts
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def duckduckgo_usernames(self, request: DuckDuckGoUsernamesRequest):
+        logger.info("Received request at /social/duckduckgo/usernames")
+
+        scrape_key = str(hash(f"ddg_usernames:{request.platform}:{request.username}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return state["data"]
+
+        if state["status"] == "pending":
+            return {
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_duckduckgo_usernames,
+                scrape_key,
+                request.username,
+                request.platform
+            )
+
+        asyncio.create_task(run())
+
+        return {
+            "status": "pending",
+            "progress": 0,
+            "step": "queued"
+        }
+
+    async def duckduckgo_images(self, request: DuckDuckGoImagesRequest):
+        logger.info("Received request at /social/duckduckgo/images")
+
+        scrape_key = str(hash(f"ddg_images:{request.platform}:{request.username}"))
+        state = self.social_controller_instance.get_scrape_status(scrape_key)
+
+        if state["status"] == "done":
+            return state["data"]
+
+        if state["status"] == "pending":
+            return {
+                "status": "pending",
+                "progress": state.get("progress", 0),
+                "step": state.get("step", "")
+            }
+
+        async def run():
+            await asyncio.to_thread(
+                self.social_controller_instance.scrape_duckduckgo_images,
+                scrape_key,
+                request.username,
+                request.platform
             )
 
         asyncio.create_task(run())

@@ -19,7 +19,7 @@ from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
 from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
-from api.social_manager.scrapers._tiktok import tiktok
+from api.social_manager.scrapers._tiktok import TikTokScraper
 from api.social_manager.scrapers._twitter import TwitterScraper
 from api.social_manager.scrapers._duck_go import DuckDuckGoScraper
 

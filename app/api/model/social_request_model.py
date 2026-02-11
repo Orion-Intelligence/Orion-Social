@@ -29,6 +29,16 @@ class SocialPostsRequest(BaseModel):
     max_posts: int = Field(default=5, ge=1, le=100)
 
 
+class DuckDuckGoUsernamesRequest(BaseModel):
+    username: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+
+
+class DuckDuckGoImagesRequest(BaseModel):
+    username: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+
+
 class SocialTarget(BaseModel):
     usernames: List[str] = Field(..., min_length=1)
     platform: str

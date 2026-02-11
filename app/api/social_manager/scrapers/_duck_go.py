@@ -1,125 +1,159 @@
-from typing import Dict, Any, List
-from playwright.sync_api import Page
+from ddgs import DDGS
+from typing import List, Dict, Any
+from urllib.parse import urlparse
+import re
 
 
-from api.social_manager.scrapers.base_scraper import BaseScraper
-from api.social_manager.models import social_model
-from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
+def extract_username_from_url(url: str) -> str:
+    try:
+        parsed = urlparse(url)
+        path = parsed.path.strip("/")
+        
+        if not path:
+            return None
+        
+        if path.startswith("@"):
+            return path.replace("@", "").split("/")[0]
+        
+        parts = path.split("/")
+        username = parts[0] if parts else None
+        
+        if username and not any(keyword in username.lower() for keyword in ["search", "explore", "hashtag", "tag", "p", "reel", "post"]):
+            return username
+        
+        return None
+    except Exception:
+        return None
 
-class DuckDuckGoScraper(BaseScraper):
 
-    def __init__(self, username: str, platform: str = "instagram.com", max_followers: int = 0, max_following: int = 0):
-        super().__init__(username, max_followers, max_following)
-        self._search_username = username
-        self._platform = platform
+def extract_real_name(title: str, snippet: str) -> str:
+    if not title:
+        return None
+    
+    title_clean = title.strip()
+    
+    if "(" in title_clean and ")" in title_clean:
+        real_name = title_clean.split("(")[0].strip()
+        if real_name:
+            return real_name
+    
+    if " - " in title_clean:
+        real_name = title_clean.split(" - ")[0].strip()
+        if real_name and len(real_name) > 2:
+            return real_name
+    
+    if "@" in title_clean:
+        real_name = title_clean.split("@")[0].strip()
+        if real_name and len(real_name) > 2:
+            return real_name
+    
+    if "|" in title_clean:
+        real_name = title_clean.split("|")[0].strip()
+        if real_name and len(real_name) > 2:
+            return real_name
+    
+    return title_clean if len(title_clean) > 2 else None
 
-    @property
-    def base_url(self) -> str:
-        return "https://html.duckduckgo.com/html"
 
-    @property
-    def seed_url(self) -> str:
-        return "https://html.duckduckgo.com/html"
-
-    @property
-    def name(self) -> str:
-        return "DuckDuckGo"
-
-    def _build_search_query(self) -> str:
-        return f'site:{self._platform} "{self._search_username}"'
-
-    def scrape_profile(self, page: Page) -> Dict[str, Any]:
-        return {}
-
-    def scrape_followers(self, page: Page) -> List[str]:
-        return []
-
-    def scrape_following(self, page: Page) -> List[str]:
-        return []
-
-    def parse_page(self, page: Page) -> Dict[str, Any]:
-        search_query = self._build_search_query()
-        encoded_query = search_query.replace(" ", "+").replace(":", "%3A").replace('"', "%22")
-        search_url = f"{self.base_url}/?q={encoded_query}"
-
-        page.goto(search_url, wait_until="domcontentloaded")
-        page.wait_for_timeout(2000)
-
-        self._extract_results(page)
-
-        try:
-            next_button = page.query_selector('input.btn[value="Next"]')
-            if next_button:
-                next_button.click()
-                page.wait_for_timeout(2000)
-                self._extract_results(page)
-        except Exception:
-            pass
-
-        print(self.data)
+def scrape_usernames(username: str, platform: str, limit: int = 10) -> Dict[str, Any]:
+    platform = platform.lower().strip()
+    
+    platform_domain = f"{platform}.com" if not platform.endswith(".com") else platform
+    
+    search_query = f'site:{platform_domain} "{username}"'
+    
+    profiles = []
+    seen_usernames = set()
+    
+    try:
+        with DDGS() as ddgs:
+            text_results = ddgs.text(search_query, max_results=limit * 3)
+            
+            for r in text_results:
+                if len(profiles) >= limit:
+                    break
+                
+                url = r.get("href")
+                title = r.get("title", "")
+                snippet = r.get("body", "")
+                
+                if not url or platform_domain not in url:
+                    continue
+                
+                extracted_username = extract_username_from_url(url)
+                
+                if not extracted_username or extracted_username in seen_usernames:
+                    continue
+                
+                real_name = extract_real_name(title, snippet)
+                
+                seen_usernames.add(extracted_username)
+                
+                profiles.append({
+                    "username": extracted_username,
+                    "real_name": real_name,
+                    "profile_url": url,
+                    "title": title,
+                    "snippet": snippet,
+                    "platform": platform
+                })
+        
         return {
-            "platform": "duckduckgo",
-            "query": self._search_username,
-            "target_platform": self._platform,
-            "results": self.data,
-            "total_results": len(self.data)
+            "searched_username": username,
+            "platform": platform,
+            "total_found": len(profiles),
+            "usernames": list(seen_usernames),
+            "profiles": profiles
+        }
+    
+    except Exception as e:
+        return {
+            "searched_username": username,
+            "platform": platform,
+            "error": str(e),
+            "total_found": 0,
+            "usernames": [],
+            "profiles": []
         }
 
-    def _extract_results(self, page: Page) -> None:
-        try:
-            result_links = page.query_selector_all('div.result__body')
 
-            for result in result_links:
-                try:
-                    title_element = result.query_selector('a.result__a')
-                    if not title_element:
-                        continue
+def scrape_images(username: str, platform: str, limit: int = 10) -> Dict[str, Any]:
+    platform = platform.lower().strip()
+    
+    search_query = f"{username} {platform}"
+    image_results = []
+    
+    try:
+        with DDGS() as ddgs:
+            image_search_results = ddgs.images(search_query, max_results=limit)
+            
+            for img in image_search_results:
+                image_url = img.get("image")
+                if image_url:
+                    image_results.append({
+                        "image_url": image_url,
+                        "thumbnail": img.get("thumbnail"),
+                        "title": img.get("title"),
+                        "source": img.get("source")
+                    })
+        
+        return {
+            "searched_username": username,
+            "platform": platform,
+            "total_found": len(image_results),
+            "images": image_results
+        }
+    
+    except Exception as e:
+        return {
+            "searched_username": username,
+            "platform": platform,
+            "error": str(e),
+            "total_found": 0,
+            "images": []
+        }
 
-                    href = title_element.get_attribute('href')
-                    title_text = title_element.text_content().strip()
 
-                    snippet_element = result.query_selector('a.result__snippet')
-                    snippet_text = snippet_element.text_content().strip() if snippet_element else ""
 
-                    url_element = result.query_selector('a.result__url')
-                    url_text = url_element.text_content().strip() if url_element else ""
 
-                    username = None
-                    if '/' in url_text:
-                        parts = url_text.rstrip('/').split('/')
-                        username = parts[-1] if parts else None
 
-                    real_name = None
-                    if '(' in title_text and ')' in title_text:
-                        real_name = title_text.split('(')[0].strip()
-                    elif ' - ' in title_text:
-                        real_name = title_text.split(' - ')[0].strip()
-                    elif '@' in title_text:
-                        real_name = title_text.split('@')[0].strip()
-
-                    if not real_name and snippet_text:
-                        if ' from ' in snippet_text.lower():
-                            parts = snippet_text.lower().split(' from ')
-                            if len(parts) > 1:
-                                name_part = parts[-1]
-                                if '(' in name_part:
-                                    real_name = name_part.split('(')[0].strip().title()
-
-                    if username and real_name:
-                        existing = [d for d in self.data if d.get('m_username') == username]
-                        if not existing:
-                            card = social_model(
-                                m_username=username,
-                                m_real_name=real_name,
-                                m_platform=self._platform,
-                                m_weblink=[href] if href else [],
-                            )
-
-                            self.data.append(card.model_dump())
-                            cross_platform_mapper.add_card(card)
-
-                except Exception:
-                    continue
-
-        except Exception:
-            pass
