@@ -310,6 +310,6 @@ class social_recon:
 
 if __name__ == "__main__":
     recon = social_recon()
-    data = "+923324935230"
+    data = "msmannan00"
     results = recon.parse(data, mode="default", job_id=None)
     print(json.dumps(results, indent=2, ensure_ascii=False))
