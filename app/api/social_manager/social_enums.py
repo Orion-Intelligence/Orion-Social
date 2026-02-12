@@ -66,3 +66,16 @@ class SITE_DATA:
         "Pinterest",
         "WordPressOrg",
     ]
+
+    TOP_10_SITES = [
+        "YouTube",
+        "Facebook",
+        "Instagram",
+        "Twitter",
+        "Wikipedia",
+        "GitHub",
+        "Reddit",
+        "TikTok",
+        "StackOverflow",
+        "Twitch",
+    ]

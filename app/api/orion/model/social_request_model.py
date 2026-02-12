@@ -36,7 +36,7 @@ class DuckDuckGoUsernamesRequest(BaseModel):
 
 class DuckDuckGoImagesRequest(BaseModel):
     username: str = Field(..., min_length=1)
-    platform: str = Field(..., min_length=1)
+    platform: str = Field("", min_length=1)
 
 
 class SocialTarget(BaseModel):

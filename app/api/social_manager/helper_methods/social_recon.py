@@ -116,12 +116,12 @@ class social_recon:
         found_profiles = self.run_sherlock(username)
 
         total = len(found_profiles) or 1
-
         seen = set()
         results = []
         done = 0
 
-        focused_lower = {s.lower() for s in SITE_DATA.FOCUSED_SITES}
+        scanned_maigret = set()
+        base_uname = username.strip().lower()
 
         for p in found_profiles:
             done += 1
@@ -136,21 +136,25 @@ class social_recon:
                 continue
             seen.add(key)
 
-            data = None
-            if plat_lower in focused_lower:
+            scanned_maigret.add(plat_lower)
+
+            if job_id:
+                self._progress.update(job_id, int((done / total) * 90), f"maigret:{plat}:{uname}")
+
+            raw = self.run_maigret_on_platform(uname, plat)
+
+            k = next((kk for kk in (raw or {}).keys() if kk.lower() == plat_lower), None)
+            if k:
+                data = raw[k]
+            elif len(raw or {}) == 1:
+                data = next(iter((raw or {}).values()))
+            else:
+                data = raw
+
+            if data is None:
                 if job_id:
-                    self._progress.update(job_id, int((done / total) * 90), f"maigret:{plat}:{uname}")
-                raw = self.run_maigret_on_platform(uname, plat)
-                if isinstance(raw, dict):
-                    k = next((kk for kk in raw.keys() if kk.lower() == plat_lower), None)
-                    if k is not None:
-                        data = raw[k]
-                    elif len(raw) == 1:
-                        data = next(iter(raw.values()))
-                    else:
-                        data = raw
-                else:
-                    data = raw
+                    self._progress.update(job_id, int((done / total) * 90), f"not_verified:{plat}:{uname}")
+                continue
 
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
@@ -169,6 +173,42 @@ class social_recon:
 
             if job_id:
                 self._progress.update(job_id, int((done / total) * 90), f"done:{plat}:{uname}")
+
+        for site in SITE_DATA.TOP_10_SITES:
+            site_lower = site.lower()
+            if site_lower in scanned_maigret:
+                continue
+
+            if job_id:
+                self._progress.update(job_id, 90, f"maigret_top10:{site}:{base_uname}")
+
+            raw = self.run_maigret_on_platform(base_uname, site)
+
+            k = next((kk for kk in (raw or {}).keys() if kk.lower() == site_lower), None)
+            if k:
+                data = raw[k]
+            elif len(raw or {}) == 1:
+                data = next(iter((raw or {}).values()))
+            else:
+                data = raw
+
+            if data is None:
+                continue
+
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+            results.append(
+                {
+                    "metadata": {
+                        "platform": site,
+                        "username": base_uname,
+                        "social_handle": base_uname,
+                        "url": None,
+                        "timestamp": timestamp,
+                    },
+                    "data": data,
+                }
+            )
 
         if job_id:
             self._progress.update(job_id, 95, "finalizing")
@@ -310,6 +350,6 @@ class social_recon:
 
 if __name__ == "__main__":
     recon = social_recon()
-    data = "msmannan00"
+    data = "msmannsadd234fdssasan00"
     results = recon.parse(data, mode="default", job_id=None)
     print(json.dumps(results, indent=2, ensure_ascii=False))

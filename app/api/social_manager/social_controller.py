@@ -31,7 +31,7 @@ class social_controller:
         self.command = command
         self._progress.update(job_id, 0, "starting")
 
-    def _get_scraper(self, platform, username, max_followers, max_following, scope):
+    def _get_scraper(self, platform, username, max_followers, max_following):
         scraper = None
         if platform == SOCIAL_PLATFORMS.INSTAGRAM:
             scraper = InstagramScraper(username, max_followers, max_following)
@@ -47,7 +47,7 @@ class social_controller:
             scraper = TikTokScraper(username, max_followers, max_following)
 
         if scraper and hasattr(scraper, 'set_scope'):
-            scraper.set_scope(scope)
+            scraper.set_scope(self.command)
 
         return scraper
 
