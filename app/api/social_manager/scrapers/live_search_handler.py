@@ -71,22 +71,28 @@ class live_search_handler:
                     return real_name
         return title_clean
 
-    def collect_social_handles(self, query: str, threshold: float = 0) -> Dict[str, Any]:
-        query = f'"{query}" social profile'
-        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
+    def collect_social_handles(self, query: str, platform: Optional[str] = None, threshold: float = 0) -> Dict[
+        str, Any]:
+        search_query = f'"{query}" social profile'
+        if platform:
+            search_query = f'site:{platform.lower().strip()}.com "{query}"'
 
+        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
         results: List[Dict[str, Any]] = []
         seen_profiles: set[str] = set()
         query_lower = query.lower().strip()
+
         try:
             with DDGS() as ddgs:
-                text_results = ddgs.text(f"{query} social media profile", max_results=30)
+                text_results = ddgs.text(search_query, max_results=30)
                 for r in text_results:
                     url = r.get("href", "")
                     if not url:
                         continue
-                    platform = self.extract_platform_from_url(url)
-                    if platform is None:
+                    extracted_platform = self.extract_platform_from_url(url)
+                    if extracted_platform is None:
+                        continue
+                    if platform and extracted_platform.lower() != platform.lower().strip():
                         continue
                     parsed = urlparse(url)
                     platform_url = f"{parsed.scheme}://{parsed.netloc}/"
@@ -96,15 +102,15 @@ class live_search_handler:
                     similarity = difflib.SequenceMatcher(None, username.lower(), query_lower).ratio()
                     if similarity < threshold:
                         continue
-                    profile_key = f"{platform}:{username}"
+                    profile_key = f"{extracted_platform}:{username}"
                     if profile_key in seen_profiles:
                         continue
                     seen_profiles.add(profile_key)
 
-                    if platform in sites:
+                    if extracted_platform in sites:
                         results.append({
                             "metadata": {
-                                "platform": platform,
+                                "platform": extracted_platform,
                                 "username": username,
                                 "social_handle": username,
                                 "url": platform_url,
@@ -223,11 +229,13 @@ class live_search_handler:
         except Exception:
             return False
 
-    def search_web(self, query: str) -> Dict[str, Any]:
+    def search_web(self, query: str, platform: Optional[str] = None) -> Dict[str, Any]:
+        search_query = f'site:{platform.lower().strip()}.com {query}' if platform else query
         results: List[Dict[str, Any]] = []
+
         try:
             with DDGS() as ddgs:
-                text_results = ddgs.text(query, max_results=20)
+                text_results = ddgs.text(search_query, max_results=20)
                 for r in text_results:
                     url = r.get("href", "")
                     if not url:
@@ -252,3 +260,6 @@ class live_search_handler:
                 "timestamp": self.timestamp,
                 "results": [],
             }
+
+
+
