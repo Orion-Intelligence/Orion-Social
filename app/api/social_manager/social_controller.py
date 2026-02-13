@@ -156,7 +156,19 @@ class social_controller:
         }:
             self.init_job(data.get("job_id"), command)
             try:
-                result = self._scrape_user(data.get("platform"), data.get("username"), data.get("max_followers", 0), data.get("max_following", 0))
+                username = data.get("username")
+                platform = data.get("platform")
+                if not username:
+                    result = {"status": "error", "message": "username_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                supported_platforms = [SOCIAL_PLATFORMS.INSTAGRAM, SOCIAL_PLATFORMS.TWITTER, SOCIAL_PLATFORMS.FACEBOOK, SOCIAL_PLATFORMS.TIKTOK]
+                if command == SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY and platform not in supported_platforms:
+                    ddg_result = self._ddg.scrape_profile(username, platform)
+                    result = {"status": "suggested", "data": ddg_result}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = self._scrape_user(platform, username, data.get("max_followers", 0), data.get("max_following", 0))
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
@@ -166,7 +178,20 @@ class social_controller:
         if command == SOCIAL_REQUEST_COMMANDS.S_POSTS:
             self.init_job(data.get("job_id"), command)
             try:
-                result = self._scrape_posts(data.get("platform"), data.get("username"), data.get("max_posts", 0))
+                username = data.get("username")
+                platform = data.get("platform")
+                max_posts = data.get("max_posts", 5)
+                if not username:
+                    result = {"status": "error", "message": "username_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                supported_platforms = [SOCIAL_PLATFORMS.INSTAGRAM, SOCIAL_PLATFORMS.TWITTER, SOCIAL_PLATFORMS.FACEBOOK]
+                if platform not in supported_platforms:
+                    ddg_result = self._ddg.scrape_posts_search(username, platform, max_posts)
+                    result = {"status": "suggested", "data": ddg_result}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = self._scrape_posts(platform, username, max_posts)
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
@@ -176,7 +201,12 @@ class social_controller:
         if command == SOCIAL_REQUEST_COMMANDS.S_DDG_USERNAMES:
             self.init_job(data.get("job_id"), command)
             try:
-                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.scrape_usernames(data.get("username"), data.get("platform"), limit=10)}
+                username = data.get("username")
+                if not username:
+                    result = {"status": "error", "message": "username_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.collect_social_handles(username, data.get("platform"))}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
@@ -186,7 +216,13 @@ class social_controller:
         if command == SOCIAL_REQUEST_COMMANDS.S_DDG_IMAGES:
             self.init_job(data.get("job_id"), command)
             try:
-                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.scrape_images(data.get("username"), data.get("platform"), limit=10)}
+                username = data.get("username")
+                platform = data.get("platform")
+                if not username:
+                    result = {"status": "error", "message": "username_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.scrape_images(username, platform or "", limit=10)}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:

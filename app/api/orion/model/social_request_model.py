@@ -7,10 +7,12 @@ class SocialReconRequest(BaseModel):
 
 
 class SocialProfileRequest(BaseModel):
-    platform: str = Field(..., min_length=1)
-    username: str = Field(..., min_length=1)
+    platform: Optional[str] = Field(default=None)
+    username: Optional[str] = Field(default=None)
     @field_validator("platform", "username", mode="before")
     def to_lowercase(cls, value: str) -> str:
+        if value is None:
+            return None
         return value.lower()
 
 
@@ -27,22 +29,24 @@ class SocialFollowingRequest(BaseModel):
 
 
 class SocialPostsRequest(BaseModel):
-    platform: str = Field(..., min_length=1)
-    username: str = Field(..., min_length=1)
+    platform: Optional[str] = Field(default=None)
+    username: Optional[str] = Field(default=None)
     max_posts: int = Field(default=5, ge=1, le=100)
 
     @field_validator("platform", "username", mode="before")
     def to_lowercase(cls, value: str) -> str:
+        if value is None:
+            return None
         return value.lower()
 
 class DuckDuckGoUsernamesRequest(BaseModel):
     username: str = Field(..., min_length=1)
-    platform: str = Field(..., min_length=1)
+    platform: Optional[str] = Field(default=None)
 
 
 class DuckDuckGoImagesRequest(BaseModel):
-    username: str = Field(..., min_length=1)
-    platform: str = Field("", min_length=1)
+    username: Optional[str] = Field(default=None)
+    platform: Optional[str] = Field(default=None)
 
 
 class SocialTarget(BaseModel):
@@ -65,6 +69,7 @@ class ProfileResponse(BaseModel):
     total_following: Optional[str] = None
     platform: str
     profile_url: str
+    status: str = "active"
 
 
 class FollowersResponse(BaseModel):
