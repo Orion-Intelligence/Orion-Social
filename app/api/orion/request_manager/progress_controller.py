@@ -27,18 +27,22 @@ class progress_controller:
                 return
             self._store[job_id] = {
                 "status": "pending",
-                "progress": 0,
+                "progress": 5,
                 "step": "starting",
                 "expires_at": time.time() + ttl
             }
 
     def update(self, job_id: str, progress: int, step: str):
+        if progress<5:
+            progress = 5
         with self._lock:
             st = self._store.get(job_id)
             if not st:
                 return
             st["status"] = "pending"
-            st["progress"] = int(max(0, min(100, progress)))
+            if step == "queued":
+                progress = 5
+            st["progress"] = int(max(5, min(100, progress)))
             st["step"] = step
 
     def done(self, job_id: str, result: Any):

@@ -13,7 +13,7 @@ from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers.twitter import TwitterScraper
 from api.social_manager.scrapers.tiktok import TikTokScraper
-from api.social_manager.scrapers.duck_go import scrape_usernames, scrape_images
+from api.social_manager.scrapers.live_search_handler import live_search_handler
 from api.social_manager.models import social_model
 
 
@@ -24,6 +24,7 @@ class social_controller:
         self._progress = progress_controller.get_instance()
         self.job_id = None
         self.command = None
+        self._ddg = live_search_handler()
 
     def init_job(self, job_id: str, command):
         self.job_id = job_id
@@ -175,7 +176,7 @@ class social_controller:
         if command == SOCIAL_REQUEST_COMMANDS.S_DDG_USERNAMES:
             self.init_job(data.get("job_id"), command)
             try:
-                result = {"status": "success", "platform": "duckduckgo", "data": scrape_usernames(data.get("username"), data.get("platform"), limit=10)}
+                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.scrape_usernames(data.get("username"), data.get("platform"), limit=10)}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
@@ -185,7 +186,7 @@ class social_controller:
         if command == SOCIAL_REQUEST_COMMANDS.S_DDG_IMAGES:
             self.init_job(data.get("job_id"), command)
             try:
-                result = {"status": "success", "platform": "duckduckgo", "data": scrape_images(data.get("username"), data.get("platform"), limit=10)}
+                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.scrape_images(data.get("username"), data.get("platform"), limit=10)}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:

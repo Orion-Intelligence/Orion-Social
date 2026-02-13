@@ -21,7 +21,7 @@ from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers.tiktok import TikTokScraper
 from api.social_manager.scrapers.twitter import TwitterScraper
-from api.social_manager.scrapers.duck_go import DuckDuckGoScraper
+from api.social_manager.scrapers.live_search_handler import DuckDuckGoScraper
 
 
 

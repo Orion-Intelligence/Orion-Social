@@ -6,6 +6,7 @@ import subprocess
 import time
 
 from api.orion.request_manager.progress_controller import progress_controller
+from api.social_manager.scrapers.live_search_handler import live_search_handler
 from api.social_manager.social_enums import SITE_DATA
 
 
@@ -42,10 +43,16 @@ class social_recon:
             out[site_name] = item
         return out
 
-    def run_maigret_on_platform(self, username: str, platform: str):
+    def run_maigret_on_platform(self, username: str, platform: str, job_id: str | None = None):
+        if job_id:
+            self._progress.update(job_id, 82, f"maigret:init:{platform}:{username}")
+
         report_dir = f"reports_{username}"
         os.makedirs(report_dir, exist_ok=True)
         report_file = os.path.join(report_dir, f"report_{username}_simple.json")
+
+        if job_id:
+            self._progress.update(job_id, 84, f"maigret:run:{platform}:{username}")
 
         result = subprocess.run(
             ["maigret", username, "--site", platform, "--json", "simple", "--folderoutput", report_dir],
@@ -53,38 +60,61 @@ class social_recon:
             text=True,
         )
 
+        if job_id:
+            self._progress.update(job_id, 86, f"maigret:exit:{platform}:{username}:{result.returncode}")
+
         cleaned = None
         if result.returncode == 0 and os.path.exists(report_file):
+            if job_id:
+                self._progress.update(job_id, 87, f"maigret:read:{platform}:{username}")
             with open(report_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            if job_id:
+                self._progress.update(job_id, 88, f"maigret:clean:{platform}:{username}")
             cleaned = self._clean_maigret(data)
             os.remove(report_file)
 
         if os.path.exists(report_dir) and not os.listdir(report_dir):
             os.rmdir(report_dir)
 
+        if job_id:
+            self._progress.update(job_id, 89, f"maigret:done:{platform}:{username}")
+
         return cleaned
 
-    def run_sherlock(self, username: str):
+    def run_sherlock(self, username: str, job_id: str | None = None):
+        if job_id:
+            self._progress.update(job_id, 5, f"sherlock:init:{username}")
+
         cmd = [
             "sherlock",
+            "--timeout", "10",
             username,
-            "--timeout", "15",
             "--print-found",
             "--no-color",
         ]
 
+        if job_id:
+            self._progress.update(job_id, 6, f"sherlock:run:{username}")
+
         result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if job_id:
+            self._progress.update(job_id, 7, f"sherlock:exit:{username}:{result.returncode}")
 
         txt_file = f"{username}.txt"
         if os.path.exists(txt_file):
             os.remove(txt_file)
 
         profiles = []
-        for line in result.stdout.splitlines():
-            line = line.strip()
-            if line.startswith("[+]"):
-                match = re.search(r"https?://\S+", line)
+        lines = result.stdout.splitlines()
+        total_lines = len(lines) or 1
+        for i, line in enumerate(lines, start=1):
+            s = line.strip()
+            if job_id and (i == 1 or i == total_lines or i % 25 == 0):
+                self._progress.update(job_id, 7 + int((i / total_lines) * 2), f"sherlock:parse:{username}:{i}/{total_lines}")
+            if s.startswith("[+]"):
+                match = re.search(r"https?://\S+", s)
                 if match:
                     url = match.group(0).rstrip("/")
                     domain = url.split("/")[2].replace("www.", "")
@@ -93,27 +123,56 @@ class social_recon:
                     user = user_match.group(1) if user_match else username
                     profiles.append({"platform": platform, "username": user, "url": url})
 
+        if job_id:
+            self._progress.update(job_id, 9, f"sherlock:done:{username}:found={len(profiles)}")
+
         return profiles
 
-    def run_holehe(self, email: str):
+    def run_holehe(self, email: str, job_id: str | None = None):
         if not shutil.which("holehe"):
+            if job_id:
+                self._progress.update(job_id, 6, f"holehe:missing:{email}")
             return None
+
+        if job_id:
+            self._progress.update(job_id, 7, f"holehe:run:{email}")
+
         result = subprocess.run(["holehe", email], capture_output=True, text=True)
+
+        if job_id:
+            self._progress.update(job_id, 9, f"holehe:exit:{email}:{result.returncode}")
+
         found = []
-        for line in result.stdout.splitlines():
-            line = line.strip()
-            m = re.match(r"^\[\+\]\s*([^:]+):\s*(.+)$", line)
+        lines = result.stdout.splitlines()
+        total_lines = len(lines) or 1
+        for i, line in enumerate(lines, start=1):
+            s = line.strip()
+            if job_id and (i == 1 or i == total_lines or i % 25 == 0):
+                self._progress.update(job_id, 9 + int((i / total_lines) * 4), f"holehe:parse:{email}:{i}/{total_lines}")
+            m = re.match(r"^\[\+\]\s*([^:]+):\s*(.+)$", s)
             if m:
                 found.append({"service": m.group(1).strip(), "result": m.group(2).strip()})
-            elif "found" in line.lower() or line.startswith("[+]"):
-                found.append({"line": line})
+            elif "found" in s.lower() or s.startswith("[+]"):
+                found.append({"line": s})
+
+        if job_id:
+            self._progress.update(job_id, 14, f"holehe:done:{email}:found={len(found)}")
+
         return {"returncode": result.returncode, "found": found}
 
     def parse_username(self, username: str, mode: str = "default", job_id: str | None = None):
         if job_id:
+            self._progress.update(job_id, 1, "init:username")
+
+        if job_id:
             self._progress.update(job_id, 5, "sherlock")
 
-        found_profiles = self.run_sherlock(username)
+        found_profiles = self.run_sherlock(username, job_id=job_id)
+
+        base_uname = username.strip().lower() + ""
+
+        if job_id:
+            self._progress.update(job_id, 10, f"sherlock_done:{len(found_profiles) or 0}")
 
         total = len(found_profiles) or 1
         seen = set()
@@ -121,40 +180,26 @@ class social_recon:
         done = 0
 
         scanned_maigret = set()
-        base_uname = username.strip().lower()
 
         for p in found_profiles:
             done += 1
-            uname = p["username"].lower()
-            plat = p["platform"]
-            plat_lower = plat.lower()
-            key = (uname, plat)
+            uname = (p.get("username") or "").lower()
+            plat = p.get("platform")
+            plat_lower = (plat or "").lower()
+            key = (uname, plat_lower)
+
+            if plat_lower == "artstation":
+                if job_id:
+                    self._progress.update(job_id, 10 + int((done / total) * 70), f"skip:artstation:{uname}")
+                continue
 
             if key in seen:
                 if job_id:
-                    self._progress.update(job_id, int((done / total) * 100), f"skip:{plat}:{uname}")
+                    self._progress.update(job_id, 10 + int((done / total) * 70), f"skip_dup:{plat}:{uname}")
                 continue
             seen.add(key)
 
             scanned_maigret.add(plat_lower)
-
-            if job_id:
-                self._progress.update(job_id, int((done / total) * 90), f"maigret:{plat}:{uname}")
-
-            raw = self.run_maigret_on_platform(uname, plat)
-
-            k = next((kk for kk in (raw or {}).keys() if kk.lower() == plat_lower), None)
-            if k:
-                data = raw[k]
-            elif len(raw or {}) == 1:
-                data = next(iter((raw or {}).values()))
-            else:
-                data = raw
-
-            if data is None:
-                if job_id:
-                    self._progress.update(job_id, int((done / total) * 90), f"not_verified:{plat}:{uname}")
-                continue
 
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
@@ -167,22 +212,28 @@ class social_recon:
                         "url": p.get("url"),
                         "timestamp": timestamp,
                     },
-                    "data": data,
+                    "data": {},
                 }
             )
 
             if job_id:
-                self._progress.update(job_id, int((done / total) * 90), f"done:{plat}:{uname}")
+                self._progress.update(job_id, 10 + int((done / total) * 70), f"accepted:{plat}:{uname}")
 
-        for site in SITE_DATA.TOP_10_SITES:
+        if job_id:
+            self._progress.update(job_id, 80, "focused")
+
+        focused_total = len(SITE_DATA.FOCUSED_SITES) or 1
+        focused_done = 0
+        for site in SITE_DATA.FOCUSED_SITES:
+            focused_done += 1
             site_lower = site.lower()
-            if site_lower in scanned_maigret:
+            if site_lower not in scanned_maigret:
                 continue
 
             if job_id:
-                self._progress.update(job_id, 90, f"maigret_top10:{site}:{base_uname}")
+                self._progress.update(job_id, 80 + int((focused_done / focused_total) * 10), f"maigret_focused:{site}:{base_uname}")
 
-            raw = self.run_maigret_on_platform(base_uname, site)
+            raw = self.run_maigret_on_platform(base_uname, site, job_id=job_id)
 
             k = next((kk for kk in (raw or {}).keys() if kk.lower() == site_lower), None)
             if k:
@@ -192,7 +243,9 @@ class social_recon:
             else:
                 data = raw
 
-            if data is None:
+            if not data:
+                if job_id:
+                    self._progress.update(job_id, 80 + int((focused_done / focused_total) * 10), f"focused_not_verified:{site}:{base_uname}")
                 continue
 
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -210,6 +263,72 @@ class social_recon:
                 }
             )
 
+            if job_id:
+                self._progress.update(job_id, 80 + int((focused_done / focused_total) * 10), f"focused_verified:{site}:{base_uname}")
+
+        if job_id:
+            self._progress.update(job_id, 90, "ddg_validate")
+
+        try:
+            ddg = live_search_handler()
+            keep = []
+            for r in results:
+                meta = r.get("metadata") or {}
+                plat = (meta.get("platform") or "").strip()
+                if not plat:
+                    continue
+                if plat in SITE_DATA.TOP_10_SITES:
+                    if ddg.check_username_exists(base_uname, plat):
+                        keep.append(r)
+                else:
+                    keep.append(r)
+            results = keep
+        except Exception:
+            pass
+
+        if job_id:
+            self._progress.update(job_id, 90, "ddg")
+
+        if len(results) > 100:
+            try:
+                ddg = live_search_handler()
+                if job_id:
+                    self._progress.update(job_id, 91, f"ddg:run:{base_uname}")
+                ddg_payload = ddg.collect_social_handles(base_uname) or {}
+                ddg_results = ddg_payload.get("results") or []
+                if job_id:
+                    self._progress.update(job_id, 93, f"ddg:parse:{len(ddg_results)}")
+
+                existing_keys: set[tuple[str, str]] = set()
+                for r in results:
+                    meta = r.get("metadata") or {}
+                    uname = (meta.get("username") or "").lower()
+                    handle = (meta.get("social_handle") or "").lower()
+                    if uname or handle:
+                        existing_keys.add((uname, handle))
+
+                ddg_total = len(ddg_results) or 1
+                for i, item in enumerate(ddg_results, start=1):
+                    if job_id and (i == 1 or i == ddg_total or i % 10 == 0):
+                        self._progress.update(job_id, 93, f"ddg:merge:{i}/{ddg_total}")
+                    meta = item.get("metadata") or {}
+                    uname = (meta.get("username") or "").lower()
+                    handle = (meta.get("social_handle") or meta.get("username") or "").lower()
+                    if not uname and not handle:
+                        continue
+                    k = (uname, handle)
+                    if k in existing_keys:
+                        continue
+                    existing_keys.add(k)
+                    results.append(item)
+
+                if job_id:
+                    self._progress.update(job_id, 94, f"ddg:done:{len(results)}")
+            except Exception:
+                if job_id:
+                    self._progress.update(job_id, 94, "ddg:error")
+                pass
+
         if job_id:
             self._progress.update(job_id, 95, "finalizing")
 
@@ -219,12 +338,23 @@ class social_recon:
         email = (email or "").strip().lower()
 
         if job_id:
+            self._progress.update(job_id, 2, "init:email")
+
+        if job_id:
             self._progress.update(job_id, 5, "email:holehe")
 
-        holehe_data = self.run_holehe(email)
+        holehe_data = self.run_holehe(email, job_id=job_id)
+
+        if job_id:
+            self._progress.update(job_id, 15, "email:pivot")
+
         pivot_username = None
         if holehe_data:
-            for item in holehe_data.get("found") or []:
+            items = holehe_data.get("found") or []
+            total = len(items) or 1
+            for i, item in enumerate(items, start=1):
+                if job_id and (i == 1 or i == total or i % 10 == 0):
+                    self._progress.update(job_id, 15, f"email:pivot_scan:{i}/{total}")
                 if item:
                     url = item.get("result") or ""
                     m = re.search(r"gravatar\.com/([^/?#\s]+)", url)
@@ -240,14 +370,21 @@ class social_recon:
         if not pivot_username and "@" in email:
             pivot_username = email.split("@", 1)[0].strip().lower() or None
 
+        if job_id:
+            self._progress.update(job_id, 20, f"email:pivot_username:{pivot_username or 'none'}")
+
         pivot_results = None
         if pivot_username:
             try:
+                if job_id:
+                    self._progress.update(job_id, 25, "email:pivot_recon")
                 pivot_results = self.parse_username(pivot_username, mode=mode, job_id=None)
             except Exception:
                 pivot_results = None
 
         if pivot_results:
+            if job_id:
+                self._progress.update(job_id, 85, "email:normalize")
             for r in pivot_results:
                 d = r["data"]
                 if d and len(d) == 1:
@@ -262,6 +399,9 @@ class social_recon:
         p = (phone or "").strip()
 
         if job_id:
+            self._progress.update(job_id, 2, "init:phone")
+
+        if job_id:
             self._progress.update(job_id, 5, "phone:scan")
 
         rc = 127
@@ -271,12 +411,16 @@ class social_recon:
 
         if shutil.which("phoneinfoga"):
             cmd = ["phoneinfoga", "scan", "--number", p]
+            if job_id:
+                self._progress.update(job_id, 10, "phoneinfoga:run")
             r = subprocess.run(cmd, capture_output=True, text=True)
             rc = r.returncode
             out = (r.stdout or "").strip()
             err = (r.stderr or "").strip()
             out = re.sub(r"\x1b\[[0-9;]*m", "", out).strip()
             err = re.sub(r"\x1b\[[0-9;]*m", "", err).strip()
+            if job_id:
+                self._progress.update(job_id, 35, f"phoneinfoga:exit:{rc}")
 
         if rc != 0:
             ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -293,6 +437,9 @@ class social_recon:
                 }
             }
 
+        if job_id:
+            self._progress.update(job_id, 50, "phone:parse")
+
         parsed = {
             "number": p,
             "country": None,
@@ -301,8 +448,12 @@ class social_recon:
             "data": [],
         }
 
-        for line in out.splitlines():
+        lines = out.splitlines()
+        total_lines = len(lines) or 1
+        for i, line in enumerate(lines, start=1):
             s = line.strip()
+            if job_id and (i == 1 or i == total_lines or i % 25 == 0):
+                self._progress.update(job_id, 50, f"phone:parse:{i}/{total_lines}")
             if not s:
                 continue
             if s.startswith("Country:"):
@@ -317,6 +468,9 @@ class social_recon:
                 parsed["urls"].append(s.split("URL:", 1)[1].strip())
             elif ":" in s and not s.endswith(":"):
                 parsed["data"].append(s)
+
+        if job_id:
+            self._progress.update(job_id, 75, "phone:dedup")
 
         seen = set()
         urls_dedup = []
@@ -334,22 +488,33 @@ class social_recon:
     def parse(self, value: str, mode: str = "default", job_id: str | None = None):
         v = (value or "").strip()
         if not v:
+            if job_id:
+                self._progress.update(job_id, 100, "empty")
             return []
+
+        if job_id:
+            self._progress.update(job_id, 1, "init")
 
         is_email = "@" in v and re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", v) is not None
         if is_email:
+            if job_id:
+                self._progress.update(job_id, 3, "detect:email")
             return self.parse_email(v, mode=mode, job_id=job_id)
 
         digits = re.sub(r"\D+", "", v)
         is_phone = re.match(r"^\+?[\d\s().\-]{7,}$", v) is not None and len(digits) >= 7
         if is_phone:
+            if job_id:
+                self._progress.update(job_id, 3, "detect:phone")
             return self.parse_phone(v, mode=mode, job_id=job_id)
 
+        if job_id:
+            self._progress.update(job_id, 3, "detect:username")
         return self.parse_username(v, mode=mode, job_id=job_id)
 
 
 if __name__ == "__main__":
     recon = social_recon()
-    data = "msmannsadd234fdssasan00"
+    data = "manan"
     results = recon.parse(data, mode="default", job_id=None)
     print(json.dumps(results, indent=2, ensure_ascii=False))

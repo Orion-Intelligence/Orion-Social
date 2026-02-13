@@ -59,7 +59,6 @@ class SITE_DATA:
         "Codepen", "Repl.it",
         "Kaggle", "Quora",
         "Wikipedia",
-
         "YouTube", "YouTube User",
         "TikTok", "Twitch",
         "Tumblr",

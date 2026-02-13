@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 
 
@@ -9,6 +9,9 @@ class SocialReconRequest(BaseModel):
 class SocialProfileRequest(BaseModel):
     platform: str = Field(..., min_length=1)
     username: str = Field(..., min_length=1)
+    @field_validator("platform", "username", mode="before")
+    def to_lowercase(cls, value: str) -> str:
+        return value.lower()
 
 
 class SocialFollowersRequest(BaseModel):
@@ -28,6 +31,9 @@ class SocialPostsRequest(BaseModel):
     username: str = Field(..., min_length=1)
     max_posts: int = Field(default=5, ge=1, le=100)
 
+    @field_validator("platform", "username", mode="before")
+    def to_lowercase(cls, value: str) -> str:
+        return value.lower()
 
 class DuckDuckGoUsernamesRequest(BaseModel):
     username: str = Field(..., min_length=1)
