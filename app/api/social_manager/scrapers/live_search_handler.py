@@ -104,6 +104,7 @@ class live_search_handler:
                     if platform in sites:
                         results.append({
                             "metadata": {
+                                "status": "suggested",
                                 "platform": platform,
                                 "username": username,
                                 "social_handle": username,

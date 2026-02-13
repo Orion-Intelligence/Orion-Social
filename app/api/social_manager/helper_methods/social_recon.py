@@ -88,7 +88,8 @@ class social_recon:
 
         cmd = [
             "sherlock",
-            "--timeout", "10",
+            "--timeout",
+            "10",
             username,
             "--print-found",
             "--no-color",
@@ -211,6 +212,7 @@ class social_recon:
                         "social_handle": uname,
                         "url": p.get("url"),
                         "timestamp": timestamp,
+                        "status": "active",
                     },
                     "data": {},
                 }
@@ -258,6 +260,7 @@ class social_recon:
                         "social_handle": base_uname,
                         "url": None,
                         "timestamp": timestamp,
+                        "status": "active",
                     },
                     "data": data,
                 }
@@ -287,7 +290,7 @@ class social_recon:
             pass
 
         if job_id:
-            self._progress.update(job_id, 90, "ddg")
+            self._progress.update(job_id, 90, "checking online presence")
 
         if len(results) > 100:
             try:
@@ -312,6 +315,9 @@ class social_recon:
                     if job_id and (i == 1 or i == ddg_total or i % 10 == 0):
                         self._progress.update(job_id, 93, f"ddg:merge:{i}/{ddg_total}")
                     meta = item.get("metadata") or {}
+                    meta["status"] = "suggested"
+                    item["metadata"] = meta
+
                     uname = (meta.get("username") or "").lower()
                     handle = (meta.get("social_handle") or meta.get("username") or "").lower()
                     if not uname and not handle:
