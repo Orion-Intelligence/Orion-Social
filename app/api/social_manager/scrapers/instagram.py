@@ -199,7 +199,7 @@ class InstagramScraper(BaseScraper):
                 page.goto(post_url, wait_until="domcontentloaded")
                 page.wait_for_timeout(3000)
 
-                post_data = {"post_url": post_url}
+                post_data = {"status": "active", "post_url": post_url}
 
                 time_elem = page.locator("time").first
                 post_data["datetime"] = time_elem.get_attribute("datetime") if time_elem.count() > 0 else ""
@@ -253,6 +253,7 @@ class InstagramScraper(BaseScraper):
 
             except:
                 collected_posts.append({
+                    "status": "active",
                     "post_url": post_url,
                     "datetime": "",
                     "caption": "",

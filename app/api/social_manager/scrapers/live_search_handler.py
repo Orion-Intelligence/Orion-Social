@@ -71,22 +71,29 @@ class live_search_handler:
                     return real_name
         return title_clean
 
-    def collect_social_handles(self, query: str, threshold: float = 0) -> Dict[str, Any]:
-        query = f'"{query}" social profile'
-        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
+    def collect_social_handles(self, query: str, platform: Optional[str] = None, threshold: float = 0) -> Dict[
+        str, Any]:
+        platform_clean = platform.lower().strip() if platform and platform.lower().strip() not in ("string", "none",
+                                                                                                   "") else None
 
+        search_query = f'site:{platform_clean}.com "{query}"' if platform_clean else f'"{query}" social profile'
+
+        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
         results: List[Dict[str, Any]] = []
         seen_profiles: set[str] = set()
         query_lower = query.lower().strip()
+
         try:
             with DDGS() as ddgs:
-                text_results = ddgs.text(f"{query} social media profile", max_results=30)
+                text_results = ddgs.text(search_query, max_results=30)
                 for r in text_results:
                     url = r.get("href", "")
                     if not url:
                         continue
-                    platform = self.extract_platform_from_url(url)
-                    if platform is None:
+                    extracted_platform = self.extract_platform_from_url(url)
+                    if extracted_platform is None:
+                        continue
+                    if platform_clean and extracted_platform != platform_clean:
                         continue
                     parsed = urlparse(url)
                     platform_url = f"{parsed.scheme}://{parsed.netloc}/"
@@ -96,16 +103,14 @@ class live_search_handler:
                     similarity = difflib.SequenceMatcher(None, username.lower(), query_lower).ratio()
                     if similarity < threshold:
                         continue
-                    profile_key = f"{platform}:{username}"
+                    profile_key = f"{extracted_platform}:{username}"
                     if profile_key in seen_profiles:
                         continue
                     seen_profiles.add(profile_key)
-
-                    if platform in sites:
+                    if platform_clean or extracted_platform in sites:
                         results.append({
                             "metadata": {
-                                "status": "suggested",
-                                "platform": platform,
+                                "platform": extracted_platform,
                                 "username": username,
                                 "social_handle": username,
                                 "url": platform_url,
@@ -132,49 +137,6 @@ class live_search_handler:
                 "results": [],
             }
 
-    def scrape_usernames(self, username: str, platform: str, limit: int = 10) -> Dict[str, Any]:
-        platform = (platform or "").lower().strip()
-        platform_domain = f"{platform}.com" if platform and not platform.endswith(".com") else platform
-        search_query = f'site:{platform_domain} "{username}"'
-        profiles = []
-        seen_usernames = set()
-        try:
-            with DDGS() as ddgs:
-                text_results = ddgs.text(search_query, max_results=limit * 3)
-                for r in text_results:
-                    if len(profiles) >= limit:
-                        break
-                    url = r.get("href")
-                    if not url or platform_domain not in url:
-                        continue
-                    extracted_username = self.extract_username_from_url(url)
-                    if not extracted_username or extracted_username in seen_usernames:
-                        continue
-                    seen_usernames.add(extracted_username)
-                    profiles.append({
-                        "username": extracted_username,
-                        "real_name": self.extract_real_name(r.get("title", "")),
-                        "profile_url": url,
-                        "title": r.get("title", ""),
-                        "snippet": r.get("body", ""),
-                        "platform": platform,
-                    })
-            return {
-                "searched_username": username,
-                "platform": platform,
-                "total_found": len(profiles),
-                "usernames": list(seen_usernames),
-                "profiles": profiles,
-            }
-        except Exception as e:
-            return {
-                "searched_username": username,
-                "platform": platform,
-                "error": str(e),
-                "total_found": 0,
-                "usernames": [],
-                "profiles": [],
-            }
 
     def scrape_images(self, username: str, platform: str, limit: int = 10) -> Dict[str, Any]:
         platform = (platform or "").lower().strip()
@@ -224,11 +186,13 @@ class live_search_handler:
         except Exception:
             return False
 
-    def search_web(self, query: str) -> Dict[str, Any]:
+    def search_web(self, query: str, platform: Optional[str] = None) -> Dict[str, Any]:
+        search_query = f'site:{platform.lower().strip()}.com {query}' if platform else query
         results: List[Dict[str, Any]] = []
+
         try:
             with DDGS() as ddgs:
-                text_results = ddgs.text(query, max_results=20)
+                text_results = ddgs.text(search_query, max_results=20)
                 for r in text_results:
                     url = r.get("href", "")
                     if not url:
@@ -252,4 +216,107 @@ class live_search_handler:
                 "total_found": 0,
                 "timestamp": self.timestamp,
                 "results": [],
+            }
+
+    def scrape_profile(self, username: str, platform: Optional[str] = None) -> Dict[str, Any]:
+        platform_clean = (platform or "").lower().strip()
+
+        if platform_clean:
+            search_query = f'{username} {platform_clean} profile'
+        else:
+            search_query = f'{username} social media profile'
+
+        try:
+            with DDGS() as ddgs:
+                text_results = ddgs.text(search_query, max_results=15)
+                for r in text_results:
+                    url = r.get("href", "")
+                    if not url:
+                        continue
+                    extracted_platform = self.extract_platform_from_url(url)
+                    if not extracted_platform:
+                        continue
+                    if platform_clean and extracted_platform != platform_clean:
+                        continue
+                    if username.lower() not in url.lower():
+                        continue
+                    extracted_username = self.extract_username_from_url(url)
+                    if not extracted_username:
+                        extracted_username = username
+                    parsed = urlparse(url)
+                    profile_url = f"{parsed.scheme}://{parsed.netloc}/{extracted_username}"
+                    title = r.get("title", "")
+                    snippet = r.get("body", "")
+                    real_name = self.extract_real_name(title)
+                    return {
+                        "profile": {
+                            "real_name": real_name or "",
+                            "bio": snippet or "",
+                            "location": "",
+                            "total_posts": "",
+                            "total_followers": "",
+                            "total_following": "",
+                            "profile_url": profile_url,
+                        },
+                        "platform": extracted_platform,
+                        "username": extracted_username,
+                        "status": "suggested",
+                    }
+            return {
+                "profile": None,
+                "platform": platform_clean,
+                "username": username,
+                "status": "suggested",
+            }
+        except Exception:
+            return {
+                "profile": None,
+                "platform": platform_clean,
+                "username": username,
+                "status": "suggested",
+            }
+
+    def scrape_posts_search(self, username: str, platform: Optional[str] = None, max_posts: int = 10) -> Dict[str, Any]:
+        platform_str = (platform or "").lower().strip()
+        if platform_str:
+            search_query = f'site:{platform_str}.com "{username}" posts OR status OR video'
+        else:
+            search_query = f'"{username}" posts OR status OR video social'
+        posts = []
+        try:
+            with DDGS() as ddgs:
+                text_results = ddgs.text(search_query, max_results=max_posts * 2)
+                for r in text_results:
+                    if len(posts) >= max_posts:
+                        break
+                    url = r.get("href", "")
+                    if not url:
+                        continue
+                    posts.append({
+                        "status": "suggested",
+                        "post_url": url,
+                        "datetime": None,
+                        "caption": r.get("body", ""),
+                        "media_url": None,
+                        "media_type": None,
+                        "comments": "0",
+                        "likes": "0",
+                        "retweets": None,
+                        "views": None,
+                    })
+            return {
+                "username": username,
+                "platform": platform_str,
+                "posts": posts,
+                "total_count": len(posts),
+                "status": "suggested",
+            }
+        except Exception as e:
+            return {
+                "username": username,
+                "platform": platform_str,
+                "posts": [],
+                "total_count": 0,
+                "error": str(e),
+                "status": "suggested",
             }

@@ -89,7 +89,7 @@ class TwitterScraper(BaseScraper):
                     continue
 
                 seen_post_urls.add(full_url)
-                post_data = {"post_url": full_url}
+                post_data = {"status": "active", "post_url": full_url}
 
                 time_elem = tweet.locator('time').first
                 post_data["datetime"] = (

@@ -77,6 +77,7 @@ class BaseScraper(ABC):
 
             result["platform"] = self.name.lower()
             result["username"] = self._username
+            result["status"] = "active"
 
             return result
         except Exception:
