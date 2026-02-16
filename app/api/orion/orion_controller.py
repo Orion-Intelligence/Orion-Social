@@ -32,7 +32,7 @@ class orion_controller:
                 return {"job_id": job_id, "result": result.get("data") if isinstance(result, dict) else result}
 
             if state["status"] == "pending":
-                return {"job_id": job_id, "status": "pending", "progress": state.get("progress", 0), "step": state.get("step", "")}
+                return {"job_id": job_id, "status": "pending", "progress": state.get("progress", 5), "step": state.get("step", "")}
 
             if state["status"] == "error":
                 return {"job_id": job_id, "status": "error", "message": state.get("error", "error")}
@@ -41,7 +41,7 @@ class orion_controller:
             self.progress.update(job_id, 0, "queued")
 
             asyncio.create_task(self._run_job(job_id, command, data, timeout))
-            return {"job_id": job_id, "status": "pending", "progress": 0, "step": "queued"}
+            return {"job_id": job_id, "status": "pending", "progress": 5, "step": "queued"}
 
         except HTTPException:
             self.progress.error(job_id, "timeout")

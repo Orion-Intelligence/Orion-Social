@@ -7,8 +7,10 @@ sherlock-project
 maigret
 rapidfuzz
 holehe
-socialscan
 email-validator
 ddgs
 requests
 beautifulsoup4
+tranco
+PicImageSearch
+tldextract

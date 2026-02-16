@@ -4,6 +4,8 @@ import re
 import shutil
 import subprocess
 import time
+import uuid
+from urllib.parse import urlparse
 
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.scrapers.live_search_handler import live_search_handler
@@ -41,6 +43,24 @@ class social_recon:
             if (v or {}).get("http_status") is not None:
                 item["http_status"] = (v or {}).get("http_status")
             out[site_name] = item
+        return out
+
+    def _dedup_results(self, results: list) -> list:
+        seen = set()
+        out = []
+        for r in results or []:
+            meta = (r or {}).get("metadata") or {}
+            plat = (meta.get("platform") or "").strip().lower()
+            uname = (meta.get("username") or "").strip().lower()
+            handle = (meta.get("social_handle") or "").strip().lower()
+            ident = uname or handle
+            if not plat or not ident:
+                continue
+            k = (plat, ident)
+            if k in seen:
+                continue
+            seen.add(k)
+            out.append(r)
         return out
 
     def run_maigret_on_platform(self, username: str, platform: str, job_id: str | None = None):
@@ -118,10 +138,14 @@ class social_recon:
                 match = re.search(r"https?://\S+", s)
                 if match:
                     url = match.group(0).rstrip("/")
-                    domain = url.split("/")[2].replace("www.", "")
-                    platform = domain.split(".")[0].capitalize()
-                    user_match = re.search(r"/([^/]+?)(?:/)?$", url)
-                    user = user_match.group(1) if user_match else username
+                    parsed = urlparse(url)
+                    host = (parsed.netloc or "").split(":")[0]
+                    host_no_www = host[4:] if host.startswith("www.") else host
+                    parts = host_no_www.split(".")
+                    platform_key = parts[-2] if len(parts) >= 2 else (parts[0] if parts else "")
+                    platform = platform_key.capitalize() if platform_key else ""
+                    path = (parsed.path or "").strip("/")
+                    user = path.split("/")[-1] if path else username
                     profiles.append({"platform": platform, "username": user, "url": url})
 
         if job_id:
@@ -203,7 +227,8 @@ class social_recon:
             scanned_maigret.add(plat_lower)
 
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
+            if str(uname).__contains__("discord"):
+                pass
             results.append(
                 {
                     "metadata": {
@@ -307,8 +332,10 @@ class social_recon:
                     meta = r.get("metadata") or {}
                     uname = (meta.get("username") or "").lower()
                     handle = (meta.get("social_handle") or "").lower()
-                    if uname or handle:
-                        existing_keys.add((uname, handle))
+                    plat = (meta.get("platform") or "").lower()
+                    ident = uname or handle
+                    if plat and ident:
+                        existing_keys.add((plat, ident))
 
                 ddg_total = len(ddg_results) or 1
                 for i, item in enumerate(ddg_results, start=1):
@@ -318,11 +345,13 @@ class social_recon:
                     meta["status"] = "suggested"
                     item["metadata"] = meta
 
+                    plat = (meta.get("platform") or "").lower()
                     uname = (meta.get("username") or "").lower()
                     handle = (meta.get("social_handle") or meta.get("username") or "").lower()
-                    if not uname and not handle:
+                    ident = uname or handle
+                    if not plat or not ident:
                         continue
-                    k = (uname, handle)
+                    k = (plat, ident)
                     if k in existing_keys:
                         continue
                     existing_keys.add(k)
@@ -338,7 +367,7 @@ class social_recon:
         if job_id:
             self._progress.update(job_id, 95, "finalizing")
 
-        return results
+        return self._dedup_results(results)
 
     def parse_email(self, email: str, mode: str = "default", job_id: str | None = None):
         email = (email or "").strip().lower()
@@ -395,6 +424,7 @@ class social_recon:
                 d = r["data"]
                 if d and len(d) == 1:
                     r["data"] = next(iter(d.values()))
+            pivot_results = self._dedup_results(pivot_results)
 
         if job_id:
             self._progress.update(job_id, 95, "finalizing")
@@ -518,9 +548,85 @@ class social_recon:
             self._progress.update(job_id, 3, "detect:username")
         return self.parse_username(v, mode=mode, job_id=job_id)
 
+    def parse_image(self, file_bytes: bytes, filename: str | None = None, job_id: str | None = None):
+        if not file_bytes:
+            if job_id:
+                self._progress.update(job_id, 100, "empty:image")
+            return []
+
+        if job_id:
+            self._progress.update(job_id, 2, "init:image")
+
+        try:
+            tmp_dir = "tmp_uploads"
+            os.makedirs(tmp_dir, exist_ok=True)
+
+            ext = os.path.splitext(filename or "")[1] or ".jpg"
+            tmp_path = os.path.join(tmp_dir, f"{uuid.uuid4().hex}{ext}")
+
+            with open(tmp_path, "wb") as f:
+                f.write(file_bytes)
+
+            if job_id:
+                self._progress.update(job_id, 10, "image:search")
+
+            ddg = live_search_handler()
+            payload = ddg.extract_accounts_from_image(tmp_path) or {}
+            results = payload.get("results") if isinstance(payload, dict) else payload
+            if not results:
+                results = []
+
+            if job_id:
+                self._progress.update(job_id, 40, f"image:found:{len(results)}")
+
+            existing_keys: set[tuple[str, str]] = set()
+            merged = []
+
+            total = len(results) or 1
+            for i, item in enumerate(results, start=1):
+                if job_id and (i == 1 or i == total or i % 10 == 0):
+                    self._progress.update(job_id, 40 + int((i / total) * 40), f"image:merge:{i}/{total}")
+
+                meta = item.get("metadata") or {}
+                plat = (meta.get("platform") or "").strip().lower()
+                uname = (meta.get("username") or "").strip().lower()
+                handle = (meta.get("social_handle") or "").strip().lower()
+                ident = uname or handle
+
+                if not plat or not ident:
+                    continue
+
+                k = (plat, ident)
+                if k in existing_keys:
+                    continue
+
+                existing_keys.add(k)
+                meta["status"] = meta.get("status") or "suggested"
+                item["metadata"] = meta
+                merged.append(item)
+
+            if job_id:
+                self._progress.update(job_id, 90, "image:dedup")
+
+            merged = self._dedup_results(merged)
+
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
+
+            if job_id:
+                self._progress.update(job_id, 95, "finalizing")
+
+            return merged
+
+        except Exception:
+            if job_id:
+                self._progress.update(job_id, 95, "image:error")
+            return []
 
 if __name__ == "__main__":
     recon = social_recon()
-    data = "manan"
+    data = "kakori_jaipur"
     results = recon.parse(data, mode="default", job_id=None)
     print(json.dumps(results, indent=2, ensure_ascii=False))

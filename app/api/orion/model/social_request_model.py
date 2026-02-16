@@ -15,7 +15,6 @@ class SocialProfileRequest(BaseModel):
             return None
         return value.lower()
 
-
 class SocialFollowersRequest(BaseModel):
     platform: str = Field(..., min_length=1)
     username: str = Field(..., min_length=1)

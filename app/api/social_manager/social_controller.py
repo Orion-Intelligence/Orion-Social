@@ -175,6 +175,22 @@ class social_controller:
                 self._progress.error(self.job_id, str(exc))
                 raise
 
+        if command == SOCIAL_REQUEST_COMMANDS.S_RECON_IMAGE:
+            self.init_job(data.get("job_id"), command)
+            try:
+                file_bytes = data.get("file_bytes")
+                filename = data.get("filename")
+                if not file_bytes:
+                    result = {"status": "error", "message": "image_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = {"status": "success", "platform": "recon_image", "data": self._recon.parse_image(file_bytes, filename=filename, job_id=self.job_id)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
         if command == SOCIAL_REQUEST_COMMANDS.S_POSTS:
             self.init_job(data.get("job_id"), command)
             try:

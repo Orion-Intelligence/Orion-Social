@@ -1,12 +1,13 @@
+import asyncio
 import difflib
 
+from PicImageSearch import Yandex
 from ddgs import DDGS
 from typing import Dict, Any, Optional, List
 from urllib.parse import urlparse
 from datetime import datetime, timezone
-
 from api.social_manager.social_enums import SITE_DATA
-
+import tldextract
 
 class live_search_handler:
     def __init__(self) -> None:
@@ -137,10 +138,93 @@ class live_search_handler:
                 "results": [],
             }
 
+    def extract_accounts_from_image(self, image_path: str, threshold: float = 0.0) -> list[dict]:
+        print("0:::::::::::::::::::::::::::::::", flush=True)
+        print("0:::::::::::::::::::::::::::::::", flush=True)
+        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
+        results = []
+
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+            yandex = Yandex()
+            resp = loop.run_until_complete(yandex.search(file=image_path))
+            loop.close()
+
+            raw = getattr(resp, "raw", None) or []
+            pages = []
+
+            for item in raw:
+                u = (
+                    item.get("url") or item.get("link") or item.get("source") or ""
+                    if isinstance(item, dict)
+                    else getattr(item, "url", "") or getattr(item, "link", "") or getattr(item, "source", "") or ""
+                )
+                if u:
+                    pages.append(u)
+
+            seen = set()
+
+            for url in pages:
+                parsed = urlparse(url)
+                base_url = f"{parsed.scheme}://{parsed.netloc}/"
+
+                platform = self.extract_platform_from_url(url)
+                username = self.extract_username_from_url(url)
+
+                if platform and platform.lower() in sites:
+                    social_handle = platform
+                else:
+                    ext = tldextract.extract(parsed.netloc)
+                    if not ext.domain or not ext.suffix:
+                        continue
+                    platform = f"{ext.domain}.{ext.suffix}"
+                    social_handle = ""
+
+                ident = (username or social_handle or "").lower()
+                if not ident:
+                    continue
+
+                key = f"{platform}:{ident}"
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                results.append({
+                    "metadata": {
+                        "platform": platform,
+                        "username": username or "",
+                        "social_handle": social_handle,
+                        "url": base_url,
+                        "timestamp": self.timestamp,
+                        "image_path": image_path,
+                    },
+                    "data": {
+                        "title": "",
+                        "snippet": "",
+                        "real_name": None,
+                        "matched_page": url,
+                    },
+                })
+
+            print("1:::::::::::::::::::::::::::::::", flush=True)
+            print("1:::::::::::::::::::::::::::::::", flush=True)
+            print(results, flush=True)
+            print("1:::::::::::::::::::::::::::::::", flush=True)
+            print("1:::::::::::::::::::::::::::::::", flush=True)
+            return results
+
+        except Exception as ex:
+            print("2:::::::::::::::::::::::::::::::", flush=True)
+            print(ex, flush=True)
+            print("2:::::::::::::::::::::::::::::::", flush=True)
+            return []
 
     def scrape_images(self, username: str, platform: str, limit: int = 10) -> Dict[str, Any]:
         platform = (platform or "").lower().strip()
-        search_query = f"{username} {platform}"
+        search_query = f'site:{platform}.com "{username}"'
+
         image_results = []
         try:
             with DDGS() as ddgs:

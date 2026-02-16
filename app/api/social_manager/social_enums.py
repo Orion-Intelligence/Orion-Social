@@ -13,6 +13,7 @@ class SOCIAL_REQUEST_COMMANDS(IntEnum):
     S_POSTS = 9
     S_DDG_USERNAMES = 10
     S_DDG_IMAGES = 11
+    S_RECON_IMAGE = 12
 
 
 class SOCIAL_PLATFORMS:
@@ -35,7 +36,7 @@ class SOCIAL_CONTENT_TYPES:
 
 class SITE_DATA:
     ALL_SITES = [
-        "2Dimensions", "3dnews", "500px", "7Cups", "9GAG", "About.me", "Academia.edu", "Airbnb", "AllMyLinks", "Amino",
+        "upwork", "devpost", "2Dimensions", "3dnews", "500px", "7Cups", "9GAG", "About.me", "Academia.edu", "Airbnb", "AllMyLinks", "Amino",
         "Apple Developer", "Archive.org", "Arduino", "Ask.fm", "Author.today", "Bandcamp", "Beacons.ai", "Behance",
         "Bikemap", "BitBucket", "BitcoinTalk", "Blogger", "BuzzFeed", "CNET", "Canva", "Carbonmade", "Cash.app",
         "Civitai", "Clubhouse", "Coco", "Codeforces", "CodePen", "Coroflot", "Crello", "CurseForge", "DeviantArt",
