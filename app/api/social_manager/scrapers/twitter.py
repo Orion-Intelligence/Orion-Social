@@ -134,6 +134,133 @@ class TwitterScraper(BaseScraper):
                 page.mouse.wheel(0, 900)
                 page.wait_for_timeout(1500)
 
+        # --- Visit each post page and collect comments ---
+        for post_data in collected_posts:
+            post_url = post_data["post_url"]
+            comments_data = []
+
+            try:
+                page.goto(post_url, wait_until="domcontentloaded")
+                page.wait_for_selector('[data-testid="tweet"]', timeout=10000)
+                page.wait_for_timeout(2000)
+
+                seen_comment_keys = set()
+                prev_len = 0
+                no_prog = 0
+                scroll_attempts = 0
+
+                while len(comments_data) < 20 and scroll_attempts < 20:
+                    tweets = page.locator('[data-testid="tweet"]')
+                    count = tweets.count()
+
+                    # index 0 is the original tweet, replies start from index 1
+                    for i in range(1, count):
+                        if len(comments_data) >= 20:
+                            break
+
+                        reply = tweets.nth(i)
+
+                        # --- username ---
+                        username = ""
+                        try:
+                            u_loc = reply.locator(
+                                '[data-testid="User-Name"] div[dir="ltr"] span'
+                            ).filter(has_text="@")
+                            if u_loc.count() > 0:
+                                username = u_loc.first.inner_text().strip().lstrip("@")
+                        except Exception:
+                            pass
+
+                        if not username:
+                            try:
+                                for s in reply.locator('div[dir="ltr"] span').all_inner_texts():
+                                    if s.startswith("@") and len(s) > 1:
+                                        username = s.lstrip("@").strip()
+                                        break
+                            except Exception:
+                                pass
+
+                        if not username:
+                            continue
+
+                        # --- comment text ---
+                        comment_text = ""
+                        try:
+                            t_loc = reply.locator('[data-testid="tweetText"]').first
+                            if t_loc.count() > 0:
+                                comment_text = t_loc.inner_text().strip()
+                        except Exception:
+                            pass
+
+                        # --- media type & url ---
+                        comment_media_type = "text"
+                        comment_media_url = ""
+                        try:
+                            photo_loc = reply.locator('[data-testid="tweetPhoto"]')
+                            if photo_loc.count() > 0:
+                                comment_media_type = "image"
+                                img = photo_loc.locator("img").first
+                                if img.count() > 0:
+                                    comment_media_url = img.get_attribute("src") or ""
+                            else:
+                                video_loc = reply.locator('[data-testid="videoComponent"]')
+                                if video_loc.count() > 0:
+                                    comment_media_type = "video"
+                                    vid = video_loc.locator("video").first
+                                    if vid.count() > 0:
+                                        comment_media_url = vid.get_attribute("poster") or ""
+                        except Exception:
+                            pass
+
+                        # skip completely empty replies
+                        if not comment_text and comment_media_type == "text":
+                            continue
+
+                        dedup_key = f"{username}::{comment_text[:60]}"
+                        if dedup_key in seen_comment_keys:
+                            continue
+                        seen_comment_keys.add(dedup_key)
+
+                        comments_data.append({
+                            "username": username,
+                            "text": comment_text,
+                            "media_type": comment_media_type,
+                            "media_url": comment_media_url,
+                        })
+
+                    if len(comments_data) == prev_len:
+                        no_prog += 1
+                    else:
+                        no_prog = 0
+                        print(f"   Collected {len(comments_data)} comments so far...")
+
+                    prev_len = len(comments_data)
+                    scroll_attempts += 1
+
+                    if no_prog >= 8:
+                        print(f"   No more comments loading. Stopping at {len(comments_data)} comments.")
+                        break
+
+                    if len(comments_data) < 20:
+                        page.mouse.wheel(0, 1200)
+                        page.wait_for_timeout(2000)
+
+            except Exception as e:
+                print(f"   Error collecting comments for {post_url}: {e}")
+                comments_data = []
+
+            post_data["top_commenters"] = [c["username"] for c in comments_data]
+            post_data["comments_text"] = [c["text"] for c in comments_data]
+            post_data["comments_media_type"] = [c["media_type"] for c in comments_data]
+            post_data["comments_media_url"] = [c["media_url"] for c in comments_data]
+
+            print(f"\n📌 {post_url}")
+            print(f"   Comments ({len(comments_data)}):")
+            for i, c in enumerate(comments_data[:10], 1):
+                media_note = f" [{c['media_type']}]" if c["media_type"] != "text" else ""
+                preview = c["text"][:50] if c["text"] else "(image/video only)"
+                print(f"   {i:>2}. @{c['username']}: {preview}...{media_note}")
+
         return collected_posts
 
     def scrape_posts_with_profile(self, page: Page, max_posts: int = 5) -> Dict[str, Any]:
@@ -158,11 +285,30 @@ class TwitterScraper(BaseScraper):
                 m_retweets=post.get("shares", "0"),
                 m_post_views=post.get("views", "0"),
                 m_channel_url=post.get("media_url", ""),
-                m_network=self.seed_url
+                m_network=self.seed_url,
+                m_top_commenters=post.get("top_commenters", []),
+                m_comments_text=post.get("comments_text", []),
             )
 
             self.data.append(card.model_dump())
             cross_platform_mapper.add_card(card)
+
+        print("\n" + "=" * 55)
+        print(f"  COMMENT SUMMARY  —  @{self._username}")
+        print("=" * 55)
+        for i, post in enumerate(posts_data, 1):
+            commenters = post.get("top_commenters", [])
+            texts = post.get("comments_text", [])
+            media_types = post.get("comments_media_type", [])
+            print(f"\n[Post {i}] {post.get('post_url', '')}")
+            if commenters:
+                for j, (u, t, mt) in enumerate(zip(commenters, texts, media_types), 1):
+                    media_note = f" [{mt}]" if mt != "text" else ""
+                    preview = t[:60] if t else "(image/video only)"
+                    print(f"  {j:>2}. @{u}: {preview}{media_note}")
+            else:
+                print("  No comments found.")
+        print("=" * 55 + "\n")
 
         return {
             "profile": profile_data,
