@@ -162,6 +162,20 @@ class social_controller:
                     result = {"status": "error", "message": "username_required", "data": None}
                     self._progress.done(self.job_id, result)
                     return result
+
+                followers_following_supported_platforms = [
+                    SOCIAL_PLATFORMS.INSTAGRAM,
+                    SOCIAL_PLATFORMS.FACEBOOK,
+                    SOCIAL_PLATFORMS.TWITTER,
+                    SOCIAL_PLATFORMS.BEHANCE,
+                    SOCIAL_PLATFORMS.VIMEO,
+                ]
+
+                if command in {SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY, SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY} and platform not in followers_following_supported_platforms:
+                    result = {"status": "success", "data": {}}
+                    self._progress.done(self.job_id, result)
+                    return result
+
                 supported_platforms = [SOCIAL_PLATFORMS.INSTAGRAM, SOCIAL_PLATFORMS.TWITTER, SOCIAL_PLATFORMS.FACEBOOK, SOCIAL_PLATFORMS.TIKTOK]
                 if command == SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY and platform not in supported_platforms:
                     ddg_result = self._ddg.scrape_profile(username, platform)
@@ -223,6 +237,23 @@ class social_controller:
                     self._progress.done(self.job_id, result)
                     return result
                 result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.scrape_images(username, platform or "", limit=10)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_DDG_METADATA:   
+            self.init_job(data.get("job_id"), command)
+            try:
+                tokens = data.get("tokens")
+                username = data.get("username")
+                platform = data.get("platform")
+                if not tokens:
+                    result = {"status": "error", "message": "Please enter at least one token.", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.search_web(tokens, username, platform)}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:

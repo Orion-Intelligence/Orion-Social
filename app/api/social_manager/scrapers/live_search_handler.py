@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from api.social_manager.social_enums import SITE_DATA
 
 
+
 class live_search_handler:
     def __init__(self) -> None:
         self.timestamp = datetime.now(timezone.utc).isoformat()
@@ -186,10 +187,23 @@ class live_search_handler:
         except Exception:
             return False
 
-    def search_web(self, query: str, platform: Optional[str] = None) -> Dict[str, Any]:
-        search_query = f'site:{platform.lower().strip()}.com {query}' if platform else query
-        results: List[Dict[str, Any]] = []
+    def search_web(
+            self,
+            tokens: List[str],
+            username: Optional[str] = None,
+            platform: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        if not tokens:
+            raise ValueError("At least one token must be provided.")
 
+        query_parts = list(tokens)
+        if username:
+            query_parts.append(username)
+
+        query = " ".join(query_parts)
+        search_query = f'site:{platform.lower().strip()}.com {query}' if platform else query
+
+        results: List[Dict[str, Any]] = []
         try:
             with DDGS() as ddgs:
                 text_results = ddgs.text(search_query, max_results=20)
@@ -217,6 +231,7 @@ class live_search_handler:
                 "timestamp": self.timestamp,
                 "results": [],
             }
+
 
     def scrape_profile(self, username: str, platform: Optional[str] = None) -> Dict[str, Any]:
         platform_clean = (platform or "").lower().strip()
@@ -320,3 +335,4 @@ class live_search_handler:
                 "error": str(e),
                 "status": "suggested",
             }
+

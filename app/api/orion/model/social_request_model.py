@@ -49,6 +49,25 @@ class DuckDuckGoImagesRequest(BaseModel):
     platform: Optional[str] = Field(default=None)
 
 
+class DuckDuckGoMetadataRequest(BaseModel):
+    tokens: List[str] = Field(..., min_length=1)
+    username: Optional[str] = Field(default=None)
+    platform: Optional[str] = Field(default=None)
+
+    @field_validator("tokens")
+    def validate_tokens(cls, value: List[str]) -> List[str]:
+        cleaned = [token.strip() for token in value if isinstance(token, str) and token.strip()]
+        if not cleaned:
+            raise ValueError("Please enter at least one token.")
+        return cleaned
+
+    @field_validator("username", "platform", mode="before")
+    def to_lowercase(cls, value: str) -> str:
+        if value is None:
+            return None
+        return value.lower()
+
+
 class SocialTarget(BaseModel):
     usernames: List[str] = Field(..., min_length=1)
     platform: str

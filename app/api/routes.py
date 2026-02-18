@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.orion.model.social_request_model import SocialReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest
+from api.orion.model.social_request_model import SocialReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
 
@@ -16,6 +16,7 @@ class SocialRoutes:
         self.router.add_api_route("/social/posts", self.social_posts, methods=["POST"])
         self.router.add_api_route("/social/duckduckgo/usernames", self.duckduckgo_usernames, methods=["POST"])
         self.router.add_api_route("/social/duckduckgo/images", self.duckduckgo_images, methods=["POST"])
+        self.router.add_api_route("/social/metadata", self.metadata, methods=["POST"])
 
 
     async def social_recon(self, p: SocialReconRequest):
@@ -50,3 +51,7 @@ class SocialRoutes:
     async def duckduckgo_images(self, p: DuckDuckGoImagesRequest):
         job_id = str(hash(f"ddg_images:{p.platform}:{p.username}"))
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_DDG_IMAGES, {"job_id": job_id, "platform": p.platform, "username": p.username})
+
+    async def metadata(self, p: DuckDuckGoMetadataRequest):
+        job_id = str(hash(f"ddg_metadata:{p.platform}:{p.username}:{p.tokens}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_DDG_METADATA, {"job_id": job_id, "platform": p.platform, "username": p.username, "tokens": p.tokens})
