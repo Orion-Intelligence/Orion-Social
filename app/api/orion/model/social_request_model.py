@@ -34,10 +34,13 @@ class SocialPostsRequest(BaseModel):
     max_posts: int = Field(default=5, ge=1, le=100)
 
     @field_validator("platform", "username", mode="before")
-    def to_lowercase(cls, value: str) -> str:
+    def sanitize(cls, value: str) -> str:
         if value is None:
             return None
-        return value.lower()
+        value = value.strip().lower()
+        if " " in value:
+            raise ValueError("must not contain spaces")
+        return value
 
 class DuckDuckGoUsernamesRequest(BaseModel):
     username: str = Field(..., min_length=1)

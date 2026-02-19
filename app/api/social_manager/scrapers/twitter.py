@@ -242,8 +242,7 @@ class TwitterScraper(BaseScraper):
 
             post_data["top_commenters"] = [c["username"] for c in comments_data]
             post_data["comments_text"] = [c["text"] for c in comments_data]
-            post_data["comments_media_type"] = [c["media_type"] for c in comments_data]
-            post_data["comments_media_url"] = [c["media_url"] for c in comments_data]
+
 
         return collected_posts
 

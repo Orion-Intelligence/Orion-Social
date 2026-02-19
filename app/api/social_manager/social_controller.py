@@ -75,7 +75,7 @@ class social_controller:
         else:
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
         if hasattr(scraper, "scrape_posts"):
-            return {"status": "success", "platform": scraper.name, "data": scraper.scrape_posts(page, max_posts)}
+            return {"status": "active", "platform": scraper.name, "data": scraper.scrape_posts(page, max_posts)}
         return {"status": "error", "message": "posts_not_supported", "platform": scraper.name}
 
     def _scrape_user(self, platform, username, max_followers, max_following) -> Dict[str, Any]:
@@ -195,17 +195,22 @@ class social_controller:
                 username = data.get("username")
                 platform = data.get("platform")
                 max_posts = data.get("max_posts", 5)
+                username = (username or "").strip()
                 if not username:
                     result = {"status": "error", "message": "username_required", "data": None}
                     self._progress.done(self.job_id, result)
                     return result
-                supported_platforms = [SOCIAL_PLATFORMS.INSTAGRAM, SOCIAL_PLATFORMS.TWITTER, SOCIAL_PLATFORMS.FACEBOOK]
-                if platform not in supported_platforms:
-                    ddg_result = self._ddg.scrape_posts_search(username, platform, max_posts)
-                    result = {"status": "suggested", "data": ddg_result}
+                if " " in username:
+                    result = {"status": "error", "message": "invalid_username", "data": None}
                     self._progress.done(self.job_id, result)
                     return result
-                result = self._scrape_posts(platform, username, max_posts)
+                native_platforms = [SOCIAL_PLATFORMS.INSTAGRAM, SOCIAL_PLATFORMS.TWITTER, SOCIAL_PLATFORMS.FACEBOOK]
+                if platform in native_platforms:
+                    result = self._scrape_posts(platform, username, max_posts)
+                    self._progress.done(self.job_id, result)
+                    return result
+                ddg_result = self._ddg.scrape_posts_search(username, platform, max_posts)
+                result = {"status": "suggested", "data": ddg_result}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
