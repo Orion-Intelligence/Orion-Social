@@ -104,7 +104,15 @@ class FacebookScraper(BaseScraper):
         processed_post_ids = set()
 
         while len(posts_data) < max_posts:
-            post_elements = page.query_selector_all('div[role="article"]')
+            all_articles = page.query_selector_all('div[role="article"]')
+
+            post_elements = [
+                el for el in all_articles
+                if not (el.get_attribute("aria-label") or "").startswith("Comment by")
+                   and el.query_selector('div[data-ad-preview="message"], div[data-ad-comet-preview="message"]')
+            ]
+
+            found_new = False
 
             for post in post_elements:
                 if len(posts_data) >= max_posts:
@@ -112,22 +120,27 @@ class FacebookScraper(BaseScraper):
 
                 post_text_el = post.query_selector('div[data-ad-preview="message"]')
                 if not post_text_el:
-                    post_text_el = post.query_selector('div[dir="auto"][style]')
-                caption = post_text_el.inner_text().strip() if post_text_el else ""
+                    post_text_el = post.query_selector('div[data-ad-comet-preview="message"]')
+                if not post_text_el:
+                    continue
+
+                caption = post_text_el.inner_text().strip()
+                if not caption:
+                    continue
 
                 post_id = hash(caption[:100])
-                if post_id in processed_post_ids or not caption:
+                if post_id in processed_post_ids:
                     continue
+
                 processed_post_ids.add(post_id)
+                found_new = True
 
                 img_el = post.query_selector('img[data-imgperflogname="feedImage"]')
                 media_url = img_el.get_attribute('src') if img_el else ""
 
-
                 reaction_el = post.query_selector(
                     '[aria-label^="All reactions"] .x135b78x, .xt0b8zv.x1jx94hy .x135b78x')
                 reaction_val = reaction_el.inner_text().strip() if reaction_el else "0"
-
 
                 stats_spans = post.query_selector_all('span.xkrqix3.x1sur9pj')
                 total_comments_feed = "0"
@@ -140,94 +153,99 @@ class FacebookScraper(BaseScraper):
                         total_shares_feed = txt.split()[0]
 
                 commenters = []
+
                 try:
-                    comment_btn = post.query_selector('[aria-label*="comment"], [aria-label*="Comment"]')
+                    comment_btn = None
+                    for span in stats_spans:
+                        if "comment" in span.inner_text().lower():
+                            comment_btn = span
+                            break
+
                     if not comment_btn:
-                        for span in stats_spans:
-                            if "comment" in span.inner_text().lower():
-                                comment_btn = span
-                                break
+                        comment_btn = post.query_selector('[aria-label*="comment"], [aria-label*="Comment"]')
 
                     if comment_btn:
                         comment_btn.click()
                         page.wait_for_timeout(3000)
 
-                        modal = page.query_selector('div[role="dialog"]')
-                        scroll_target = modal if modal else page
+                        modal = None
+                        for _ in range(10):
+                            modal = page.query_selector('div[role="dialog"]')
+                            if modal:
+                                break
+                            page.wait_for_timeout(500)
 
-                        seen_comment_keys = set()
-                        no_progress_count = 0
-                        prev_count = 0
-                        scroll_attempts = 0
+                        if modal:
+                            seen_comment_keys = set()
+                            no_progress_count = 0
+                            prev_count = 0
+                            scroll_attempts = 0
 
-                        while len(commenters) < 20 and scroll_attempts < 25:
-                            comment_articles = page.query_selector_all(
-                                'div[role="article"][aria-label*="Comment by"]'
-                            )
+                            while len(commenters) < 20 and scroll_attempts < 25:
+                                comment_articles = modal.query_selector_all(
+                                    'div[role="article"][aria-label*="Comment by"]'
+                                )
 
-                            for article in comment_articles:
-                                if len(commenters) >= 20:
+                                for article in comment_articles:
+                                    if len(commenters) >= 20:
+                                        break
+
+                                    author_el = article.query_selector('a[role="link"] span[dir="auto"]')
+                                    if not author_el:
+                                        author_el = article.query_selector('a[role="link"] span.x3nfvp2 span')
+                                    username = author_el.inner_text().strip() if author_el else ""
+
+                                    if not username:
+                                        continue
+
+                                    text_el = article.query_selector('div[dir="auto"] > div[dir="auto"]')
+                                    if not text_el:
+                                        text_el = article.query_selector('div[dir="auto"]')
+                                    comment_text = text_el.inner_text().strip() if text_el else ""
+
+                                    if not comment_text:
+                                        continue
+
+                                    dedup_key = f"{username}::{comment_text[:80]}"
+                                    if dedup_key in seen_comment_keys:
+                                        continue
+                                    seen_comment_keys.add(dedup_key)
+
+                                    commenters.append({
+                                        "username": username,
+                                        "text": comment_text
+                                    })
+
+                                if len(commenters) == prev_count:
+                                    no_progress_count += 1
+                                else:
+                                    no_progress_count = 0
+
+                                prev_count = len(commenters)
+                                scroll_attempts += 1
+
+                                if no_progress_count >= 5:
                                     break
 
-                                author_el = article.query_selector(
-                                    'a[role="link"] span[dir="auto"]'
-                                )
-                                if not author_el:
-                                    author_el = article.query_selector('a[role="link"] span.x3nfvp2 span')
-                                username = author_el.inner_text().strip() if author_el else ""
+                                if len(commenters) < 20:
+                                    page.evaluate('el => el.scrollBy(0, 1200)', modal)
+                                    page.wait_for_timeout(2000)
 
-                                if not username:
-                                    continue
-
-                                text_el = article.query_selector(
-                                    'div[dir="auto"] > div[dir="auto"]'
-                                )
-                                if not text_el:
-                                    text_el = article.query_selector('div[dir="auto"]')
-                                comment_text = text_el.inner_text().strip() if text_el else ""
-
-                                if not comment_text:
-                                    continue
-
-                                dedup_key = f"{username}::{comment_text[:80]}"
-                                if dedup_key in seen_comment_keys:
-                                    continue
-                                seen_comment_keys.add(dedup_key)
-
-                                commenters.append({
-                                    "username": username,
-                                    "text": comment_text
-                                })
-
-                            if len(commenters) == prev_count:
-                                no_progress_count += 1
-                            else:
-                                no_progress_count = 0
-
-                            prev_count = len(commenters)
-                            scroll_attempts += 1
-
-                            if no_progress_count >= 5:
-                                break
-
-                            if len(commenters) < 20:
-                                if modal:
-                                    page.evaluate(
-                                        'el => el.scrollBy(0, 1200)',
-                                        modal
-                                    )
-                                else:
-                                    page.mouse.wheel(0, 1200)
-                                page.wait_for_timeout(2000)
-
-                        page.keyboard.press("Escape")
-                        page.wait_for_timeout(1500)
+                    page.keyboard.press("Escape")
+                    for _ in range(10):
+                        if not page.query_selector('div[role="dialog"]'):
+                            break
+                        page.wait_for_timeout(500)
+                    page.wait_for_timeout(500)
 
                 except Exception as e:
                     print(f"Error scraping comments: {e}")
                     try:
                         page.keyboard.press("Escape")
-                        page.wait_for_timeout(1000)
+                        for _ in range(10):
+                            if not page.query_selector('div[role="dialog"]'):
+                                break
+                            page.wait_for_timeout(500)
                     except Exception:
                         pass
 
@@ -245,6 +263,9 @@ class FacebookScraper(BaseScraper):
             if len(posts_data) < max_posts:
                 page.mouse.wheel(0, 2500)
                 page.wait_for_timeout(3000)
+                if not found_new:
+                    print("No new posts found after scroll, stopping.")
+                    break
 
         return posts_data
 
