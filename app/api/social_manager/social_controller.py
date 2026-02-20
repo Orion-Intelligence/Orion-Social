@@ -13,6 +13,7 @@ from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers.twitter import TwitterScraper
 from api.social_manager.scrapers.tiktok import TikTokScraper
+from api.social_manager.scrapers._youtube import YoutubeScraper
 from api.social_manager.scrapers.live_search_handler import live_search_handler
 from api.social_manager.models import social_model
 
@@ -46,6 +47,8 @@ class social_controller:
             scraper = TwitterScraper(username, max_followers, max_following)
         elif platform == SOCIAL_PLATFORMS.TIKTOK:
             scraper = TikTokScraper(username, max_followers, max_following)
+        elif platform == SOCIAL_PLATFORMS.YOUTUBE:
+            scraper = YoutubeScraper(username, max_followers, max_following)
 
         if scraper and hasattr(scraper, 'set_scope'):
             scraper.set_scope(self.command)
@@ -176,7 +179,13 @@ class social_controller:
                     self._progress.done(self.job_id, result)
                     return result
 
-                supported_platforms = [SOCIAL_PLATFORMS.INSTAGRAM, SOCIAL_PLATFORMS.TWITTER, SOCIAL_PLATFORMS.FACEBOOK, SOCIAL_PLATFORMS.TIKTOK]
+                supported_platforms = [
+                    SOCIAL_PLATFORMS.INSTAGRAM,
+                    SOCIAL_PLATFORMS.TWITTER,
+                    SOCIAL_PLATFORMS.FACEBOOK,
+                    SOCIAL_PLATFORMS.TIKTOK,
+                    SOCIAL_PLATFORMS.YOUTUBE,
+                ]
                 if command == SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY and platform not in supported_platforms:
                     ddg_result = self._ddg.scrape_profile(username, platform)
                     result = {"status": "suggested", "data": ddg_result}
@@ -204,7 +213,12 @@ class social_controller:
                     result = {"status": "error", "message": "invalid_username", "data": None}
                     self._progress.done(self.job_id, result)
                     return result
-                native_platforms = [SOCIAL_PLATFORMS.INSTAGRAM, SOCIAL_PLATFORMS.TWITTER, SOCIAL_PLATFORMS.FACEBOOK]
+                native_platforms = [
+                    SOCIAL_PLATFORMS.INSTAGRAM,
+                    SOCIAL_PLATFORMS.TWITTER,
+                    SOCIAL_PLATFORMS.FACEBOOK,
+                    SOCIAL_PLATFORMS.YOUTUBE,
+                ]
                 if platform in native_platforms:
                     result = self._scrape_posts(platform, username, max_posts)
                     self._progress.done(self.job_id, result)
