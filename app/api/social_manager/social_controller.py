@@ -210,7 +210,11 @@ class social_controller:
                     self._progress.done(self.job_id, result)
                     return result
                 ddg_result = self._ddg.scrape_posts_search(username, platform, max_posts)
-                result = {"status": "suggested", "data": ddg_result}
+                result = {
+                    "status": "suggested",
+                    "platform": platform,
+                    "data": ddg_result.get("posts", []),
+                }
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:

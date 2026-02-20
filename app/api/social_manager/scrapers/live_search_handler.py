@@ -188,10 +188,10 @@ class live_search_handler:
             return False
 
     def search_web(
-            self,
-            tokens: List[str],
-            username: Optional[str] = None,
-            platform: Optional[str] = None,
+        self,
+        tokens: List[str],
+        username: Optional[str] = None,
+        platform: Optional[str] = None,
     ) -> Dict[str, Any]:
         if not tokens:
             raise ValueError("At least one token must be provided.")
@@ -310,14 +310,16 @@ class live_search_handler:
                     posts.append({
                         "status": "suggested",
                         "post_url": url,
-                        "datetime": None,
+                        "datetime": "",
                         "caption": r.get("body", ""),
-                        "media_url": None,
-                        "media_type": None,
+                        "media_url": "",
+                        "media_type": "text",
                         "comments": "0",
                         "likes": "0",
-                        "retweets": None,
-                        "views": None,
+                        "shares": "0",
+                        "views": "0",
+                        "top_commenters": [],
+                        "comments_text": [],
                     })
             return {
                 "username": username,

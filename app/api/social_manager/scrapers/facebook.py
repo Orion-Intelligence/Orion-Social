@@ -250,14 +250,18 @@ class FacebookScraper(BaseScraper):
                         pass
 
                 posts_data.append({
+                    "status": "active",
+                    "post_url": self.seed_url,
+                    "datetime": "",
                     "caption": caption,
                     "media_url": media_url,
-                    "total_reactions": reaction_val,
-                    "total_comments": total_comments_feed,
-                    "total_shares": total_shares_feed,
+                    "media_type": "image" if media_url else "text",
+                    "comments": total_comments_feed or "0",
+                    "likes": reaction_val or "0",
+                    "shares": total_shares_feed or "0",
+                    "views": "0",
                     "top_commenters": [c["username"] for c in commenters],
                     "comments_text": [c["text"] for c in commenters],
-                    "profile_url": self.seed_url
                 })
 
             if len(posts_data) < max_posts:
