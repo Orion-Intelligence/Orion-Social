@@ -345,7 +345,7 @@ class InstagramScraper(BaseScraper):
                     "comments": "0",
                     "shares": "0",
                     "views": "0",
-                    "top_commenters": [],
+                    "connections": [],
                     "comments_text": []
                 })
 

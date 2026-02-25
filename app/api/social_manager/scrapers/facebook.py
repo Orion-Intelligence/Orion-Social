@@ -260,7 +260,7 @@ class FacebookScraper(BaseScraper):
                     "likes": reaction_val or "0",
                     "shares": total_shares_feed or "0",
                     "views": "0",
-                    "top_commenters": [c["username"] for c in commenters],
+                    "connections": [c["username"] for c in commenters],
                     "comments_text": [c["text"] for c in commenters],
                 })
 
