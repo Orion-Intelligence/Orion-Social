@@ -193,15 +193,27 @@ class live_search_handler:
         username: Optional[str] = None,
         platform: Optional[str] = None,
     ) -> Dict[str, Any]:
-        if not tokens:
-            raise ValueError("At least one token must be provided.")
+        username_clean = (username or "").strip()
+        clean_tokens = [token.strip() for token in tokens if token and token.strip()] if tokens else []
+        platform_clean = (platform or "").lower().strip()
 
-        query_parts = list(tokens)
-        if username:
-            query_parts.append(username)
+        if not username_clean or not clean_tokens:
+            query_parts = list(clean_tokens)
+            if username_clean:
+                query_parts.append(username_clean)
+            query = " ".join(query_parts)
+            return {
+                "query": query,
+                "total_found": 0,
+                "timestamp": self.timestamp,
+                "results": [],
+            }
+
+        query_parts = list(clean_tokens)
+        query_parts.append(username_clean)
 
         query = " ".join(query_parts)
-        search_query = f'site:{platform.lower().strip()}.com {query}' if platform else query
+        search_query = f'site:{platform_clean}.com {query}' if platform_clean else query
 
         results: List[Dict[str, Any]] = []
         try:
@@ -211,10 +223,19 @@ class live_search_handler:
                     url = r.get("href", "")
                     if not url:
                         continue
+
+                    title = r.get("title", "")
+                    snippet = r.get("body", "")
+                    haystack = f"{title} {snippet} {url}".lower()
+                    if username_clean.lower() not in haystack:
+                        continue
+                    if not any(token.lower() in haystack for token in clean_tokens):
+                        continue
+
                     results.append({
-                        "title": r.get("title", ""),
+                        "title": title,
                         "url": url,
-                        "snippet": r.get("body", ""),
+                        "snippet": snippet,
                         "timestamp": self.timestamp,
                     })
             return {
