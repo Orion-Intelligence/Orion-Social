@@ -35,7 +35,7 @@ class social_model(BaseModel):
     m_likes: Optional[str] = None
     m_retweets: Optional[str] = None
     m_likers: List[str] = Field(default_factory=list)
-    m_top_commenters: List[str] = Field(default_factory=list)
+    m_connections: List[str] = Field(default_factory=list)
     m_comments_text: List[str] = Field(default_factory=list)
     m_mutual_usernames: List[str] = Field(default_factory=list)
 
