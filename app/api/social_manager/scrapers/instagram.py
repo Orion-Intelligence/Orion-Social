@@ -322,7 +322,7 @@ class InstagramScraper(BaseScraper):
                     print(f"   Error collecting comments: {e}")
                     comments_data = []
 
-                post_data["top_commenters"] = [c["username"] for c in comments_data]
+                post_data["connections"] = [c["username"] for c in comments_data]
                 post_data["comments_text"] = [c["text"] for c in comments_data]
 
                 print(f"\n📌 {post_url}")
@@ -371,7 +371,7 @@ class InstagramScraper(BaseScraper):
                 m_post_likes=post.get("likes", "0"),
                 m_channel_url=post.get("media_url", ""),
                 m_network=self.seed_url,
-                m_top_commenters=post.get("top_commenters", []),  # Now a list
+                m_top_commenters=post.get("conenctions", []),  # Now a list
                 m_comments_text=post.get("comments_text", [])  # Now a list
             )
             self.data.append(card.model_dump())
@@ -381,7 +381,7 @@ class InstagramScraper(BaseScraper):
         print(f"  COMMENT SUMMARY  —  @{self._username}")
         print("=" * 55)
         for i, post in enumerate(posts_data, 1):
-            commenters = post.get("top_commenters", [])
+            commenters = post.get("connections", [])
             texts = post.get("comments_text", [])
             print(f"\n[Post {i}] {post.get('post_url', '')}")
             if commenters:

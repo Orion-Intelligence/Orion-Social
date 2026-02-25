@@ -269,7 +269,7 @@ class TwitterScraper(BaseScraper):
                 m_post_views=post.get("views", "0"),
                 m_channel_url=post.get("media_url", ""),
                 m_network=self.seed_url,
-                m_top_commenters=post.get("top_commenters", []),
+                m_top_commenters=post.get("connections", []),
                 m_comments_text=post.get("comments_text", []),
             )
 
