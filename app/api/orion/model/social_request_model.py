@@ -6,6 +6,10 @@ class SocialReconRequest(BaseModel):
     query: str = Field(..., min_length=1)
 
 
+class SocialPhoneReconRequest(BaseModel):
+    query: str = Field(..., min_length=1)
+
+
 class SocialProfileRequest(BaseModel):
     platform: Optional[str] = Field(default=None)
     username: Optional[str] = Field(default=None)

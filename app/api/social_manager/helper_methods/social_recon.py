@@ -431,96 +431,6 @@ class social_recon:
 
         return pivot_results
 
-    def parse_phone(self, phone: str, mode: str = "default", job_id: str | None = None):
-        p = (phone or "").strip()
-
-        if job_id:
-            self._progress.update(job_id, 2, "init:phone")
-
-        if job_id:
-            self._progress.update(job_id, 5, "phone:scan")
-
-        rc = 127
-        out = ""
-        err = ""
-        cmd = []
-
-        if shutil.which("phoneinfoga"):
-            cmd = ["phoneinfoga", "scan", "--number", p]
-            if job_id:
-                self._progress.update(job_id, 10, "phoneinfoga:run")
-            r = subprocess.run(cmd, capture_output=True, text=True)
-            rc = r.returncode
-            out = (r.stdout or "").strip()
-            err = (r.stderr or "").strip()
-            out = re.sub(r"\x1b\[[0-9;]*m", "", out).strip()
-            err = re.sub(r"\x1b\[[0-9;]*m", "", err).strip()
-            if job_id:
-                self._progress.update(job_id, 35, f"phoneinfoga:exit:{rc}")
-
-        if rc != 0:
-            ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            if job_id:
-                self._progress.update(job_id, 95, "finalizing")
-            return {
-                "result": {
-                    "phone": p,
-                    "timestamp": ts,
-                    "status": {"code": rc},
-                    "results": {"error": err or out or "phoneinfoga not available"},
-                    "debug": {"cmd": " ".join(cmd)},
-                    "data": [],
-                }
-            }
-
-        if job_id:
-            self._progress.update(job_id, 50, "phone:parse")
-
-        parsed = {
-            "number": p,
-            "country": None,
-            "formats": {},
-            "urls": [],
-            "data": [],
-        }
-
-        lines = out.splitlines()
-        total_lines = len(lines) or 1
-        for i, line in enumerate(lines, start=1):
-            s = line.strip()
-            if job_id and (i == 1 or i == total_lines or i % 25 == 0):
-                self._progress.update(job_id, 50, f"phone:parse:{i}/{total_lines}")
-            if not s:
-                continue
-            if s.startswith("Country:"):
-                parsed["country"] = s.split(":", 1)[1].strip()
-            elif s.startswith("E164:"):
-                parsed["formats"]["e164"] = s.split(":", 1)[1].strip()
-            elif s.startswith("International:"):
-                parsed["formats"]["international"] = s.split(":", 1)[1].strip()
-            elif s.startswith("Local:"):
-                parsed["formats"]["local"] = s.split(":", 1)[1].strip()
-            elif "URL:" in s:
-                parsed["urls"].append(s.split("URL:", 1)[1].strip())
-            elif ":" in s and not s.endswith(":"):
-                parsed["data"].append(s)
-
-        if job_id:
-            self._progress.update(job_id, 75, "phone:dedup")
-
-        seen = set()
-        urls_dedup = []
-        for u in parsed["urls"]:
-            if u not in seen:
-                seen.add(u)
-                urls_dedup.append(u)
-        parsed["urls"] = urls_dedup
-
-        if job_id:
-            self._progress.update(job_id, 95, "finalizing")
-
-        return {"result": parsed}
-
     def parse(self, value: str, mode: str = "default", job_id: str | None = None):
         v = (value or "").strip()
         if not v:
@@ -541,8 +451,8 @@ class social_recon:
         is_phone = re.match(r"^\+?[\d\s().\-]{7,}$", v) is not None and len(digits) >= 7
         if is_phone:
             if job_id:
-                self._progress.update(job_id, 3, "detect:phone")
-            return self.parse_phone(v, mode=mode, job_id=job_id)
+                self._progress.update(job_id, 100, "skip:phone")
+            return []
 
         if job_id:
             self._progress.update(job_id, 3, "detect:username")

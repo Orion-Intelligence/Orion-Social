@@ -3,6 +3,7 @@ from typing import Dict, Any, List
 
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.helper_methods.social_recon import social_recon
+from api.social_manager.helper_methods.phone_recon import phone_recon
 from api.social_manager.sessions.playwright_session import playwright_session
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS, SOCIAL_PLATFORMS
 from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
@@ -21,6 +22,7 @@ class social_controller:
 
     def __init__(self):
         self._recon = social_recon()
+        self._phone_recon = phone_recon()
         self._progress = progress_controller.get_instance()
         self.job_id = None
         self.command = None
@@ -133,6 +135,21 @@ class social_controller:
             self.init_job(data.get("job_id"), command)
             try:
                 result = {"status": "success", "platform": "recon", "data": self._recon.parse(data.get("username"), data.get("mode", "default"), job_id=self.job_id)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_RECON_PHONE:
+            self.init_job(data.get("job_id"), command)
+            try:
+                phone = data.get("phone")
+                if not phone:
+                    result = {"status": "error", "message": "phone_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = {"status": "success", "platform": "recon_phone", "data": self._phone_recon.parse_phone(phone, data.get("mode", "default"), job_id=self.job_id)}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
