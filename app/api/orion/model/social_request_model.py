@@ -37,10 +37,13 @@ class SocialPostsRequest(BaseModel):
     max_posts: int = Field(default=5, ge=1, le=100)
 
     @field_validator("platform", "username", mode="before")
-    def to_lowercase(cls, value: str) -> str:
+    def sanitize(cls, value: str) -> str:
         if value is None:
             return None
-        return value.lower()
+        value = value.strip().lower()
+        if " " in value:
+            raise ValueError("must not contain spaces")
+        return value
 
 class DuckDuckGoUsernamesRequest(BaseModel):
     username: str = Field(..., min_length=1)
@@ -50,6 +53,25 @@ class DuckDuckGoUsernamesRequest(BaseModel):
 class DuckDuckGoImagesRequest(BaseModel):
     username: Optional[str] = Field(default=None)
     platform: Optional[str] = Field(default=None)
+
+
+class DuckDuckGoMetadataRequest(BaseModel):
+    tokens: List[str] = Field(..., min_length=1)
+    username: Optional[str] = Field(default=None)
+    platform: Optional[str] = Field(default=None)
+
+    @field_validator("tokens")
+    def validate_tokens(cls, value: List[str]) -> List[str]:
+        cleaned = [token.strip() for token in value if isinstance(token, str) and token.strip()]
+        if not cleaned:
+            raise ValueError("Please enter at least one token.")
+        return cleaned
+
+    @field_validator("username", "platform", mode="before")
+    def to_lowercase(cls, value: str) -> str:
+        if value is None:
+            return None
+        return value.lower()
 
 
 class SocialTarget(BaseModel):

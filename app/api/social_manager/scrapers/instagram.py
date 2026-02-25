@@ -35,25 +35,18 @@ class InstagramScraper(BaseScraper):
         collected = set()
         prev_count = 0
         no_progress_rounds = 0
-        max_no_progress = 5
 
-        while len(collected) < max_items and no_progress_rounds < max_no_progress:
+        while len(collected) < max_items and no_progress_rounds < 5:
             page.mouse.wheel(0, 1500)
             page.wait_for_timeout(5000)
 
-            loc = page.locator("div[role='dialog'] a.notranslate")
             try:
-                current = loc.all_inner_texts()
+                current = page.locator("div[role='dialog'] a.notranslate").all_inner_texts()
             except:
                 current = []
 
             collected.update(current)
-
-            if len(collected) == prev_count:
-                no_progress_rounds += 1
-            else:
-                no_progress_rounds = 0
-
+            no_progress_rounds = 0 if len(collected) != prev_count else no_progress_rounds + 1
             prev_count = len(collected)
 
         return list(collected)[:max_items]
@@ -88,15 +81,14 @@ class InstagramScraper(BaseScraper):
         }
 
     def _dismiss_popups(self, page: Page):
-        popup_selectors = [
+        for selector in [
             "button:has-text('Not Now')",
             "button:has-text('Not now')",
             "button:has-text('Cancel')",
             "button:has-text('Decline')",
             "[role='dialog'] button[type='button']",
             "div[role='dialog'] svg[aria-label='Close']",
-        ]
-        for selector in popup_selectors:
+        ]:
             try:
                 loc = page.locator(selector).first
                 if loc.count() > 0 and loc.is_visible():
@@ -129,23 +121,17 @@ class InstagramScraper(BaseScraper):
     def _extract_number_from_text(self, text: str) -> str:
         if not text:
             return "0"
-
         text = text.strip()
-
         if 'K' in text.upper():
-            match = re.search(r'([\d.]+)\s*K', text, re.IGNORECASE)
-            if match:
-                return str(int(float(match.group(1)) * 1000))
+            m = re.search(r'([\d.]+)\s*K', text, re.IGNORECASE)
+            if m:
+                return str(int(float(m.group(1)) * 1000))
         elif 'M' in text.upper():
-            match = re.search(r'([\d.]+)\s*M', text, re.IGNORECASE)
-            if match:
-                return str(int(float(match.group(1)) * 1000000))
-
-        match = re.search(r'([\d,]+)', text)
-        if match:
-            return match.group(1).replace(',', '')
-
-        return "0"
+            m = re.search(r'([\d.]+)\s*M', text, re.IGNORECASE)
+            if m:
+                return str(int(float(m.group(1)) * 1000000))
+        m = re.search(r'([\d,]+)', text)
+        return m.group(1).replace(',', '') if m else "0"
 
     def scrape_posts(self, page: Page, max_posts: int = 5) -> List[Dict[str, Any]]:
         page.goto(self.seed_url, wait_until="domcontentloaded")
@@ -155,25 +141,16 @@ class InstagramScraper(BaseScraper):
         seen_urls = set()
         prev_count = 0
         no_progress_rounds = 0
-        max_no_progress = 5
 
-        while len(collected_urls) < max_posts and no_progress_rounds < max_no_progress:
-            post_elements = page.locator("a[href*='/p/'], a[href*='/reel/']").all()
-
-            for elem in post_elements:
+        while len(collected_urls) < max_posts and no_progress_rounds < 5:
+            for elem in page.locator("a[href*='/p/'], a[href*='/reel/']").all():
                 if len(collected_urls) >= max_posts:
                     break
-
                 try:
                     href = elem.get_attribute("href")
                     if not href:
                         continue
-
-                    if href.startswith("/"):
-                        post_url = f"https://www.instagram.com{href}"
-                    else:
-                        post_url = href
-
+                    post_url = f"https://www.instagram.com{href}" if href.startswith("/") else href
                     base_url = post_url.split("?")[0]
                     if base_url not in seen_urls:
                         seen_urls.add(base_url)
@@ -181,11 +158,7 @@ class InstagramScraper(BaseScraper):
                 except:
                     continue
 
-            if len(collected_urls) == prev_count:
-                no_progress_rounds += 1
-            else:
-                no_progress_rounds = 0
-
+            no_progress_rounds = 0 if len(collected_urls) != prev_count else no_progress_rounds + 1
             prev_count = len(collected_urls)
 
             if len(collected_urls) < max_posts:
@@ -211,24 +184,20 @@ class InstagramScraper(BaseScraper):
                 meta_desc = page.locator("meta[property='og:description']").first
                 if meta_desc.count() > 0:
                     meta_content = meta_desc.get_attribute("content") or ""
-
-                    likes_match = re.search(r'([\d.,KkMm]+)\s+likes', meta_content)
-                    comments_match = re.search(r'([\d.,KkMm]+)\s+comments', meta_content)
-
-                    if likes_match:
-                        likes_count = self._extract_number_from_text(likes_match.group(1))
-
-                    if comments_match:
-                        comments_count = self._extract_number_from_text(comments_match.group(1))
-
-                    caption_match = re.search(r':\s*"(.*)"', meta_content)
-                    if caption_match:
-                        caption_text = caption_match.group(1)
+                    m = re.search(r'([\d.,KkMm]+)\s+likes', meta_content)
+                    if m:
+                        likes_count = self._extract_number_from_text(m.group(1))
+                    m = re.search(r'([\d.,KkMm]+)\s+comments', meta_content)
+                    if m:
+                        comments_count = self._extract_number_from_text(m.group(1))
+                    m = re.search(r':\s*"(.*)"', meta_content)
+                    if m:
+                        caption_text = m.group(1)
 
                 if not caption_text:
-                    h1_loc = page.locator("h1").first
-                    if h1_loc.count() > 0:
-                        caption_text = h1_loc.inner_text().strip()
+                    h1 = page.locator("h1").first
+                    if h1.count() > 0:
+                        caption_text = h1.inner_text().strip()
 
                 post_data["caption"] = caption_text.strip()
                 post_data["likes"] = likes_count
@@ -249,9 +218,122 @@ class InstagramScraper(BaseScraper):
                         post_data["media_type"] = "text"
                         post_data["media_url"] = ""
 
+                comments_data = []
+                try:
+                    page.wait_for_selector("a.notranslate", timeout=8000)
+                    page.wait_for_timeout(2000)
+
+                    EXTRACT_JS = """
+                        (ownerUsername) => {
+                            const results = [];
+                            const seen = new Set();
+
+                            const isJunk = (t) => {
+                                if (!t || t === '\\u00a0') return true;
+                                if (/^\\d+[wdhms]$/.test(t)) return true;
+                                if (t === 'Reply' || t === 'Like' || t === 'See translation') return true;
+                                if (/^\\d+\\s+likes?$/.test(t)) return true;
+                                if (t === 'View all' || /^View all \\d+/.test(t)) return true;
+                                return false;
+                            };
+
+                            for (const link of document.querySelectorAll('a.notranslate[href]')) {
+                                const username = link.getAttribute('href').replace(/\\//g, '').trim();
+                                if (!username || username.toLowerCase() === ownerUsername.toLowerCase()) continue;
+                                if (seen.has(username)) continue;
+
+                                let text = '';
+                                let node = link.parentElement;
+
+                                for (let depth = 0; depth < 15; depth++) {
+                                    if (!node || node === document.body) break;
+                                    for (const span of node.querySelectorAll('span[dir="auto"]')) {
+                                        if (link.contains(span)) continue;
+                                        if (span.querySelector('a, time')) continue;
+                                        const t = span.innerText.trim();
+                                        if (!isJunk(t) && t !== username) {
+                                            text = t;
+                                            break;
+                                        }
+                                    }
+                                    if (text) break;
+                                    node = node.parentElement;
+                                }
+
+                                if (text) {
+                                    seen.add(username);
+                                    results.push({ username, text });
+                                }
+                            }
+                            return results;
+                        }
+                    """
+
+                    SCROLL_JS = """
+                        () => {
+                            // Find the scrollable comments container
+                            const dialog = document.querySelector('div[role="dialog"]');
+                            if (!dialog) return false;
+
+                            // Find the scrollable element inside the dialog
+                            const scrollables = dialog.querySelectorAll('div');
+                            for (const el of scrollables) {
+                                if (el.scrollHeight > el.clientHeight) {
+                                    el.scrollBy(0, 500);
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    """
+
+                    prev_len = 0
+                    no_prog = 0
+                    scroll_attempts = 0
+                    max_scroll_attempts = 15
+
+                    while len(comments_data) < 20 and scroll_attempts < max_scroll_attempts:
+                        scrolled = page.evaluate(SCROLL_JS)
+
+                        if not scrolled:
+                            page.mouse.wheel(0, 500)
+
+                        page.wait_for_timeout(2000)
+
+                        raw = page.evaluate(EXTRACT_JS, self._username)
+                        comments_data = raw if isinstance(raw, list) else []
+
+                        if len(comments_data) == prev_len:
+                            no_prog += 1
+                        else:
+                            no_prog = 0
+                            print(f"   Collected {len(comments_data)} comments so far...")
+
+                        prev_len = len(comments_data)
+                        scroll_attempts += 1
+
+                        if no_prog >= 10:
+                            print(f"   No more comments loading. Stopping at {len(comments_data)} comments.")
+                            break
+
+                    comments_data = comments_data[:20]
+
+                except Exception as e:
+                    print(f"   Error collecting comments: {e}")
+                    comments_data = []
+
+                post_data["top_commenters"] = [c["username"] for c in comments_data]
+                post_data["comments_text"] = [c["text"] for c in comments_data]
+
+                print(f"\n📌 {post_url}")
+                print(f"   Comments ({len(comments_data)}):")
+                for i, c in enumerate(comments_data[:10], 1):
+                    print(f"   {i:>2}. @{c['username']}: {c['text'][:50]}...")
+
                 collected_posts.append(post_data)
 
-            except:
+            except Exception as e:
+                print(f"Error processing post {post_url}: {e}")
                 collected_posts.append({
                     "status": "active",
                     "post_url": post_url,
@@ -262,7 +344,9 @@ class InstagramScraper(BaseScraper):
                     "likes": "0",
                     "comments": "0",
                     "shares": "0",
-                    "views": "0"
+                    "views": "0",
+                    "top_commenters": [],
+                    "comments_text": []
                 })
 
         return collected_posts
@@ -286,11 +370,26 @@ class InstagramScraper(BaseScraper):
                 m_post_comments=post.get("comments", "0"),
                 m_post_likes=post.get("likes", "0"),
                 m_channel_url=post.get("media_url", ""),
-                m_network=self.seed_url
+                m_network=self.seed_url,
+                m_top_commenters=post.get("top_commenters", []),  # Now a list
+                m_comments_text=post.get("comments_text", [])  # Now a list
             )
-
             self.data.append(card.model_dump())
             cross_platform_mapper.add_card(card)
+
+        print("\n" + "=" * 55)
+        print(f"  COMMENT SUMMARY  —  @{self._username}")
+        print("=" * 55)
+        for i, post in enumerate(posts_data, 1):
+            commenters = post.get("top_commenters", [])
+            texts = post.get("comments_text", [])
+            print(f"\n[Post {i}] {post.get('post_url', '')}")
+            if commenters:
+                for j, (u, t) in enumerate(zip(commenters, texts), 1):
+                    print(f"  {j:>2}. @{u}: {t}")
+            else:
+                print("  No comments found.")
+        print("=" * 55 + "\n")
 
         return {
             "profile": profile_data,

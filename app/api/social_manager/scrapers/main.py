@@ -13,7 +13,6 @@ app_dir = os.path.dirname(
 sys.path.insert(0, app_dir)
 
 from api.social_manager.login_session.session_manager import SessionManager
-from api.social_manager.scrapers._duck_go_images import ImageScraper
 
 from api.social_manager.scrapers.instagram import InstagramScraper
 from api.social_manager.scrapers.facebook import FacebookScraper
@@ -21,7 +20,7 @@ from api.social_manager.scrapers.behance_scraper import BehanceScraper
 from api.social_manager.scrapers.vimeo import VimeoScraper
 from api.social_manager.scrapers.tiktok import TikTokScraper
 from api.social_manager.scrapers.twitter import TwitterScraper
-from api.social_manager.scrapers.live_search_handler import DuckDuckGoScraper
+from api.social_manager.scrapers._youtube import YoutubeScraper
 
 
 
@@ -74,7 +73,7 @@ def run_scraper(scraper):
 def main():
 
     scrapers = [
-        InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
+        #InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
         #FacebookScraper(username="saqibali.jaspal", max_followers=30, max_following=10),
         # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
         #tiktok(username="bilalshahid669"),
@@ -82,7 +81,7 @@ def main():
         #twitter(username="elonmusk"),
         #DuckDuckGoScraper("Usman Ali"),
         #ImageScraper(name="Elon Musk", limit=20)
-
+        YoutubeScraper(username="ABMALIKFAREED"),
 
     ]
 
@@ -107,13 +106,26 @@ def main():
 
     for result in all_results:
         if result:
-            followers = result.get('m_followers') or []
-            following = result.get('m_following') or []
-            print(
-                f"{result.get('m_platform', 'Unknown')}: "
-                f"{result.get('m_username', 'N/A')} "
-                f"({len(followers)} followers, {len(following)} following)"
-            )
+            print("\n" + "=" * 50)
+            print("PROFILE")
+            print("=" * 50)
+            profile = result.get("profile", {})
+            for key, val in profile.items():
+                print(f"  {key}: {val}")
+
+            print(f"\nTOTAL POSTS SCRAPED: {result.get('total_posts', 0)}")
+            print("=" * 50)
+
+            for i, post in enumerate(result.get("posts", []), 1):
+                print(f"\n  POST {i}: {post.get('caption', '')[:60]}")
+                print(f"    URL      : {post.get('post_url', '')}")
+                print(f"    Views    : {post.get('views', '')}")
+                print(f"    Likes    : {post.get('likes', '')}")
+                print(f"    Duration : {post.get('duration', '')}")
+                print(f"    Posted   : {post.get('datetime', '')}")
+                print(f"    Comments : {len(post.get('comments_text', []))}")
+                for j, (user, text) in enumerate(zip(post.get('top_commenters', []), post.get('comments_text', [])), 1):
+                    print(f"      [{j}] @{user}: {text[:80]}")
 
 
 if __name__ == "__main__":
