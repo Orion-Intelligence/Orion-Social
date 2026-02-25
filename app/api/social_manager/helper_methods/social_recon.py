@@ -317,7 +317,7 @@ class social_recon:
         if job_id:
             self._progress.update(job_id, 90, "checking online presence")
 
-        if len(results) > 100:
+        if len(results) < 100:
             try:
                 ddg = live_search_handler()
                 if job_id:
@@ -537,6 +537,6 @@ class social_recon:
 
 if __name__ == "__main__":
     recon = social_recon()
-    data = "kakori_jaipur"
+    data = "usmancout"
     results = recon.parse(data, mode="default", job_id=None)
     print(json.dumps(results, indent=2, ensure_ascii=False))
