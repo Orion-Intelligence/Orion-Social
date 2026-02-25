@@ -305,10 +305,6 @@ class social_controller:
                 tokens = data.get("tokens")
                 username = data.get("username")
                 platform = data.get("platform")
-                if not tokens:
-                    result = {"status": "error", "message": "Please enter at least one token.", "data": None}
-                    self._progress.done(self.job_id, result)
-                    return result
                 result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.search_web(tokens, username, platform)}
                 self._progress.done(self.job_id, result)
                 return result

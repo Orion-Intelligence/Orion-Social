@@ -142,8 +142,6 @@ class live_search_handler:
 			}
 
 	def extract_accounts_from_image(self, image_path: str, threshold: float = 0.0) -> list[dict]:
-		print("0:::::::::::::::::::::::::::::::", flush=True)
-		print("0:::::::::::::::::::::::::::::::", flush=True)
 		sites = {site.lower() for site in SITE_DATA.ALL_SITES}
 		results = []
 
@@ -166,6 +164,71 @@ class live_search_handler:
 				)
 				if u:
 					pages.append(u)
+    def search_web(
+        self,
+        tokens: List[str],
+        username: Optional[str] = None,
+        platform: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        username_clean = (username or "").strip()
+        clean_tokens = [token.strip() for token in tokens if token and token.strip()] if tokens else []
+        platform_clean = (platform or "").lower().strip()
+
+        if not username_clean or not clean_tokens:
+            query_parts = list(clean_tokens)
+            if username_clean:
+                query_parts.append(username_clean)
+            query = " ".join(query_parts)
+            return {
+                "query": query,
+                "total_found": 0,
+                "timestamp": self.timestamp,
+                "results": [],
+            }
+
+        query_parts = list(clean_tokens)
+        query_parts.append(username_clean)
+
+        query = " ".join(query_parts)
+        search_query = f'site:{platform_clean}.com {query}' if platform_clean else query
+
+        results: List[Dict[str, Any]] = []
+        try:
+            with DDGS() as ddgs:
+                text_results = ddgs.text(search_query, max_results=20)
+                for r in text_results:
+                    url = r.get("href", "")
+                    if not url:
+                        continue
+
+                    title = r.get("title", "")
+                    snippet = r.get("body", "")
+                    haystack = f"{title} {snippet} {url}".lower()
+                    if username_clean.lower() not in haystack:
+                        continue
+                    if not any(token.lower() in haystack for token in clean_tokens):
+                        continue
+
+                    results.append({
+                        "title": title,
+                        "url": url,
+                        "snippet": snippet,
+                        "timestamp": self.timestamp,
+                    })
+            return {
+                "query": query,
+                "total_found": len(results),
+                "timestamp": self.timestamp,
+                "results": results,
+            }
+        except Exception as e:
+            return {
+                "query": query,
+                "error": str(e),
+                "total_found": 0,
+                "timestamp": self.timestamp,
+                "results": [],
+            }
 
 			seen = set()
 
@@ -211,17 +274,9 @@ class live_search_handler:
 					},
 				})
 
-			print("1:::::::::::::::::::::::::::::::", flush=True)
-			print("1:::::::::::::::::::::::::::::::", flush=True)
-			print(results, flush=True)
-			print("1:::::::::::::::::::::::::::::::", flush=True)
-			print("1:::::::::::::::::::::::::::::::", flush=True)
 			return results
 
 		except Exception as ex:
-			print("2:::::::::::::::::::::::::::::::", flush=True)
-			print(ex, flush=True)
-			print("2:::::::::::::::::::::::::::::::", flush=True)
 			return []
 
 	def scrape_images(self, username: str, platform: str, limit: int = 10) -> Dict[str, Any]:

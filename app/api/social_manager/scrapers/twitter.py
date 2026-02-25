@@ -240,7 +240,7 @@ class TwitterScraper(BaseScraper):
             except Exception:
                 comments_data = []
 
-            post_data["top_commenters"] = [c["username"] for c in comments_data]
+            post_data["connections"] = [c["username"] for c in comments_data]
             post_data["comments_text"] = [c["text"] for c in comments_data]
 
 
@@ -269,7 +269,7 @@ class TwitterScraper(BaseScraper):
                 m_post_views=post.get("views", "0"),
                 m_channel_url=post.get("media_url", ""),
                 m_network=self.seed_url,
-                m_top_commenters=post.get("top_commenters", []),
+                m_connections=post.get("connections", []),
                 m_comments_text=post.get("comments_text", []),
             )
 
