@@ -27,33 +27,44 @@ class live_search_handler:
             return None
 
     @staticmethod
-    def extract_username_from_url(url: str) -> Optional[str]:
+    def extract_username_from_url(url: str, query: str = "") -> Optional[str]:
         try:
             parsed = urlparse(url)
             path = parsed.path.strip("/")
             if not path:
                 return None
-            if path.startswith("@"):
-                return path.replace("@", "").split("/")[0] or None
-            parts = path.split("/")
-            if "in" in parts:
-                idx = parts.index("in")
-                if idx + 1 < len(parts):
-                    return parts[idx + 1] or None
-            if "@" in path and path.count("@") == 1:
-                username = path.split("@", 1)[1].split("/")[0]
-                return username or None
-            username = parts[0] if parts else None
-            excluded = [
+
+            excluded = {
                 "search", "explore", "hashtag", "tag", "p", "reel", "post",
                 "status", "posts", "about", "help", "support", "privacy",
                 "terms", "settings", "home", "feed", "trending", "login",
-                "signup", "register", "watch", "video", "channel", "user",
-                "c", "orgs", "features", "pricing",
-            ]
-            if username and not any(keyword in username.lower() for keyword in excluded):
-                return username
-            return None
+                "signup", "register", "watch", "video", "videos", "channel",
+                "user", "c", "orgs", "features", "pricing", "stories", "in",
+                "highlights", "saved", "tagged", "reels", "live",
+            }
+
+            parts = [p.lstrip("@") for p in path.split("/") if p and p.lstrip("@") not in excluded]
+
+            if not parts:
+                return None
+
+            if not query:
+                return parts[0]
+
+            query_lower = query.lower().replace(" ", "").strip()
+
+            best_token = None
+            best_score = -1.0
+
+            for token in parts:
+                token_lower = token.lower()
+                score = difflib.SequenceMatcher(None, token_lower, query_lower).ratio()
+                if score > best_score:
+                    best_score = score
+                    best_token = token
+
+            return best_token
+
         except Exception:
             return None
 
@@ -98,7 +109,8 @@ class live_search_handler:
                         continue
                     parsed = urlparse(url)
                     platform_url = f"{parsed.scheme}://{parsed.netloc}/"
-                    username = self.extract_username_from_url(url)
+                    username = self.extract_username_from_url(url, query=query)
+
                     if username is None:
                         continue
                     similarity = difflib.SequenceMatcher(None, username.lower(), query_lower).ratio()
