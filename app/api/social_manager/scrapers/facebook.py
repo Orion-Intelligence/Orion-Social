@@ -273,26 +273,153 @@ class FacebookScraper(BaseScraper):
 
         return posts_data
 
-    def scrape_profile(self, page: Page) -> Dict[str, Any]:
-        page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
-        page.wait_for_timeout(3000)
-
-        name_el = page.query_selector('h1')
-        name = name_el.inner_text().strip() if name_el else ""
-
-        bio_el = page.query_selector('div[data-pagelet="ProfileTilesFeed_0"] span')
-        bio = bio_el.inner_text().strip() if bio_el else ""
-
-        return {
-            "real_name": name,
-            "bio": bio,
-            "location": "",
-            "total_posts": "",
-            "total_followers": "",
-            "total_following": "",
-            "profile_url": self.seed_url
+    def _extract_profile_info(self, page: Page) -> Dict:
+        """Extract basic profile information"""
+        print("[Facebook] Extracting profile information...")
+        profile_data = {
+            "real_name": None,
+            "bio": None,
+            "location": None,
+            "total_friends": None,
+            "total_followers": None,
+            "total_following": None
         }
 
+        try:
+            # Extract real name
+            name_selectors = [
+                'h1.html-h1',
+                'span.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x1xmvt09.x1lliihq.x1s928wv.xhkezso.x1gmr53x.x1cpjm7i.x1fgarty.x1943h6x.x4zkp8e.x676frb.x1nxh6w3.x1sibtaa.xo1l8bm.xi81zsa.x1yc453h',
+                'h2.html-h2'
+            ]
+
+            for selector in name_selectors:
+                try:
+                    name_elem = page.query_selector(selector)
+                    if name_elem:
+                        profile_data["real_name"] = name_elem.inner_text().strip()
+                        break
+                except:
+                    continue
+
+            # Extract friends count
+            try:
+                friends_elem = page.query_selector('a[href*="friends"] strong')
+                if friends_elem:
+                    profile_data["total_friends"] = friends_elem.inner_text().strip()
+            except:
+                pass
+
+            # Extract bio/intro
+            try:
+                bio_selectors = [
+                    'div[data-ad-rendering-role="story_message"]',
+                    'div.x1iorvi4.x4uap5.x1g0dm76.xpdmqnj'
+                ]
+
+                for selector in bio_selectors:
+                    bio_elem = page.query_selector(selector)
+                    if bio_elem:
+                        profile_data["bio"] = bio_elem.inner_text().strip()
+                        break
+            except:
+                pass
+
+            # Extract location
+            try:
+                location_elem = page.query_selector('a[href*="Sargodha"], span:has-text("Sargodha")')
+                if location_elem:
+                    profile_data["location"] = location_elem.inner_text().strip()
+            except:
+                pass
+
+            print(f"[Facebook] Profile info collected: {profile_data}")
+            return profile_data
+
+        except Exception as e:
+            print(f"[Facebook] Error extracting profile info: {e}")
+            return profile_data
+
+    def scrape_profile(self, page: Page) -> Dict[str, Any]:
+        page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(4000)
+
+        profile_data = {
+            "real_name": None,
+            "bio": None,
+            "location": None,
+            "total_friends": None,
+            "total_followers": None,
+            "total_following": None,
+            "profile_url": self.seed_url,
+        }
+
+        try:
+            for selector in ["h1", "h1.html-h1", "h2.html-h2"]:
+                el = page.query_selector(selector)
+                if el:
+                    text = el.inner_text().strip()
+                    if text:
+                        profile_data["real_name"] = text
+                        break
+
+            followers_strong = page.query_selector('a[href*="followers"] strong')
+            if followers_strong:
+                profile_data["total_followers"] = followers_strong.inner_text().strip()
+            else:
+                followers_anchor = page.query_selector('a[href*="followers"]')
+                if followers_anchor:
+                    text = followers_anchor.inner_text().strip()
+                    m = re.search(r"([\d.,]+\s*[KkMmBb]?)\s*followers", text, re.I)
+                    if m:
+                        profile_data["total_followers"] = m.group(1).strip()
+
+            following_strong = page.query_selector('a[href*="following"] strong')
+            if following_strong:
+                profile_data["total_following"] = following_strong.inner_text().strip()
+
+            friends_strong = page.query_selector('a[href*="friends"] strong')
+            if friends_strong:
+                profile_data["total_friends"] = friends_strong.inner_text().strip()
+
+
+
+            bio_el = page.query_selector(
+                "div.xz9dl7a.xp6pnuw.x160xiiu > span[dir='auto']"
+            )
+            if bio_el:
+                profile_data["bio"] = bio_el.inner_text().strip()
+
+
+            if not profile_data["bio"]:
+                bio_text = page.evaluate("""
+                    () => {
+                        const div = document.querySelector(
+                            'div.xz9dl7a.xp6pnuw.x160xiiu > span[dir="auto"]'
+                        );
+                        return div ? div.innerText.trim() : null;
+                    }
+                """)
+                if bio_text:
+                    profile_data["bio"] = bio_text
+
+            for selector in [
+                'a[href*="hometown"]',
+                'a[href*="location"]',
+                'a[href*="city"]',
+                "li:has(svg) a",
+            ]:
+                el = page.query_selector(selector)
+                if el:
+                    text = el.inner_text().strip()
+                    if text and not text.lower().startswith("http"):
+                        profile_data["location"] = text
+                        break
+
+        except Exception:
+            pass
+
+        return profile_data
     def scrape_followers(self, page: Page) -> List[str]:
         return self._collect_friends(page, self._max_friends)
 
