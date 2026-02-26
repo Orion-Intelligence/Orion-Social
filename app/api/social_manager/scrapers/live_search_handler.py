@@ -1,11 +1,17 @@
+import asyncio
 import difflib
+import os
+import re
+from html import unescape
 
+import tldextract
 from ddgs import DDGS
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from urllib.parse import urlparse
 from datetime import datetime, timezone
 
 from api.social_manager.social_enums import SITE_DATA
+from PicImageSearch import Yandex
 
 
 
@@ -82,6 +88,48 @@ class live_search_handler:
                 if len(real_name) > 2:
                     return real_name
         return title_clean
+
+    @staticmethod
+    def _infer_main_title_from_titles(title_items: List[Dict[str, str]]) -> str:
+        stop = {
+            "video", "videos", "news", "youtube", "twitter", "profile", "images", "photos",
+            "world", "page", "official", "latest", "archive", "archives", "channel", "watch",
+            "documentaries", "films", "posts", "urdu", "pakistan", "pakistani",
+        }
+        scores = {}
+        for item in title_items:
+            text = (item.get("title") or "").replace("+", " ")
+            words = re.findall(r"[A-Za-z][A-Za-z'._-]{1,}", text.lower())
+            if len(words) < 2:
+                continue
+            for n in (3, 2):
+                for i in range(0, len(words) - n + 1):
+                    gram = words[i:i + n]
+                    if any(w in stop for w in gram):
+                        continue
+                    key = " ".join(gram).strip()
+                    if len(key) < 5:
+                        continue
+                    scores[key] = scores.get(key, 0) + 1
+        if not scores:
+            return ""
+        best, count = max(scores.items(), key=lambda x: x[1])
+        if count < 2:
+            return ""
+        return " ".join(w.capitalize() for w in best.split())
+
+    @staticmethod
+    def _extract_yandex_tags_from_html(html: str) -> List[str]:
+        out: List[str] = []
+        for m in re.findall(
+            r'<span[^>]*Button-Text[^>]*>(.*?)</span>',
+            html or "",
+            flags=re.IGNORECASE | re.DOTALL,
+        ):
+            tag = unescape(re.sub(r"<[^>]+>", "", m)).strip()
+            if tag and tag not in out:
+                out.append(tag)
+        return out
 
     def collect_social_handles(self, query: str, platform: Optional[str] = None, threshold: float = 0) -> Dict[
         str, Any]:
@@ -181,6 +229,78 @@ class live_search_handler:
                 "total_found": 0,
                 "images": [],
             }
+
+    def extract_accounts_from_image(self, image_path: str, threshold: float = 0.0) -> list[dict]:
+        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
+        results = []
+
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+            yandex = Yandex()
+            resp = loop.run_until_complete(yandex.search(file=image_path))
+            loop.close()
+
+            raw = getattr(resp, "raw", None) or []
+            pages = []
+
+            for item in raw:
+                u = (
+                    item.get("url") or item.get("link") or item.get("source") or ""
+                    if isinstance(item, dict)
+                    else getattr(item, "url", "") or getattr(item, "link", "") or getattr(item, "source", "") or ""
+                )
+                if u:
+                    pages.append(u)
+            seen = set()
+
+            for url in pages:
+                parsed = urlparse(url)
+                base_url = f"{parsed.scheme}://{parsed.netloc}/"
+
+                platform = self.extract_platform_from_url(url)
+                username = self.extract_username_from_url(url)
+
+                if platform and platform.lower() in sites:
+                    social_handle = platform
+                else:
+                    ext = tldextract.extract(parsed.netloc)
+                    if not ext.domain or not ext.suffix:
+                        continue
+                    platform = f"{ext.domain}.{ext.suffix}"
+                    social_handle = ""
+
+                ident = (username or social_handle or "").lower()
+                if not ident:
+                    continue
+
+                key = f"{platform}:{ident}"
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                results.append({
+                    "metadata": {
+                        "platform": platform,
+                        "username": username or "",
+                        "social_handle": social_handle,
+                        "url": base_url,
+                        "timestamp": self.timestamp,
+                        "image_path": image_path,
+                    },
+                    "data": {
+                        "title": "",
+                        "snippet": "",
+                        "real_name": None,
+                        "matched_page": url,
+                    },
+                })
+
+            return results
+
+        except Exception as ex:
+            return []
 
     def check_username_exists(self, username: str, platform: str) -> bool:
         platform = platform.lower().strip()
@@ -349,4 +469,3 @@ class live_search_handler:
                 "error": str(e),
                 "status": "suggested",
             }
-

@@ -46,21 +46,55 @@ class social_recon:
         return out
 
     def _dedup_results(self, results: list) -> list:
-        seen = set()
+        seen = {}
         out = []
+
         for r in results or []:
             meta = (r or {}).get("metadata") or {}
+
             plat = (meta.get("platform") or "").strip().lower()
             uname = (meta.get("username") or "").strip().lower()
             handle = (meta.get("social_handle") or "").strip().lower()
-            ident = uname or handle
-            if not plat or not ident:
+
+            ident_raw = uname or handle
+            if not plat or not ident_raw:
                 continue
-            k = (plat, ident)
-            if k in seen:
+
+            ident = ident_raw.strip()
+
+            i = 0
+            n = len(ident)
+            while i < n and not ident[i].isalnum():
+                i += 1
+            ident = ident[i:]
+
+            j = len(ident) - 1
+            while j >= 0 and not ident[j].isalnum():
+                j -= 1
+            ident = ident[: j + 1]
+
+            if not ident:
                 continue
-            seen.add(k)
+
+            per_plat = seen.get(plat)
+            if per_plat is None:
+                per_plat = set()
+                seen[plat] = per_plat
+
+            if ident in per_plat:
+                continue
+
+            should_skip = False
+            for s in per_plat:
+                if s in ident or ident in s:
+                    should_skip = True
+                    break
+            if should_skip:
+                continue
+
+            per_plat.add(ident)
             out.append(r)
+
         return out
 
     def run_maigret_on_platform(self, username: str, platform: str, job_id: str | None = None):
@@ -481,8 +515,13 @@ class social_recon:
                 self._progress.update(job_id, 10, "image:search")
 
             ddg = live_search_handler()
-            payload = ddg.extract_accounts_from_image(tmp_path) or {}
-            results = payload.get("results") if isinstance(payload, dict) else payload
+            payload = ddg.extract_accounts_from_image(tmp_path)
+            if isinstance(payload, tuple) and len(payload) == 2:
+                results, _titles = payload
+            elif isinstance(payload, dict):
+                results = payload.get("results") or []
+            else:
+                results = payload or []
             if not results:
                 results = []
 
@@ -501,24 +540,31 @@ class social_recon:
                 plat = (meta.get("platform") or "").strip().lower()
                 uname = (meta.get("username") or "").strip().lower()
                 handle = (meta.get("social_handle") or "").strip().lower()
+                status = "active" if plat in {s.lower() for s in SITE_DATA.ALL_SITES} else "informational"
                 ident = uname or handle
-
+                if status == "informational" and not ident:
+                    ident = ((item.get("data") or {}).get("matched_page") or meta.get("url") or "").strip().lower()
                 if not plat or not ident:
                     continue
 
                 k = (plat, ident)
-                if k in existing_keys:
-                    continue
-
-                existing_keys.add(k)
-                meta["status"] = meta.get("status") or "suggested"
+                meta["status"] = status
+                if status == "informational":
+                    meta["username"] = ""
+                    meta["social_handle"] = ""
+                else:
+                    if k in existing_keys:
+                        continue
+                    existing_keys.add(k)
                 item["metadata"] = meta
                 merged.append(item)
 
             if job_id:
                 self._progress.update(job_id, 90, "image:dedup")
 
-            merged = self._dedup_results(merged)
+            active_items = [r for r in merged if ((r.get("metadata") or {}).get("status") == "active")]
+            informational_items = [r for r in merged if ((r.get("metadata") or {}).get("status") == "informational")]
+            merged = self._dedup_results(active_items) + informational_items
 
             try:
                 os.remove(tmp_path)

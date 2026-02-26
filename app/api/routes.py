@@ -1,3 +1,5 @@
+import hashlib
+
 from fastapi import APIRouter, UploadFile, File
 
 from api.orion.model.social_request_model import SocialReconRequest, SocialPhoneReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest
@@ -31,7 +33,8 @@ class SocialRoutes:
 
     async def social_recon_image(self, file: UploadFile = File(...)):
         content = await file.read()
-        job_id = str(hash(f"recon_image:{file.filename}"))
+        content_hash = hashlib.sha256(content or b"").hexdigest()
+        job_id = f"recon_image:{content_hash}"
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_RECON_IMAGE, {"job_id": job_id, "filename": file.filename, "file_bytes": content},)
 
     async def social_scrape(self, p: SocialScrapeRequest):
