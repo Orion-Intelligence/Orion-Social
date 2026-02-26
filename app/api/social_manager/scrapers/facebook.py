@@ -274,7 +274,6 @@ class FacebookScraper(BaseScraper):
         return posts_data
 
     def _extract_profile_info(self, page: Page) -> Dict:
-        """Extract basic profile information"""
         print("[Facebook] Extracting profile information...")
         profile_data = {
             "real_name": None,
@@ -286,7 +285,6 @@ class FacebookScraper(BaseScraper):
         }
 
         try:
-            # Extract real name
             name_selectors = [
                 'h1.html-h1',
                 'span.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x1xmvt09.x1lliihq.x1s928wv.xhkezso.x1gmr53x.x1cpjm7i.x1fgarty.x1943h6x.x4zkp8e.x676frb.x1nxh6w3.x1sibtaa.xo1l8bm.xi81zsa.x1yc453h',
@@ -302,7 +300,6 @@ class FacebookScraper(BaseScraper):
                 except:
                     continue
 
-            # Extract friends count
             try:
                 friends_elem = page.query_selector('a[href*="friends"] strong')
                 if friends_elem:
@@ -310,7 +307,6 @@ class FacebookScraper(BaseScraper):
             except:
                 pass
 
-            # Extract bio/intro
             try:
                 bio_selectors = [
                     'div[data-ad-rendering-role="story_message"]',
@@ -325,7 +321,6 @@ class FacebookScraper(BaseScraper):
             except:
                 pass
 
-            # Extract location
             try:
                 location_elem = page.query_selector('a[href*="Sargodha"], span:has-text("Sargodha")')
                 if location_elem:
