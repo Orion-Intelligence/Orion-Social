@@ -25,6 +25,18 @@ class FacebookScraper(BaseScraper):
         return f"https://www.facebook.com/{self._username}/friends"
 
     @property
+    def followers_url(self) -> str:
+        if self._username.isdigit():
+            return f"https://www.facebook.com/profile.php?id={self._username}&sk=followers"
+        return f"https://www.facebook.com/{self._username}/followers"
+
+    @property
+    def following_url(self) -> str:
+        if self._username.isdigit():
+            return f"https://www.facebook.com/profile.php?id={self._username}&sk=following"
+        return f"https://www.facebook.com/{self._username}/following"
+
+    @property
     def base_url(self) -> str:
         return "https://www.facebook.com"
 
@@ -62,8 +74,46 @@ class FacebookScraper(BaseScraper):
         except Exception:
             return []
 
-    def _collect_friends(self, page: Page, max_items: int):
-        page.goto(self.friends_url, wait_until="domcontentloaded", timeout=60000)
+    def _resolve_list_url(self, page: Page, mode: str) -> str:
+        
+        page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(2500)
+
+        anchors = page.query_selector_all('a[href]')
+        hrefs = []
+        for a in anchors:
+            href = a.get_attribute("href")
+            if href:
+                hrefs.append(href.lower())
+
+        def has_followers() -> bool:
+            return any("/followers" in h or "sk=followers" in h for h in hrefs)
+
+        def has_following() -> bool:
+            return any("/following" in h or "sk=following" in h for h in hrefs)
+
+        def has_friends() -> bool:
+            return any("/friends" in h or "sk=friends" in h for h in hrefs)
+
+        if mode == "followers":
+            if has_followers():
+                return self.followers_url
+            if has_friends():
+                return self.friends_url
+            return self.followers_url
+
+        if mode == "following":
+            if has_following():
+                return self.following_url
+            if has_friends():
+                return self.friends_url
+            return self.following_url
+
+        return self.friends_url
+
+    def _collect_people(self, page: Page, max_items: int, mode: str):
+        target_url = self._resolve_list_url(page, mode)
+        page.goto(target_url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(3000)
 
         collected = []
@@ -297,14 +347,28 @@ class FacebookScraper(BaseScraper):
                     if name_elem:
                         profile_data["real_name"] = name_elem.inner_text().strip()
                         break
-                except:
+                except Exception:
                     continue
 
             try:
                 friends_elem = page.query_selector('a[href*="friends"] strong')
                 if friends_elem:
                     profile_data["total_friends"] = friends_elem.inner_text().strip()
-            except:
+            except Exception:
+                pass
+
+            try:
+                followers_elem = page.query_selector('a[href*="followers"] strong')
+                if followers_elem:
+                    profile_data["total_followers"] = followers_elem.inner_text().strip()
+            except Exception:
+                pass
+
+            try:
+                following_elem = page.query_selector('a[href*="following"] strong')
+                if following_elem:
+                    profile_data["total_following"] = following_elem.inner_text().strip()
+            except Exception:
                 pass
 
             try:
@@ -318,14 +382,14 @@ class FacebookScraper(BaseScraper):
                     if bio_elem:
                         profile_data["bio"] = bio_elem.inner_text().strip()
                         break
-            except:
+            except Exception:
                 pass
 
             try:
                 location_elem = page.query_selector('a[href*="Sargodha"], span:has-text("Sargodha")')
                 if location_elem:
                     profile_data["location"] = location_elem.inner_text().strip()
-            except:
+            except Exception:
                 pass
 
             print(f"[Facebook] Profile info collected: {profile_data}")
@@ -377,14 +441,11 @@ class FacebookScraper(BaseScraper):
             if friends_strong:
                 profile_data["total_friends"] = friends_strong.inner_text().strip()
 
-
-
             bio_el = page.query_selector(
                 "div.xz9dl7a.xp6pnuw.x160xiiu > span[dir='auto']"
             )
             if bio_el:
                 profile_data["bio"] = bio_el.inner_text().strip()
-
 
             if not profile_data["bio"]:
                 bio_text = page.evaluate("""
@@ -415,8 +476,9 @@ class FacebookScraper(BaseScraper):
             pass
 
         return profile_data
+
     def scrape_followers(self, page: Page) -> List[str]:
-        return self._collect_friends(page, self._max_friends)
+        return self._collect_people(page, self._max_friends, mode="followers")
 
     def scrape_following(self, page: Page) -> List[str]:
-        return self._collect_friends(page, self._max_friends)
+        return self._collect_people(page, self._max_friends, mode="following")
