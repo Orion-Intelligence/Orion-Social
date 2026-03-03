@@ -75,7 +75,7 @@ class FacebookScraper(BaseScraper):
             return []
 
     def _resolve_list_url(self, page: Page, mode: str) -> str:
-        
+       
         page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(2500)
 
