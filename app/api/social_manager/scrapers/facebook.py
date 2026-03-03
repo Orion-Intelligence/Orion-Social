@@ -49,7 +49,6 @@ class FacebookScraper(BaseScraper):
             name_spans = page.query_selector_all(
                 'span.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x1lkfr7t.x1lbecb7.x1s688f.xzsf02u[dir="auto"]'
             )
-
             names = []
             for span in name_spans:
                 name_text = span.inner_text().strip()
@@ -75,7 +74,7 @@ class FacebookScraper(BaseScraper):
             return []
 
     def _resolve_list_url(self, page: Page, mode: str) -> str:
-       
+
         page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(2500)
 
