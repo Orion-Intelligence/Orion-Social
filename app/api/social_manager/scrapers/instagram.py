@@ -27,25 +27,38 @@ class InstagramScraper(BaseScraper):
     def _scroll_and_collect(self, page: Page, max_items: int) -> list:
         page.wait_for_selector("div[role='dialog'] a.notranslate")
 
-        loc = page.locator("div[role='dialog'] a.notranslate").first
-        box = loc.bounding_box()
-        if box:
-            page.mouse.move(box["x"] + box["width"] + 20, box["y"] + 10)
-
         collected = set()
         prev_count = 0
         no_progress_rounds = 0
 
         while len(collected) < max_items and no_progress_rounds < 5:
-            page.mouse.wheel(0, 1500)
-            page.wait_for_timeout(5000)
+            try:
+                page.evaluate(
+                    """
+                    () => {
+                        const dialog = document.querySelector("div[role='dialog']");
+                        if (!dialog) return;
+
+                        const scrollable = Array.from(dialog.querySelectorAll("div"))
+                            .find((el) => el.scrollHeight > el.clientHeight + 20);
+
+                        if (scrollable) {
+                            scrollable.scrollTop += Math.max(900, Math.floor(scrollable.clientHeight * 0.85));
+                        }
+                    }
+                    """
+                )
+            except:
+                pass
+
+            page.wait_for_timeout(2000)
 
             try:
                 current = page.locator("div[role='dialog'] a.notranslate").all_inner_texts()
             except:
                 current = []
 
-            collected.update(current)
+            collected.update([u.strip() for u in current if u and u.strip()])
             no_progress_rounds = 0 if len(collected) != prev_count else no_progress_rounds + 1
             prev_count = len(collected)
 

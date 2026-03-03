@@ -1,6 +1,5 @@
 import sys
 import os
-import asyncio
 from playwright.sync_api import sync_playwright
 
 app_dir = os.path.dirname(
@@ -13,120 +12,131 @@ app_dir = os.path.dirname(
 sys.path.insert(0, app_dir)
 
 from api.social_manager.login_session.session_manager import SessionManager
-
 from api.social_manager.scrapers.instagram import InstagramScraper
-from api.social_manager.scrapers.facebook import FacebookScraper
-from api.social_manager.scrapers.behance_scraper import BehanceScraper
-from api.social_manager.scrapers.vimeo import VimeoScraper
-from api.social_manager.scrapers.tiktok import TikTokScraper
-from api.social_manager.scrapers.twitter import TwitterScraper
-from api.social_manager.scrapers._youtube import YoutubeScraper
 
 
-
-
-def run_scraper(scraper):
-
-    print(f"\n{'='*50}")
-    print(f">> Running scraper: {scraper.__class__.__name__}")
-    print(f"{'='*50}")
+def run_instagram_scraper(username: str, max_followers: int = 40, max_following: int = 40, max_posts: int = 5):
+    scraper = InstagramScraper(
+        username=username,
+        max_followers=max_followers,
+        max_following=max_following
+    )
 
     with sync_playwright() as p:
-
         browser = p.chromium.launch(headless=False)
-        page = browser.new_page()
+        context = browser.new_context()
+        page = context.new_page()
 
-        if getattr(scraper, "requires_login", False):
+        # ---- login/session flow ----
+        session = SessionManager(scraper.__class__.__name__)
+        print(f">> Session file: {session.session_file}")
+        print(f">> Session exists: {os.path.exists(session.session_file)}")
 
-            session = SessionManager(scraper.__class__.__name__)
+        loaded = session.load(page)
 
-            print(f">> Session file: {session.session_file}")
-            print(f">> Session exists: {os.path.exists(session.session_file)}")
-
-            loaded = session.load(page)
-
-            if loaded:
-                print(">> Session loaded successfully!")
-                page.goto(scraper.seed_url, wait_until="domcontentloaded")
-                session.apply_storage(page)
-                page.reload(wait_until="domcontentloaded")
-                page.wait_for_timeout(3000)
-            else:
-                print(">> No session found. Login manually...")
-                page.goto(scraper.base_url, wait_until="domcontentloaded")
-                input("Press ENTER after login...")
-
-                page.goto(scraper.seed_url, wait_until="domcontentloaded")
-                page.wait_for_timeout(5000)
-                session.save(page)
-                print(">> Session saved successfully!")
-
-        else:
+        if loaded:
+            print(">> Session loaded successfully!")
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
+            session.apply_storage(page)
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_timeout(3000)
+        else:
+            print(">> No session found. Login manually...")
+            page.goto(scraper.base_url, wait_until="domcontentloaded")
+            input("Press ENTER after login...")
+            page.goto(scraper.seed_url, wait_until="domcontentloaded")
+            page.wait_for_timeout(5000)
+            session.save(page)
+            print(">> Session saved successfully!")
 
-        result = scraper.parse_page(page)
+        # ---- instagram scraping ----
+        result = {
+            "platform": "instagram",
+            "username": username,
+            "status": "active",
+            "profile": {},
+            "followers": [],
+            "following": [],
+            "posts": [],
+            "total_posts": 0
+        }
+
+        try:
+            print("\n>> Scraping profile...")
+            result["profile"] = scraper.scrape_profile(page)
+        except Exception as e:
+            print(f"[ERROR] scrape_profile: {e}")
+
+        try:
+            print("\n>> Scraping followers...")
+            result["followers"] = scraper.scrape_followers(page)
+            print(f">> Followers collected: {len(result['followers'])}")
+        except Exception as e:
+            print(f"[ERROR] scrape_followers: {e}")
+
+        try:
+            print("\n>> Scraping following...")
+            result["following"] = scraper.scrape_following(page)
+            print(f">> Following collected: {len(result['following'])}")
+        except Exception as e:
+            print(f"[ERROR] scrape_following: {e}")
+
+        try:
+            print("\n>> Scraping posts...")
+            result["posts"] = scraper.scrape_posts(page, max_posts=max_posts)
+            result["total_posts"] = len(result["posts"])
+            print(f">> Posts collected: {result['total_posts']}")
+        except Exception as e:
+            print(f"[ERROR] scrape_posts: {e}")
 
         browser.close()
         return result
 
 
 def main():
+    username = "dawn.today"   # change here
+    max_followers = 40
+    max_following = 40
+    max_posts = 5
 
-    scrapers = [
-        #InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
-        #FacebookScraper(username="saqibali.jaspal", max_followers=30, max_following=10),
-        # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
-        #tiktok(username="bilalshahid669"),
-        #TwitterScraper(username="elonmusk", max_followers=10, max_following=10),
-        #twitter(username="elonmusk"),
-        #DuckDuckGoScraper("Usman Ali"),
-        #ImageScraper(name="Elon Musk", limit=20)
-        YoutubeScraper(username="ABMALIKFAREED"),
+    print(f"\n{'='*60}")
+    print("RUNNING INSTAGRAM SCRAPER")
+    print(f"{'='*60}")
+    print(f"Username: {username}")
 
-    ]
+    result = run_instagram_scraper(
+        username=username,
+        max_followers=max_followers,
+        max_following=max_following,
+        max_posts=max_posts
+    )
 
-    if not scrapers:
-        print("No scrapers configured.")
-        return
+    print(f"\n{'='*60}")
+    print("SCRAPING COMPLETE - SUMMARY")
+    print(f"{'='*60}")
+    print(f"Platform : {result.get('platform')}")
+    print(f"Username : {result.get('username')}")
+    print(f"Status   : {result.get('status')}")
 
-    async def run_all_parallel(scrapers):
-        loop = asyncio.get_event_loop()
-        tasks = [
-            loop.run_in_executor(None, run_scraper, scraper)
-            for scraper in scrapers
-        ]
-        return await asyncio.gather(*tasks)
+    print("\nPROFILE")
+    for k, v in result.get("profile", {}).items():
+        print(f"  {k}: {v}")
 
-    all_results = asyncio.run(run_all_parallel(scrapers))
+    print(f"\nFollowers ({len(result.get('followers', []))}):")
+    print(result.get("followers", []))
 
-    print(f"\n{'='*50}")
-    print(">> SCRAPING COMPLETE - SUMMARY")
-    print(f"{'='*50}")
-    print(f"Total scrapers run: {len(all_results)}")
+    print(f"\nFollowing ({len(result.get('following', []))}):")
+    print(result.get("following", []))
 
-    for result in all_results:
-        if result:
-            print("\n" + "=" * 50)
-            print("PROFILE")
-            print("=" * 50)
-            profile = result.get("profile", {})
-            for key, val in profile.items():
-                print(f"  {key}: {val}")
-
-            print(f"\nTOTAL POSTS SCRAPED: {result.get('total_posts', 0)}")
-            print("=" * 50)
-
-            for i, post in enumerate(result.get("posts", []), 1):
-                print(f"\n  POST {i}: {post.get('caption', '')[:60]}")
-                print(f"    URL      : {post.get('post_url', '')}")
-                print(f"    Views    : {post.get('views', '')}")
-                print(f"    Likes    : {post.get('likes', '')}")
-                print(f"    Duration : {post.get('duration', '')}")
-                print(f"    Posted   : {post.get('datetime', '')}")
-                print(f"    Comments : {len(post.get('comments_text', []))}")
-                for j, (user, text) in enumerate(zip(post.get('top_commenters', []), post.get('comments_text', [])), 1):
-                    print(f"      [{j}] @{user}: {text[:80]}")
-
+    print(f"\nPosts ({result.get('total_posts', 0)}):")
+    for i, post in enumerate(result.get("posts", []), 1):
+        print(f"\n  POST {i}")
+        print(f"    URL      : {post.get('post_url', '')}")
+        print(f"    Caption  : {post.get('caption', '')[:80]}")
+        print(f"    Likes    : {post.get('likes', '')}")
+        print(f"    Comments : {post.get('comments', '')}")
+        print(f"    Datetime : {post.get('datetime', '')}")
+        print(f"    Media    : {post.get('media_type', '')}")
 
 if __name__ == "__main__":
     main()
