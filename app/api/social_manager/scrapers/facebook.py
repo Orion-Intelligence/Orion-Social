@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from playwright.sync_api import Page, ElementHandle
 from api.social_manager.scrapers.base_scraper import BaseScraper
 
@@ -11,6 +11,7 @@ class FacebookScraper(BaseScraper):
     def __init__(self, username: str, max_followers: int = 50, max_following: int = 50):
         super().__init__(username, max_followers, max_following)
         self._max_friends = max(max_followers, max_following)
+
 
     @property
     def seed_url(self) -> str:
@@ -44,273 +45,253 @@ class FacebookScraper(BaseScraper):
     def name(self) -> str:
         return "Facebook"
 
-    # -------------------------------------------------------------------------
-    # STABLE COMMENT AUTHOR EXTRACTION
-    # aria-label="Comment by Nayab Zoey RedBird 4 hours ago"  ← always present
-    # -------------------------------------------------------------------------
+
+
     @staticmethod
     def _author_from_aria(article: ElementHandle) -> str:
-        """
-        Extract commenter name from the article's aria-label.
-        Format: "Comment by <Name> <N> <unit> ago"
-        This attribute is required for accessibility and never changes.
-        """
         label = article.get_attribute("aria-label") or ""
-        # Strip leading prefix
         if not label.startswith("Comment by "):
             return ""
         rest = label[len("Comment by "):]
-        # Strip trailing time expression e.g. "4 hours ago", "just now", "Yesterday at 3:00 PM"
         rest = re.sub(
-            r'\s+\d+\s+(?:second|minute|hour|day|week|month|year)s?\s+ago\s*$',
+            r'\s+(?:about\s+)?(?:'
+            r'a\s+few\s+seconds?\s+ago|just\s+now'
+            r'|(?:a|an|\d+)\s+(?:second|minute|hour|day|week|month|year)s?(?:\s+ago)?'
+            r'|yesterday(?:\s+at\s+[\d:]+(?::\d+)?\s*(?:AM|PM)?)?'
+            r'|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s+at\s+[\d:]+(?::\d+)?\s*(?:AM|PM)?)?'
+            r'|(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?'
+            r'|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)'
+            r'\s+\d{1,2}(?:,?\s+\d{4})?(?:\s+at\s+[\d:]+(?::\d+)?\s*(?:AM|PM)?)?)\s*$',
             '', rest, flags=re.I
         ).strip()
-        rest = re.sub(r'\s+just\s+now\s*$', '', rest, flags=re.I).strip()
-        rest = re.sub(r'\s+Yesterday\s+at\s+[\d:]+\s*(?:AM|PM)?\s*$', '', rest, flags=re.I).strip()
-        return rest.strip()
+        return rest
 
-    # -------------------------------------------------------------------------
-    # STABLE COMMENT TEXT EXTRACTION
-    # div[dir="auto"][style="text-align: start;"]  ← inline style, always set
-    # -------------------------------------------------------------------------
     @staticmethod
     def _text_from_article(article: ElementHandle) -> str:
-        """
-        Extract comment body using the inline style attribute which Facebook
-        sets consistently on comment text containers.
-        Falls back to the deepest dir="auto" div if the style isn't present.
-        """
-        # Primary: inline style is stable, not a generated class
         el = article.query_selector('div[dir="auto"][style*="text-align"]')
         if el:
             return el.inner_text().strip()
-
-        # Fallback: nested dir=auto (text container is always the deepest one)
         el = article.query_selector('div[dir="auto"] div[dir="auto"]')
         if el:
             return el.inner_text().strip()
-
         el = article.query_selector('div[dir="auto"]')
         if el:
             return el.inner_text().strip()
-
         return ""
 
-    # -------------------------------------------------------------------------
-    # STABLE STATS EXTRACTION  (no CSS class selectors)
-    # -------------------------------------------------------------------------
     def _extract_post_stats(self, page: Page, post: ElementHandle) -> Tuple[str, str, str]:
-        """
-        Returns (reaction_val, total_comments, total_shares).
-
-        Uses:
-          - aria-label on the reactions summary button  (stable ARIA)
-          - JS text-node walker to find "X comments" / "X shares"  (stable text)
-        """
-        reaction_val = "0"
-        total_comments = "0"
-        total_shares = "0"
-
+        likes = "0"
+        comments = "0"
+        shares = "0"
         try:
-            # Reactions: Facebook always puts aria-label="X reactions" or
-            # "Like: X" on the reaction summary element.
-            reaction_el = post.query_selector(
-                '[aria-label*="reaction" i], [aria-label*="like" i][role="button"]'
-            )
-            if reaction_el:
-                lbl = reaction_el.get_attribute("aria-label") or ""
-                m = re.search(r'([\d,]+)', lbl)
+            el = post.query_selector('[aria-label*="reaction" i], [aria-label*="like" i][role="button"]')
+            if el:
+                m = re.search(r'([\d,]+)', el.get_attribute("aria-label") or "")
                 if m:
-                    reaction_val = m.group(1).replace(",", "")
+                    likes = m.group(1).replace(",", "")
         except Exception:
             pass
-
         try:
-            # Walk text nodes to find "N comment(s)" and "N share(s)".
-            # Text nodes are independent of class names.
             stats = page.evaluate(
-                """(postEl) => {
+                r"""(el) => {
                     const out = { comments: "0", shares: "0" };
-                    const walk = document.createTreeWalker(
-                        postEl, NodeFilter.SHOW_TEXT, null
-                    );
-                    let node;
-                    while ((node = walk.nextNode())) {
-                        const t = node.textContent.trim();
-                        if (/^[\d,]+\s+comment/i.test(t)) {
-                            const m = t.match(/^([\d,]+)/);
-                            if (m) out.comments = m[1].replace(/,/g, '');
-                        } else if (/^[\d,]+\s+share/i.test(t)) {
-                            const m = t.match(/^([\d,]+)/);
-                            if (m) out.shares = m[1].replace(/,/g, '');
-                        }
+                    const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+                    let n;
+                    while ((n = walk.nextNode())) {
+                        const t = n.textContent.trim();
+                        if (/^[\d,]+\s+comment/i.test(t))
+                            out.comments = t.match(/^([\d,]+)/)[1].replace(/,/g,'');
+                        else if (/^[\d,]+\s+share/i.test(t))
+                            out.shares = t.match(/^([\d,]+)/)[1].replace(/,/g,'');
                     }
                     return out;
-                }""",
-                post,
+                }""", post
             )
-            total_comments = stats.get("comments", "0")
-            total_shares = stats.get("shares", "0")
+            comments = stats.get("comments", "0")
+            shares = stats.get("shares", "0")
         except Exception:
             pass
+        return likes, comments, shares
 
-        return reaction_val, total_comments, total_shares
 
-    # -------------------------------------------------------------------------
-    # STABLE COMMENT TRIGGER
-    # -------------------------------------------------------------------------
-    # -------------------------------------------------------------------------
-    # FIND POST PERMALINK FROM FEED ARTICLE
-    # -------------------------------------------------------------------------
-    @staticmethod
-    def _get_post_permalink(post: ElementHandle) -> str:
-        """Extract the permanent URL of a post from its feed article element."""
-        # Strategy 1: anchor wrapping a timestamp abbreviation
-        el = post.query_selector("a:has(abbr)")
-        if el:
-            href = el.get_attribute("href") or ""
-            if "/posts/" in href or "/permalink/" in href or "story_fbid" in href:
-                if href.startswith("/"):
-                    href = "https://www.facebook.com" + href
-                return href
 
-        # Strategy 2: any a[href*="/posts/"] inside the article
-        links = post.query_selector_all('a[href*="/posts/"], a[href*="/permalink/"]')
-        for link in links:
-            href = link.get_attribute("href") or ""
+    _PERMALINK_PATTERNS = ("/posts/", "/permalink/", "/reel/", "/reels/", "/videos/", "story_fbid")
+
+    @classmethod
+    def _get_post_permalink(cls, post: ElementHandle) -> str:
+        def clean(href: str) -> str:
             if href.startswith("/"):
                 href = "https://www.facebook.com" + href
-            if "comment_id" not in href:
-                return href
+            return href.split("?")[0]
 
-        # Strategy 3: JS - find shortest /posts/ href
+        def valid(href: str) -> bool:
+            return bool(href) and not href.startswith("?") and "comment_id" not in href \
+                   and any(p in href for p in cls._PERMALINK_PATTERNS)
+
+        el = post.query_selector("a:has(abbr)")
+        if el:
+            h = clean(el.get_attribute("href") or "")
+            if valid(h):
+                return h
+
+        for sel in ['a[href*="/posts/"]', 'a[href*="/permalink/"]', 'a[href*="/reel/"]',
+                    'a[href*="/reels/"]', 'a[href*="/videos/"]', 'a[href*="story_fbid"]']:
+            for link in post.query_selector_all(sel):
+                h = clean(link.get_attribute("href") or "")
+                if valid(h):
+                    return h
+
         result = post.evaluate(
             """(el) => {
-                const anchors = el.querySelectorAll('a[href]');
+                const PATS = ['/posts/','/permalink/','/reel/','/reels/','/videos/','story_fbid'];
                 let best = null;
-                for (const a of anchors) {
+                for (const a of el.querySelectorAll('a[href]')) {
                     const h = a.getAttribute('href') || '';
-                    if ((h.includes('/posts/') || h.includes('/permalink/')) &&
-                        !h.includes('comment_id')) {
+                    if (h.startsWith('?') || h.includes('comment_id')) continue;
+                    if (PATS.some(p => h.includes(p))) {
                         if (!best || h.length < best.length) best = h;
                     }
                 }
-                if (best && best.startsWith('/'))
-                    best = 'https://www.facebook.com' + best;
+                if (best && best.startsWith('/')) best = 'https://www.facebook.com' + best;
                 return best;
             }"""
         )
-        return result or ""
+        if result and valid(result):
+            return result.split("?")[0]
+        return ""
 
-    # -------------------------------------------------------------------------
-    # CORE COMMENT SCRAPER  (navigate to permalink, read comments there)
-    # -------------------------------------------------------------------------
-    def _scrape_post_comments(self, page: Page, permalink: str) -> list:
-        """
-        Navigate to permalink and collect comments.
-        Accepts a plain string URL — no ElementHandle — so it is never stale.
-        """
+
+    @staticmethod
+    def _get_comment_labels(page: Page) -> set:
+        return {
+            a.get_attribute("aria-label") or ""
+            for a in page.query_selector_all('div[role="article"][aria-label^="Comment by"]')
+        }
+
+    def _scrape_comments(self, page: Page, baseline: set) -> list:
+
         commenters = []
         seen_keys = set()
 
-        if not permalink:
-            print("[FB] No permalink provided — skipping comments")
+        def get_new_articles():
+            all_arts = page.query_selector_all(
+                'div[role="article"][aria-label^="Comment by"]'
+            )
+            return [a for a in all_arts if (a.get_attribute("aria-label") or "") not in baseline]
+
+        print("[FB]   Waiting for comments to load...")
+        for _ in range(20):
+            if get_new_articles():
+                break
+            page.wait_for_timeout(500)
+        else:
+            print("[FB]   No comments appeared — skipping")
             return commenters
 
-        print(f"[FB] Fetching comments from: {permalink}")
-        origin_url = page.url
+        no_progress = 0
+        scroll_count = 0
 
-        try:
-            page.goto(permalink, wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(4000)
+        while len(commenters) < 20:
+            new_articles = get_new_articles()
+            print(f"[FB]   {len(new_articles)} comment articles visible (scroll {scroll_count})")
 
-            scroll_attempts = 0
-            no_progress_streak = 0
-            prev_count = 0
-
-            while len(commenters) < 20 and scroll_attempts < 20:
-                articles = page.query_selector_all(
-                    'div[role="article"][aria-label^="Comment by"]'
-                )
-                print(f"[FB]   {len(articles)} comment articles found (scroll {scroll_attempts + 1})")
-
-                for article in articles:
-                    if len(commenters) >= 20:
-                        break
-                    username = self._author_from_aria(article)
-                    if not username:
-                        continue
-                    comment_text = self._text_from_article(article)
-                    if not comment_text:
-                        continue
-                    key = f"{username}::{comment_text[:80]}"
-                    if key in seen_keys:
-                        continue
-                    seen_keys.add(key)
-                    commenters.append({"username": username, "text": comment_text})
-                    print(f"[FB]     + {username!r}: {comment_text[:50]!r}")
-
-                if len(commenters) == prev_count:
-                    no_progress_streak += 1
-                else:
-                    no_progress_streak = 0
-                prev_count = len(commenters)
-                scroll_attempts += 1
-
-                if no_progress_streak >= 4:
+            added = 0
+            for article in new_articles:
+                if len(commenters) >= 20:
                     break
-                if len(commenters) < 20:
-                    page.mouse.wheel(0, 1500)
-                    page.wait_for_timeout(2000)
+                username = self._author_from_aria(article)
+                comment_text = self._text_from_article(article)
+                if not username or not comment_text:
+                    continue
+                key = f"{username}::{comment_text[:80]}"
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                commenters.append({"username": username, "text": comment_text})
+                print(f"[FB]     + {username!r}: {comment_text[:60]!r}")
+                added += 1
 
-        except Exception as e:
-            print(f"[FB] Error scraping comments: {e}")
-        finally:
+            if len(commenters) >= 20:
+                break
+
+            if added == 0:
+                no_progress += 1
+                if no_progress >= 4:
+                    print("[FB]   No new comments after 4 scrolls — done")
+                    break
+            else:
+                no_progress = 0
+
             try:
-                page.goto(origin_url, wait_until="domcontentloaded", timeout=60000)
-                page.wait_for_timeout(3000)
+                last = new_articles[-1]
+                box = last.bounding_box()
+                if box:
+                    page.mouse.move(
+                        box["x"] + box["width"] / 2,
+                        box["y"] + box["height"] / 2
+                    )
+                page.mouse.wheel(0, 1200)
             except Exception:
-                pass
+                page.mouse.wheel(0, 1200)
+
+            page.wait_for_timeout(2500)
+            scroll_count += 1
 
         return commenters
 
+    def _click_comments_button(self, page: Page, post: ElementHandle) -> bool:
+        try:
+            for btn in post.query_selector_all('div[role="button"], span[role="button"]'):
+                if re.search(r'\d+\s*comment', (btn.inner_text() or "").lower()):
+                    btn.scroll_into_view_if_needed()
+                    btn.click()
+                    return True
+            btn = post.query_selector('[aria-label*="comment" i][role="button"]')
+            if btn:
+                btn.scroll_into_view_if_needed()
+                btn.click()
+                return True
+        except Exception as e:
+            print(f"[FB]   Click failed: {e}")
+        return False
+
+    def _close_comments(self, page: Page, baseline: set):
+        try:
+            page.keyboard.press("Escape")
+            for _ in range(14):  # up to 7s
+                remaining = page.query_selector_all(
+                    'div[role="article"][aria-label^="Comment by"]'
+                )
+                still_open = [
+                    a for a in remaining
+                    if (a.get_attribute("aria-label") or "") not in baseline
+                ]
+                if not still_open:
+                    print("[FB]   Panel closed")
+                    return
+                page.wait_for_timeout(500)
+        except Exception:
+            pass
+        page.wait_for_timeout(1000)
+
+
+
     def scrape_posts(self, page: Page, max_posts: int = 5) -> List[Dict[str, Any]]:
-        """
-        Two-phase approach to avoid stale ElementHandle errors:
 
-        PHASE 1  (on the feed page)
-          - Scroll and collect raw post metadata entirely as plain Python dicts.
-            No ElementHandles are kept — everything extracted to strings immediately.
-
-        PHASE 2  (navigate to each permalink)
-          - For each collected permalink, navigate and scrape comments.
-          - The feed page is never revisited with stale handles.
-        """
         page.goto(self.seed_url, wait_until="domcontentloaded")
         page.wait_for_timeout(4000)
 
-        # ── Phase 1: collect post metadata (plain data only, no ElementHandles) ─────
-        raw_posts = []           # list of dicts with plain string values
+        posts_data: List[Dict[str, Any]] = []
         processed_ids: set = set()
         no_new_rounds = 0
 
-        while len(raw_posts) < max_posts and no_new_rounds < 8:
+        while len(posts_data) < max_posts and no_new_rounds < 8:
             found_new = False
 
-            all_articles = page.query_selector_all('div[role="article"]')
-            post_elements = [
-                el for el in all_articles
-                if not (el.get_attribute("aria-label") or "").startswith("Comment by")
-                and el.query_selector(
-                    'div[data-ad-preview="message"], div[data-ad-comet-preview="message"]'
-                )
-            ]
-
-            for post in post_elements:
-                if len(raw_posts) >= max_posts:
-                    break
-
-                # Caption
+            pending = []
+            for post in page.query_selector_all('div[role="article"]'):
+                if (post.get_attribute("aria-label") or "").startswith("Comment by"):
+                    continue
                 text_el = post.query_selector(
                     'div[data-ad-preview="message"], div[data-ad-comet-preview="message"]'
                 )
@@ -319,88 +300,118 @@ class FacebookScraper(BaseScraper):
                 caption = text_el.inner_text().strip()
                 if not caption:
                     continue
-
                 post_id = hash(caption[:100])
                 if post_id in processed_ids:
                     continue
-                processed_ids.add(post_id)
-                found_new = True
 
-                # Permalink — extract to plain string NOW before any navigation
                 permalink = self._get_post_permalink(post)
-                print(f"[FB] Post permalink: {permalink!r}")
 
-                # Media
-                img_el = post.query_selector('img[data-imgperflogname="feedImage"]')
-                media_url = img_el.get_attribute("src") if img_el else ""
+                media_url, media_type = "", "text"
+                for sel, mtype in [
+                    ('img[data-imgperflogname="feedImage"]', "image"),
+                    ("video[poster]", "video"),
+                ]:
+                    el = post.query_selector(sel)
+                    if el:
+                        src = el.get_attribute("src") or el.get_attribute("poster") or ""
+                        if src:
+                            media_url, media_type = src, mtype
+                            break
+                if not media_url:
+                    for sel in ['a[role="link"] img[src*="t15.5256"]', 'a[role="link"] img[src]']:
+                        el = post.query_selector(sel)
+                        if el:
+                            src = el.get_attribute("src") or ""
+                            if src.startswith("http"):
+                                media_url = src
+                                media_type = "video" if "t15.5256" in sel else "image"
+                                break
 
-                # Stats (reactions / comments / shares)
-                reaction_val, total_comments, total_shares = self._extract_post_stats(page, post)
+                likes, comments, shares = self._extract_post_stats(page, post)
 
-                raw_posts.append({
+                pending.append({
+                    "post_id":    post_id,
                     "caption":    caption,
                     "permalink":  permalink,
                     "media_url":  media_url,
-                    "likes":      reaction_val,
-                    "comments":   total_comments,
-                    "shares":     total_shares,
+                    "media_type": media_type,
+                    "likes":      likes,
+                    "comments":   comments,
+                    "shares":     shares,
                 })
+
+            for meta in pending:
+                if len(posts_data) >= max_posts:
+                    break
+                if meta["post_id"] in processed_ids:
+                    continue
+                processed_ids.add(meta["post_id"])
+                found_new = True
+
+
+
+                baseline = self._get_comment_labels(page)
+
+                fresh_post = None
+                for el in page.query_selector_all('div[role="article"]'):
+                    if (el.get_attribute("aria-label") or "").startswith("Comment by"):
+                        continue
+                    text_el = el.query_selector(
+                        'div[data-ad-preview="message"], div[data-ad-comet-preview="message"]'
+                    )
+                    if text_el and hash(text_el.inner_text().strip()[:100]) == meta["post_id"]:
+                        fresh_post = el
+                        break
+
+                commenters = []
+                if fresh_post and self._click_comments_button(page, fresh_post):
+                    page.wait_for_timeout(2000)  # let panel animate in
+                    commenters = self._scrape_comments(page, baseline)
+                    self._close_comments(page, baseline)
+                else:
+                    print("[FB]   Could not click comments — skipping")
+
+                posts_data.append({
+                    "status":        "active",
+                    "post_url":      meta["permalink"] or self.seed_url,
+                    "datetime":      "",
+                    "caption":       meta["caption"],
+                    "media_url":     meta["media_url"],
+                    "media_type":    meta["media_type"],
+                    "comments":      meta["comments"],
+                    "likes":         meta["likes"],
+                    "shares":        meta["shares"],
+                    "views":         "0",
+                    "connections":   [c["username"] for c in commenters],
+                    "comments_text": [c["text"]     for c in commenters],
+                })
+                print(f"[FB] ✓ {len(commenters)} comments collected | likes={meta['likes']} shares={meta['shares']}")
 
             no_new_rounds = 0 if found_new else no_new_rounds + 1
 
-            if len(raw_posts) < max_posts:
+            if len(posts_data) < max_posts:
                 page.mouse.wheel(0, 2500)
                 page.wait_for_timeout(3000)
-
-        print(f"[FB] Phase 1 complete: {len(raw_posts)} posts collected")
-
-        # ── Phase 2: visit each permalink and scrape comments ────────────────────────
-        posts_data: List[Dict[str, Any]] = []
-
-        for raw in raw_posts:
-            commenters = self._scrape_post_comments(page, raw["permalink"])
-            posts_data.append({
-                "status":        "active",
-                "post_url":      raw["permalink"] or self.seed_url,
-                "datetime":      "",
-                "caption":       raw["caption"],
-                "media_url":     raw["media_url"],
-                "media_type":    "image" if raw["media_url"] else "text",
-                "comments":      raw["comments"],
-                "likes":         raw["likes"],
-                "shares":        raw["shares"],
-                "views":         "0",
-                "connections":   [c["username"] for c in commenters],
-                "comments_text": [c["text"]     for c in commenters],
-            })
 
         return posts_data
 
 
-    # -------------------------------------------------------------------------
-    # REMAINING METHODS (unchanged)
-    # -------------------------------------------------------------------------
 
     def _extract_names(self, page: Page):
         try:
-            name_spans = page.query_selector_all(
-                'span.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x1lkfr7t.x1lbecb7.x1s688f.xzsf02u[dir="auto"]'
-            )
             names = []
-            for span in name_spans:
-                name_text = span.inner_text().strip()
-                if not name_text:
+            for span in page.query_selector_all(
+                'span.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x1lkfr7t.x1lbecb7.x1s688f.xzsf02u[dir="auto"]'
+            ):
+                name = span.inner_text().strip()
+                if not name:
                     continue
-                parent_anchor = span.evaluate_handle('el => el.closest("a")')
-                if not parent_anchor:
+                anchor = span.evaluate_handle('el => el.closest("a")')
+                if not anchor:
                     continue
-                href = parent_anchor.evaluate('el => el.href')
-                is_profile = (
-                    'profile.php?id=' in href or
-                    (href.count('/') >= 3 and '?' not in href.split('/')[-1])
-                )
-                if is_profile:
-                    names.append(name_text)
+                href = anchor.evaluate('el => el.href')
+                if 'profile.php?id=' in href or (href.count('/') >= 3 and '?' not in href.split('/')[-1]):
+                    names.append(name)
             return names
         except Exception:
             return []
@@ -408,151 +419,99 @@ class FacebookScraper(BaseScraper):
     def _resolve_list_url(self, page: Page, mode: str) -> str:
         page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(2500)
-        anchors = page.query_selector_all('a[href]')
-        hrefs = [a.get_attribute("href").lower() for a in anchors if a.get_attribute("href")]
-
-        def has_followers(): return any("/followers" in h or "sk=followers" in h for h in hrefs)
-        def has_following(): return any("/following" in h or "sk=following" in h for h in hrefs)
-        def has_friends():   return any("/friends" in h or "sk=friends" in h for h in hrefs)
+        hrefs = [
+            (a.get_attribute("href") or "").lower()
+            for a in page.query_selector_all('a[href]')
+        ]
+        has_followers = any("/followers" in h or "sk=followers" in h for h in hrefs)
+        has_following = any("/following" in h or "sk=following" in h for h in hrefs)
+        has_friends   = any("/friends"   in h or "sk=friends"   in h for h in hrefs)
 
         if mode == "followers":
-            return self.followers_url if has_followers() else (self.friends_url if has_friends() else self.followers_url)
+            return self.followers_url if has_followers else (self.friends_url if has_friends else self.followers_url)
         if mode == "following":
-            return self.following_url if has_following() else (self.friends_url if has_friends() else self.following_url)
+            return self.following_url if has_following else (self.friends_url if has_friends else self.following_url)
         return self.friends_url
 
-    def _collect_people(self, page: Page, max_items: int, mode: str):
-        target_url = self._resolve_list_url(page, mode)
-        page.goto(target_url, wait_until="domcontentloaded", timeout=60000)
+    def _collect_people(self, page: Page, max_items: int, mode: str) -> List[str]:
+        page.goto(self._resolve_list_url(page, mode), wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(3000)
 
-        collected, seen = [], set()
-        no_progress_rounds = 0
+        collected, seen, no_progress = [], set(), 0
 
-        while len(collected) < max_items and no_progress_rounds < 12:
-            names = self._extract_names(page)
+        while len(collected) < max_items and no_progress < 12:
             added = 0
-            for name in names:
+            for name in self._extract_names(page):
                 if name not in seen:
                     seen.add(name)
                     collected.append(name)
                     added += 1
                 if len(collected) >= max_items:
                     break
-
-            no_progress_rounds = 0 if added else no_progress_rounds + 1
-            if added == 0:
+            no_progress = 0 if added else no_progress + 1
+            if not added:
                 page.wait_for_timeout(1500)
             page.mouse.wheel(0, 4000)
             page.wait_for_timeout(2000)
 
         return collected[:max_items]
 
-    def _extract_profile_info(self, page: Page) -> Dict:
-        print("[Facebook] Extracting profile information...")
-        profile_data = {
-            "real_name": None, "bio": None, "location": None,
-            "total_friends": None, "total_followers": None, "total_following": None,
-        }
-        try:
-            for selector in ['h1.html-h1', 'span[dir="auto"]', 'h2.html-h2']:
-                try:
-                    el = page.query_selector(selector)
-                    if el:
-                        profile_data["real_name"] = el.inner_text().strip()
-                        break
-                except Exception:
-                    continue
-
-            for key, pattern in [
-                ("total_friends", "friends"),
-                ("total_followers", "followers"),
-                ("total_following", "following"),
-            ]:
-                try:
-                    el = page.query_selector(f'a[href*="{pattern}"] strong')
-                    if el:
-                        profile_data[key] = el.inner_text().strip()
-                except Exception:
-                    pass
-
-            for selector in ['div[data-ad-rendering-role="story_message"]']:
-                bio_el = page.query_selector(selector)
-                if bio_el:
-                    profile_data["bio"] = bio_el.inner_text().strip()
-                    break
-
-            print(f"[Facebook] Profile info collected: {profile_data}")
-        except Exception as e:
-            print(f"[Facebook] Error extracting profile info: {e}")
-        return profile_data
 
     def scrape_profile(self, page: Page) -> Dict[str, Any]:
         page.goto(self.seed_url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(4000)
 
-        profile_data = {
+        data: Dict[str, Any] = {
             "real_name": None, "bio": None, "location": None,
-            "total_friends": None, "total_followers": None, "total_following": None,
-            "profile_url": self.seed_url,
+            "total_friends": None, "total_followers": None,
+            "total_following": None, "profile_url": self.seed_url,
         }
 
         try:
-            for selector in ["h1", "h1.html-h1", "h2.html-h2"]:
-                el = page.query_selector(selector)
+            for sel in ["h1", "h1.html-h1", "h2.html-h2"]:
+                el = page.query_selector(sel)
                 if el:
                     text = el.inner_text().strip()
                     if text:
-                        profile_data["real_name"] = text
+                        data["real_name"] = text
                         break
 
-            followers_strong = page.query_selector('a[href*="followers"] strong')
-            if followers_strong:
-                profile_data["total_followers"] = followers_strong.inner_text().strip()
-            else:
-                followers_anchor = page.query_selector('a[href*="followers"]')
-                if followers_anchor:
-                    text = followers_anchor.inner_text().strip()
-                    m = re.search(r"([\d.,]+\s*[KkMmBb]?)\s*followers", text, re.I)
-                    if m:
-                        profile_data["total_followers"] = m.group(1).strip()
-
-            following_strong = page.query_selector('a[href*="following"] strong')
-            if following_strong:
-                profile_data["total_following"] = following_strong.inner_text().strip()
-
-            friends_strong = page.query_selector('a[href*="friends"] strong')
-            if friends_strong:
-                profile_data["total_friends"] = friends_strong.inner_text().strip()
+            for key, pattern in [("total_followers", "followers"),
+                                  ("total_following", "following"),
+                                  ("total_friends",   "friends")]:
+                el = page.query_selector(f'a[href*="{pattern}"] strong')
+                if el:
+                    data[key] = el.inner_text().strip()
+                elif pattern == "followers":
+                    el = page.query_selector(f'a[href*="{pattern}"]')
+                    if el:
+                        m = re.search(r"([\d.,]+\s*[KkMmBb]?)\s*followers", el.inner_text(), re.I)
+                        if m:
+                            data[key] = m.group(1).strip()
 
             bio_el = page.query_selector("div.xz9dl7a.xp6pnuw.x160xiiu > span[dir='auto']")
             if bio_el:
-                profile_data["bio"] = bio_el.inner_text().strip()
+                data["bio"] = bio_el.inner_text().strip()
+            if not data["bio"]:
+                data["bio"] = page.evaluate(
+                    """() => {
+                        const d = document.querySelector('div.xz9dl7a.xp6pnuw.x160xiiu > span[dir="auto"]');
+                        return d ? d.innerText.trim() : null;
+                    }"""
+                )
 
-            if not profile_data["bio"]:
-                bio_text = page.evaluate("""
-                    () => {
-                        const div = document.querySelector(
-                            'div.xz9dl7a.xp6pnuw.x160xiiu > span[dir="auto"]'
-                        );
-                        return div ? div.innerText.trim() : null;
-                    }
-                """)
-                if bio_text:
-                    profile_data["bio"] = bio_text
-
-            for selector in ['a[href*="hometown"]', 'a[href*="location"]', 'a[href*="city"]', "li:has(svg) a"]:
-                el = page.query_selector(selector)
+            for sel in ['a[href*="hometown"]', 'a[href*="location"]', 'a[href*="city"]', "li:has(svg) a"]:
+                el = page.query_selector(sel)
                 if el:
                     text = el.inner_text().strip()
                     if text and not text.lower().startswith("http"):
-                        profile_data["location"] = text
+                        data["location"] = text
                         break
 
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[Facebook] Profile error: {e}")
 
-        return profile_data
+        return data
 
     def scrape_followers(self, page: Page) -> List[str]:
         return self._collect_people(page, self._max_friends, mode="followers")

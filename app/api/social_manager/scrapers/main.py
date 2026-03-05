@@ -64,7 +64,20 @@ def run_scraper(scraper):
         else:
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
 
-        result = scraper.parse_page(page)
+        result = {"profile": {}, "posts": []}
+        try:
+            if hasattr(scraper, "scrape_profile"):
+                result["profile"] = scraper.scrape_profile(page)
+        except Exception as e:
+            print(f">> Profile scrape error: {e}")
+
+        try:
+            if hasattr(scraper, "scrape_posts"):
+                result["posts"] = scraper.scrape_posts(page, max_posts=5)
+        except Exception as e:
+            print(f">> Posts scrape error: {e}")
+
+        result["total_posts"] = len(result.get("posts", []))
 
         browser.close()
         return result
@@ -74,14 +87,14 @@ def main():
 
     scrapers = [
         #InstagramScraper(username="nazarali870", max_followers=10, max_following=10),
-        #FacebookScraper(username="saqibali.jaspal", max_followers=30, max_following=10),
+        FacebookScraper(username="PakistanCricketBoard", max_followers=0, max_following=0),
         # BehanceScraper(username="grapheine", max_followers=30, max_following=30),
         #tiktok(username="bilalshahid669"),
         #TwitterScraper(username="elonmusk", max_followers=10, max_following=10),
         #twitter(username="elonmusk"),
         #DuckDuckGoScraper("Usman Ali"),
         #ImageScraper(name="Elon Musk", limit=20)
-        YoutubeScraper(username="ABMALIKFAREED"),
+        #YoutubeScraper(username="ABMALIKFAREED"),
 
     ]
 
@@ -123,8 +136,9 @@ def main():
                 print(f"    Likes    : {post.get('likes', '')}")
                 print(f"    Duration : {post.get('duration', '')}")
                 print(f"    Posted   : {post.get('datetime', '')}")
-                print(f"    Comments : {len(post.get('comments_text', []))}")
-                for j, (user, text) in enumerate(zip(post.get('top_commenters', []), post.get('comments_text', [])), 1):
+                print(f"    Feed Cmt : {post.get('comments', '0')}")
+                print(f"    Extracted: {len(post.get('comments_text', []))}")
+                for j, (user, text) in enumerate(zip(post.get('connections', []), post.get('comments_text', [])), 1):
                     print(f"      [{j}] @{user}: {text[:80]}")
 
 
