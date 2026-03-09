@@ -199,36 +199,104 @@ class live_search_handler:
             }
 
 
+    @staticmethod
+    def _split_username(username: str) -> str:
+        name = username.replace("_", " ").replace("-", " ").replace(".", " ")
+        name = re.sub(r'([a-z])([A-Z])', r'\1 \2', name)
+        name = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1 \2', name)
+        return " ".join(name.split())
+
+    def _build_image_queries(self, username: str, platform: str) -> List[str]:
+        queries = []
+        split_name = self._split_username(username)
+        has_split = split_name.lower() != username.lower()
+
+        if platform:
+            queries.append(f'"{username}" {platform}')
+            if has_split:
+                queries.append(f'"{split_name}" {platform}')
+            queries.append(f'{username} {platform} photo')
+            if has_split:
+                queries.append(f'{split_name} {platform} photo')
+        else:
+            queries.append(f'"{username}"')
+            if has_split:
+                queries.append(f'"{split_name}"')
+            queries.append(f'{username} photo')
+
+        return queries
+
+    def _image_search(self, queries: List[str], limit: int) -> Tuple[List[Dict], set]:
+        seen_urls: set[str] = set()
+        results = []
+        for query in queries:
+            if len(results) >= limit:
+                break
+            try:
+                with DDGS() as ddgs:
+                    for img in ddgs.images(query, max_results=limit - len(results)):
+                        image_url = img.get("image")
+                        if image_url and image_url not in seen_urls:
+                            seen_urls.add(image_url)
+                            results.append({
+                                "image_url": image_url,
+                                "thumbnail": img.get("thumbnail"),
+                                "title": img.get("title"),
+                                "source": img.get("source"),
+                            })
+            except Exception:
+                continue
+        return results, seen_urls
+
+    def _text_image_fallback(self, username: str, platform: str, limit: int, seen_urls: set) -> List[Dict]:
+        split_name = self._split_username(username)
+        queries = [
+            f'{username} {platform} photos' if platform else f'{username} photos',
+            f'{split_name} {platform} images' if platform else f'{split_name} images',
+        ]
+        results = []
+        for query in queries:
+            if len(results) >= limit:
+                break
+            try:
+                with DDGS() as ddgs:
+                    for r in ddgs.text(query, max_results=limit * 2):
+                        if len(results) >= limit:
+                            break
+                        image_url = r.get("image", "")
+                        href = r.get("href", "")
+                        url = image_url or href
+                        if not url or url in seen_urls:
+                            continue
+                        if image_url or re.search(r'\.(jpg|jpeg|png|webp)', url, re.IGNORECASE):
+                            seen_urls.add(url)
+                            results.append({
+                                "image_url": url,
+                                "thumbnail": image_url or "",
+                                "title": r.get("title", ""),
+                                "source": href,
+                            })
+            except Exception:
+                continue
+        return results
+
     def scrape_images(self, username: str, platform: str, limit: int = 10) -> Dict[str, Any]:
         platform = (platform or "").lower().strip()
-        search_query = f"{username} {platform}"
-        image_results = []
-        try:
-            with DDGS() as ddgs:
-                image_search_results = ddgs.images(search_query, max_results=limit)
-                for img in image_search_results:
-                    image_url = img.get("image")
-                    if image_url:
-                        image_results.append({
-                            "image_url": image_url,
-                            "thumbnail": img.get("thumbnail"),
-                            "title": img.get("title"),
-                            "source": img.get("source"),
-                        })
-            return {
-                "searched_username": username,
-                "platform": platform,
-                "total_found": len(image_results),
-                "images": image_results,
-            }
-        except Exception as e:
-            return {
-                "searched_username": username,
-                "platform": platform,
-                "error": str(e),
-                "total_found": 0,
-                "images": [],
-            }
+        queries = self._build_image_queries(username, platform)
+
+        image_results, seen_urls = self._image_search(queries, limit)
+
+        if len(image_results) < limit:
+            image_results.extend(
+                self._text_image_fallback(username, platform, limit - len(image_results), seen_urls)
+            )
+
+        return {
+            "searched_username": username,
+            "platform": platform,
+            "total_found": len(image_results),
+            "images": image_results,
+        }
 
     def extract_accounts_from_image(self, image_path: str, threshold: float = 0.0) -> list[dict]:
         sites = {site.lower() for site in SITE_DATA.ALL_SITES}
