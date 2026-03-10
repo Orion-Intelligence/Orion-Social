@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 SESSION_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SESSION_FILE_MAP = {
-    "InstagramScraper": "instagram_session.json.gz",
+    "InstagramScraper": "instagramscraper_session.json.gz",
     "FacebookScraper": "FacebookScraper_session.json.gz",
 }
 
@@ -17,7 +17,7 @@ BROWSER_ARGS = [
     "--disable-software-rasterizer",
 ]
 
-BLOCKED_RESOURCES = {"image", "media", "font", "stylesheet"}
+BLOCKED_RESOURCES = {"image", "media", "font"}
 
 
 class playwright_session:
@@ -63,7 +63,7 @@ class playwright_session:
             route.abort()
             return
 
-        if r.resource_type in {"image", "media", "font", "stylesheet"}:
+        if r.resource_type in self.blocked_resources:
             route.abort()
             return
 

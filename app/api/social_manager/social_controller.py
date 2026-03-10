@@ -59,9 +59,11 @@ class social_controller:
 
     def _run_scraper(self, scraper, page) -> Dict[str, Any]:
         if getattr(scraper, "requires_login", False):
-            session = SessionManager(playwright_session.session_file_for(scraper))
+            session = SessionManager(scraper.__class__.__name__)
             if not session.load(page):
-                return {"status": "login_required", "platform": scraper.name}
+                session = SessionManager(playwright_session.session_file_for(scraper))
+                if not session.load(page):
+                    return {"status": "login_required", "platform": scraper.name}
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
             session.apply_storage(page)
             page.reload(wait_until="domcontentloaded")
@@ -71,9 +73,11 @@ class social_controller:
 
     def _run_posts_scraper(self, scraper, page, max_posts: int) -> Dict[str, Any]:
         if getattr(scraper, "requires_login", False):
-            session = SessionManager(playwright_session.session_file_for(scraper))
+            session = SessionManager(scraper.__class__.__name__)
             if not session.load(page):
-                return {"status": "login_required", "platform": scraper.name}
+                session = SessionManager(playwright_session.session_file_for(scraper))
+                if not session.load(page):
+                    return {"status": "login_required", "platform": scraper.name}
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
             session.apply_storage(page)
             page.reload(wait_until="domcontentloaded")
