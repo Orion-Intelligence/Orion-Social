@@ -1,10 +1,15 @@
 import os
 import gzip
 import json
+import traceback
 from playwright.sync_api import Page
 
 
 class SessionManager:
+    @staticmethod
+    def _log_exception(context: str, exc: Exception) -> None:
+        print(f"[SessionManager] {context}: {exc}", flush=True)
+        traceback.print_exc()
 
     def __init__(self, scraper_name: str):
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,7 +49,8 @@ class SessionManager:
                 json.dump(state, f)
 
             return True
-        except Exception:
+        except Exception as exc:
+            self._log_exception(f"save session_file={self.session_file!r}", exc)
             return False
 
     def load(self, page: Page) -> bool:
@@ -62,7 +68,8 @@ class SessionManager:
             self._pending_session = state.get("session_storage", {}) or {}
 
             return True
-        except Exception as _:
+        except Exception as exc:
+            self._log_exception(f"load session_file={self.session_file!r}", exc)
             return False
 
     def apply_storage(self, page: Page) -> bool:
@@ -74,5 +81,6 @@ class SessionManager:
                 page.evaluate("([k, v]) => sessionStorage.setItem(k, v)", [k, v])
 
             return True
-        except Exception:
+        except Exception as exc:
+            self._log_exception("apply_storage", exc)
             return False

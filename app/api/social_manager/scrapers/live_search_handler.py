@@ -2,10 +2,12 @@ import asyncio
 import difflib
 import os
 import re
+import traceback
 from html import unescape
 
 import tldextract
 from ddgs import DDGS
+from ddgs.exceptions import DDGSException
 from typing import Dict, Any, Optional, List, Tuple
 from urllib.parse import urlparse
 from datetime import datetime, timezone
@@ -18,6 +20,82 @@ from PicImageSearch import Yandex
 class live_search_handler:
     def __init__(self) -> None:
         self.timestamp = datetime.now(timezone.utc).isoformat()
+
+    @staticmethod
+    def _log_exception(context: str, exc: Exception) -> None:
+        print(f"[live_search_handler] {context}: {exc}", flush=True)
+        traceback.print_exc()
+
+    @staticmethod
+    def _tor_proxy_url() -> str:
+        return (
+            os.getenv("TOR_IMAGE_PROXY_URL")
+            or os.getenv("TOR_PROXY_URL")
+            or "socks5h://trusted-social_tor_instace_1:9552"
+        )
+
+    def _ddgs(self) -> DDGS:
+        return DDGS(proxy=self._tor_proxy_url())
+
+    @staticmethod
+    def _direct_fallback_enabled() -> bool:
+        return os.getenv("TOR_IMAGE_DIRECT_FALLBACK", "true").lower() not in {"0", "false", "no"}
+
+    @staticmethod
+    def _is_no_results_error(exc: Exception) -> bool:
+        return "No results found" in str(exc)
+
+    @staticmethod
+    def _should_retry_direct(exc: Exception) -> bool:
+        msg = str(exc).lower()
+        return (
+            isinstance(exc, DDGSException)
+            and (
+                "error sending request" in msg
+                or "timed out" in msg
+                or "proxy" in msg
+                or "no results found" in msg
+            )
+        )
+
+    def _log_ddgs_error(self, context: str, exc: Exception) -> None:
+        if self._is_no_results_error(exc):
+            print(f"[live_search_handler] {context}: {exc}", flush=True)
+            return
+        self._log_exception(context, exc)
+
+    def _ddgs_search(self, method: str, query: str, **kwargs: Any) -> List[Dict[str, Any]]:
+        try:
+            with self._ddgs() as ddgs:
+                return getattr(ddgs, method)(query, **kwargs)
+        except Exception as exc:
+            self._log_ddgs_error(f"{method} via_tor query={query!r}", exc)
+            if not self._direct_fallback_enabled() or not self._should_retry_direct(exc):
+                raise
+            print(f"[live_search_handler] {method} direct_fallback query={query!r}", flush=True)
+            with DDGS() as ddgs:
+                return getattr(ddgs, method)(query, **kwargs)
+
+    def _search_yandex(self, image_path: str):
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            yandex = Yandex(proxies=self._tor_proxy_url())
+            return loop.run_until_complete(yandex.search(file=image_path))
+        except Exception as exc:
+            self._log_exception(f"extract_accounts_from_image via_tor image_path={image_path!r}", exc)
+            if not self._direct_fallback_enabled():
+                raise
+            print(f"[live_search_handler] extract_accounts_from_image direct_fallback image_path={image_path!r}", flush=True)
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            yandex = Yandex()
+            return loop.run_until_complete(yandex.search(file=image_path))
+        finally:
+            try:
+                loop.close()
+            except Exception:
+                pass
 
     @staticmethod
     def extract_platform_from_url(url: str) -> Optional[str]:
@@ -144,45 +222,44 @@ class live_search_handler:
         query_lower = query.lower().strip()
 
         try:
-            with DDGS() as ddgs:
-                text_results = ddgs.text(search_query, max_results=30)
-                for r in text_results:
-                    url = r.get("href", "")
-                    if not url:
-                        continue
-                    extracted_platform = self.extract_platform_from_url(url)
-                    if extracted_platform is None:
-                        continue
-                    if platform_clean and extracted_platform != platform_clean:
-                        continue
-                    parsed = urlparse(url)
-                    platform_url = f"{parsed.scheme}://{parsed.netloc}/"
-                    username = self.extract_username_from_url(url, query=query)
+            text_results = self._ddgs_search("text", search_query, max_results=30)
+            for r in text_results:
+                url = r.get("href", "")
+                if not url:
+                    continue
+                extracted_platform = self.extract_platform_from_url(url)
+                if extracted_platform is None:
+                    continue
+                if platform_clean and extracted_platform != platform_clean:
+                    continue
+                parsed = urlparse(url)
+                platform_url = f"{parsed.scheme}://{parsed.netloc}/"
+                username = self.extract_username_from_url(url, query=query)
 
-                    if username is None:
-                        continue
-                    similarity = difflib.SequenceMatcher(None, username.lower(), query_lower).ratio()
-                    if similarity < threshold:
-                        continue
-                    profile_key = f"{extracted_platform}:{username}"
-                    if profile_key in seen_profiles:
-                        continue
-                    seen_profiles.add(profile_key)
-                    if platform_clean or extracted_platform in sites:
-                        results.append({
-                            "metadata": {
-                                "platform": extracted_platform,
-                                "username": username,
-                                "social_handle": username,
-                                "url": platform_url,
-                                "timestamp": self.timestamp,
-                            },
-                            "data": {
-                                "title": r.get("title", ""),
-                                "snippet": r.get("body", ""),
-                                "real_name": self.extract_real_name(r.get("title", "")),
-                            },
-                        })
+                if username is None:
+                    continue
+                similarity = difflib.SequenceMatcher(None, username.lower(), query_lower).ratio()
+                if similarity < threshold:
+                    continue
+                profile_key = f"{extracted_platform}:{username}"
+                if profile_key in seen_profiles:
+                    continue
+                seen_profiles.add(profile_key)
+                if platform_clean or extracted_platform in sites:
+                    results.append({
+                        "metadata": {
+                            "platform": extracted_platform,
+                            "username": username,
+                            "social_handle": username,
+                            "url": platform_url,
+                            "timestamp": self.timestamp,
+                        },
+                        "data": {
+                            "title": r.get("title", ""),
+                            "snippet": r.get("body", ""),
+                            "real_name": self.extract_real_name(r.get("title", "")),
+                        },
+                    })
             return {
                 "query": query,
                 "total_found": len(results),
@@ -190,6 +267,7 @@ class live_search_handler:
                 "results": results,
             }
         except Exception as e:
+            self._log_exception("collect_social_handles", e)
             return {
                 "query": query,
                 "error": str(e),
@@ -233,18 +311,17 @@ class live_search_handler:
             if len(results) >= limit:
                 break
             try:
-                with DDGS() as ddgs:
-                    for img in ddgs.images(query, max_results=limit - len(results)):
-                        image_url = img.get("image")
-                        if image_url and image_url not in seen_urls:
-                            seen_urls.add(image_url)
-                            results.append({
-                                "image_url": image_url,
-                                "thumbnail": img.get("thumbnail"),
-                                "title": img.get("title"),
-                                "source": img.get("source"),
-                            })
-            except Exception:
+                for img in self._ddgs_search("images", query, max_results=limit - len(results)):
+                    image_url = img.get("image")
+                    if image_url and image_url not in seen_urls:
+                        seen_urls.add(image_url)
+                        results.append({
+                            "image_url": image_url,
+                            "thumbnail": img.get("thumbnail"),
+                            "title": img.get("title"),
+                            "source": img.get("source"),
+                        })
+            except Exception as exc:
                 continue
         return results, seen_urls
 
@@ -259,24 +336,23 @@ class live_search_handler:
             if len(results) >= limit:
                 break
             try:
-                with DDGS() as ddgs:
-                    for r in ddgs.text(query, max_results=limit * 2):
-                        if len(results) >= limit:
-                            break
-                        image_url = r.get("image", "")
-                        href = r.get("href", "")
-                        url = image_url or href
-                        if not url or url in seen_urls:
-                            continue
-                        if image_url or re.search(r'\.(jpg|jpeg|png|webp)', url, re.IGNORECASE):
-                            seen_urls.add(url)
-                            results.append({
-                                "image_url": url,
-                                "thumbnail": image_url or "",
-                                "title": r.get("title", ""),
-                                "source": href,
-                            })
-            except Exception:
+                for r in self._ddgs_search("text", query, max_results=limit * 2):
+                    if len(results) >= limit:
+                        break
+                    image_url = r.get("image", "")
+                    href = r.get("href", "")
+                    url = image_url or href
+                    if not url or url in seen_urls:
+                        continue
+                    if image_url or re.search(r'\.(jpg|jpeg|png|webp)', url, re.IGNORECASE):
+                        seen_urls.add(url)
+                        results.append({
+                            "image_url": url,
+                            "thumbnail": image_url or "",
+                            "title": r.get("title", ""),
+                            "source": href,
+                        })
+            except Exception as exc:
                 continue
         return results
 
@@ -303,12 +379,7 @@ class live_search_handler:
         results = []
 
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-            yandex = Yandex()
-            resp = loop.run_until_complete(yandex.search(file=image_path))
-            loop.close()
+            resp = self._search_yandex(image_path)
 
             raw = getattr(resp, "raw", None) or []
             pages = []
@@ -368,21 +439,21 @@ class live_search_handler:
             return results
 
         except Exception as ex:
+            self._log_exception(f"extract_accounts_from_image image_path={image_path!r}", ex)
             return []
 
     def check_username_exists(self, username: str, platform: str) -> bool:
         platform = platform.lower().strip()
         username_lower = username.lower()
         try:
-            with DDGS() as ddgs:
-                search_query = f'site:{platform}.com "{username}"'
-                text_results = ddgs.text(search_query, max_results=10)
-                for r in text_results:
-                    url = r.get("href", "").lower()
-                    if not url or f"{platform}.com" not in url:
-                        continue
-                    if username_lower in url:
-                        return True
+            search_query = f'site:{platform}.com "{username}"'
+            text_results = self._ddgs_search("text", search_query, max_results=10)
+            for r in text_results:
+                url = r.get("href", "").lower()
+                if not url or f"{platform}.com" not in url:
+                    continue
+                if username_lower in url:
+                    return True
             return False
         except Exception:
             return False
@@ -405,18 +476,17 @@ class live_search_handler:
 
         results: List[Dict[str, Any]] = []
         try:
-            with DDGS() as ddgs:
-                text_results = ddgs.text(search_query, max_results=20)
-                for r in text_results:
-                    url = r.get("href", "")
-                    if not url:
-                        continue
-                    results.append({
-                        "title": r.get("title", ""),
-                        "url": url,
-                        "snippet": r.get("body", ""),
-                        "timestamp": self.timestamp,
-                    })
+            text_results = self._ddgs_search("text", search_query, max_results=20)
+            for r in text_results:
+                url = r.get("href", "")
+                if not url:
+                    continue
+                results.append({
+                    "title": r.get("title", ""),
+                    "url": url,
+                    "snippet": r.get("body", ""),
+                    "timestamp": self.timestamp,
+                })
             return {
                 "query": query,
                 "total_found": len(results),
@@ -424,6 +494,7 @@ class live_search_handler:
                 "results": results,
             }
         except Exception as e:
+            self._log_exception(f"search_web query={query!r}", e)
             return {
                 "query": query,
                 "error": str(e),
@@ -442,48 +513,48 @@ class live_search_handler:
             search_query = f'{username} social media profile'
 
         try:
-            with DDGS() as ddgs:
-                text_results = ddgs.text(search_query, max_results=15)
-                for r in text_results:
-                    url = r.get("href", "")
-                    if not url:
-                        continue
-                    extracted_platform = self.extract_platform_from_url(url)
-                    if not extracted_platform:
-                        continue
-                    if platform_clean and extracted_platform != platform_clean:
-                        continue
-                    if username.lower() not in url.lower():
-                        continue
-                    extracted_username = self.extract_username_from_url(url)
-                    if not extracted_username:
-                        extracted_username = username
-                    parsed = urlparse(url)
-                    profile_url = f"{parsed.scheme}://{parsed.netloc}/{extracted_username}"
-                    title = r.get("title", "")
-                    snippet = r.get("body", "")
-                    real_name = self.extract_real_name(title)
-                    return {
-                        "profile": {
-                            "real_name": real_name or "",
-                            "bio": snippet or "",
-                            "location": "",
-                            "total_posts": "",
-                            "total_followers": "",
-                            "total_following": "",
-                            "profile_url": profile_url,
-                        },
-                        "platform": extracted_platform,
-                        "username": extracted_username,
-                        "status": "suggested",
-                    }
+            text_results = self._ddgs_search("text", search_query, max_results=15)
+            for r in text_results:
+                url = r.get("href", "")
+                if not url:
+                    continue
+                extracted_platform = self.extract_platform_from_url(url)
+                if not extracted_platform:
+                    continue
+                if platform_clean and extracted_platform != platform_clean:
+                    continue
+                if username.lower() not in url.lower():
+                    continue
+                extracted_username = self.extract_username_from_url(url)
+                if not extracted_username:
+                    extracted_username = username
+                parsed = urlparse(url)
+                profile_url = f"{parsed.scheme}://{parsed.netloc}/{extracted_username}"
+                title = r.get("title", "")
+                snippet = r.get("body", "")
+                real_name = self.extract_real_name(title)
+                return {
+                    "profile": {
+                        "real_name": real_name or "",
+                        "bio": snippet or "",
+                        "location": "",
+                        "total_posts": "",
+                        "total_followers": "",
+                        "total_following": "",
+                        "profile_url": profile_url,
+                    },
+                    "platform": extracted_platform,
+                    "username": extracted_username,
+                    "status": "suggested",
+                }
             return {
                 "profile": None,
                 "platform": platform_clean,
                 "username": username,
                 "status": "suggested",
             }
-        except Exception:
+        except Exception as exc:
+            self._log_exception(f"scrape_profile username={username!r} platform={platform_clean!r}", exc)
             return {
                 "profile": None,
                 "platform": platform_clean,
@@ -499,28 +570,27 @@ class live_search_handler:
             search_query = f'"{username}" posts OR status OR video social'
         posts = []
         try:
-            with DDGS() as ddgs:
-                text_results = ddgs.text(search_query, max_results=max_posts * 2)
-                for r in text_results:
-                    if len(posts) >= max_posts:
-                        break
-                    url = r.get("href", "")
-                    if not url:
-                        continue
-                    posts.append({
-                        "status": "suggested",
-                        "post_url": url,
-                        "datetime": "",
-                        "caption": r.get("body", ""),
-                        "media_url": "",
-                        "media_type": "text",
-                        "comments": "0",
-                        "likes": "0",
-                        "shares": "0",
-                        "views": "0",
-                        "top_commenters": [],
-                        "comments_text": [],
-                    })
+            text_results = self._ddgs_search("text", search_query, max_results=max_posts * 2)
+            for r in text_results:
+                if len(posts) >= max_posts:
+                    break
+                url = r.get("href", "")
+                if not url:
+                    continue
+                posts.append({
+                    "status": "suggested",
+                    "post_url": url,
+                    "datetime": "",
+                    "caption": r.get("body", ""),
+                    "media_url": "",
+                    "media_type": "text",
+                    "comments": "0",
+                    "likes": "0",
+                    "shares": "0",
+                    "views": "0",
+                    "top_commenters": [],
+                    "comments_text": [],
+                })
             return {
                 "username": username,
                 "platform": platform_str,
