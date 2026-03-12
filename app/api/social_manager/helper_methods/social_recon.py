@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import time
@@ -14,6 +15,13 @@ from api.social_manager.social_enums import SITE_DATA
 
 class social_recon:
     _instance = None
+    TARGETED_MAIGRET_SITES = [
+        "Instagram",
+        "Facebook",
+        "YouTube",
+        "Twitter",
+        "Behance",
+    ]
 
     def __new__(cls):
         if cls._instance is None:
@@ -128,6 +136,11 @@ class social_recon:
             cleaned = self._clean_maigret(data)
             os.remove(report_file)
 
+        if not cleaned:
+            container_cleaned = self._run_maigret_in_container(username, platform)
+            if container_cleaned:
+                cleaned = container_cleaned
+
         if os.path.exists(report_dir) and not os.listdir(report_dir):
             os.rmdir(report_dir)
 
@@ -135,6 +148,44 @@ class social_recon:
             self._progress.update(job_id, 89, f"maigret:done:{platform}:{username}")
 
         return cleaned
+
+    def _run_maigret_in_container(self, username: str, platform: str) -> dict | None:
+        if os.path.exists("/.dockerenv"):
+            return None
+
+        docker_bin = shutil.which("docker")
+        if not docker_bin:
+            return None
+
+        report_dir = f"/tmp/maigret_{uuid.uuid4().hex}"
+        report_file = f"{report_dir}/report_{username}_simple.json"
+        maigret_cmd = [
+            "maigret",
+            username,
+            "--site",
+            platform,
+            "--json",
+            "simple",
+            "--folderoutput",
+            report_dir,
+        ]
+        shell_cmd = (
+            f"mkdir -p {shlex.quote(report_dir)} && "
+            f"{' '.join(shlex.quote(part) for part in maigret_cmd)} >/dev/null 2>&1; "
+            f"cat {shlex.quote(report_file)} 2>/dev/null || true"
+        )
+        result = subprocess.run(
+            [docker_bin, "exec", "trusted-social-api", "sh", "-lc", shell_cmd],
+            capture_output=True,
+            text=True,
+        )
+        payload = (result.stdout or "").strip()
+        if not payload:
+            return None
+        try:
+            return self._clean_maigret(json.loads(payload))
+        except Exception:
+            return None
 
     def run_sherlock(self, username: str, job_id: str | None = None):
         if job_id:
@@ -288,7 +339,7 @@ class social_recon:
         for site in SITE_DATA.FOCUSED_SITES:
             focused_done += 1
             site_lower = site.lower()
-            if site_lower not in scanned_maigret:
+            if site_lower not in scanned_maigret and site not in self.TARGETED_MAIGRET_SITES:
                 continue
 
             if job_id:
@@ -582,7 +633,8 @@ class social_recon:
             return []
 
 if __name__ == "__main__":
+
     recon = social_recon()
-    data = "usmancout"
+    data = "calmmelancholy"
     results = recon.parse(data, mode="default", job_id=None)
     print(json.dumps(results, indent=2, ensure_ascii=False))

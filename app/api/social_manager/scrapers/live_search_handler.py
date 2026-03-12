@@ -46,20 +46,35 @@ class live_search_handler:
         return "No results found" in str(exc)
 
     @staticmethod
+    def _is_resolution_error(exc: Exception) -> bool:
+        msg = str(exc).lower()
+        return (
+            "temporary failure in name resolution" in msg
+            or "failed to lookup address information" in msg
+            or "could not contact dns servers" in msg
+        )
+
+    @staticmethod
     def _should_retry_direct(exc: Exception) -> bool:
         msg = str(exc).lower()
         return (
-            isinstance(exc, DDGSException)
+            (
+                isinstance(exc, DDGSException)
+                or live_search_handler._is_resolution_error(exc)
+            )
             and (
                 "error sending request" in msg
                 or "timed out" in msg
                 or "proxy" in msg
                 or "no results found" in msg
+                or "temporary failure in name resolution" in msg
+                or "failed to lookup address information" in msg
+                or "could not contact dns servers" in msg
             )
         )
 
     def _log_ddgs_error(self, context: str, exc: Exception) -> None:
-        if self._is_no_results_error(exc):
+        if self._is_no_results_error(exc) or self._is_resolution_error(exc):
             print(f"[live_search_handler] {context}: {exc}", flush=True)
             return
         self._log_exception(context, exc)
@@ -71,10 +86,14 @@ class live_search_handler:
         except Exception as exc:
             self._log_ddgs_error(f"{method} via_tor query={query!r}", exc)
             if not self._direct_fallback_enabled() or not self._should_retry_direct(exc):
-                raise
+                return []
             print(f"[live_search_handler] {method} direct_fallback query={query!r}", flush=True)
-            with DDGS() as ddgs:
-                return getattr(ddgs, method)(query, **kwargs)
+            try:
+                with DDGS() as ddgs:
+                    return getattr(ddgs, method)(query, **kwargs)
+            except Exception as direct_exc:
+                self._log_ddgs_error(f"{method} direct query={query!r}", direct_exc)
+                return []
 
     def _search_yandex(self, image_path: str):
         try:

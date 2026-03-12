@@ -35,6 +35,12 @@ class social_controller:
         self.command = command
         self._progress.update(job_id, 0, "starting")
 
+    @staticmethod
+    def _session_for_scraper(scraper):
+        if isinstance(scraper, YoutubeScraper):
+            return playwright_session(headless=True, blocked_resources=set())
+        return playwright_session(headless=True)
+
     def _get_scraper(self, platform, username, max_followers, max_following):
         scraper = None
         if platform == SOCIAL_PLATFORMS.INSTAGRAM:
@@ -92,7 +98,7 @@ class social_controller:
         if not scraper:
             return {"status": "error", "message": f"Unsupported platform: {platform}"}
         self._progress.update(self.job_id, 10, f"initializing:{platform}:{username}")
-        with playwright_session() as s:
+        with self._session_for_scraper(scraper) as s:
             self._progress.update(self.job_id, 30, f"loading:{platform}:{username}")
             result = self._run_scraper(scraper, s.page)
             self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")
@@ -103,7 +109,7 @@ class social_controller:
         if not scraper:
             return {"status": "error", "message": f"Unsupported platform: {platform}"}
         self._progress.update(self.job_id, 10, f"initializing:{platform}:{username}")
-        with playwright_session() as s:
+        with self._session_for_scraper(scraper) as s:
             self._progress.update(self.job_id, 30, f"loading:{platform}:{username}")
             result = self._run_posts_scraper(scraper, s.page, max_posts)
             self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")

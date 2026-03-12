@@ -15,17 +15,20 @@ BROWSER_ARGS = [
     "--disable-gpu",
     "--disable-dev-shm-usage",
     "--disable-software-rasterizer",
+    "--disable-blink-features=AutomationControlled",
 ]
 
 BLOCKED_RESOURCES = {"image", "media", "font"}
 
 
 class playwright_session:
-    def __init__(self, browser_args: Optional[List[str]] = None, blocked_resources: Optional[Set[str]] = None):
+    def __init__(self, browser_args: Optional[List[str]] = None, blocked_resources: Optional[Set[str]] = None, headless: bool = True):
         self.browser_args = browser_args or BROWSER_ARGS
         self.blocked_resources = blocked_resources or BLOCKED_RESOURCES
+        self.headless = headless
         self._playwright = None
         self._browser = None
+        self._context = None
         self.page = None
 
     @staticmethod
@@ -41,15 +44,29 @@ class playwright_session:
     def __enter__(self):
         self._playwright = sync_playwright().start()
 
-        self._browser = self._playwright.chromium.launch(headless=True, args=self.browser_args)
+        self._browser = self._playwright.chromium.launch(headless=self.headless, args=self.browser_args)
 
-        self.page = self._browser.new_page()
+        self._context = self._browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (X11; Linux x86_64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            ),
+            viewport={"width": 1366, "height": 900},
+            locale="en-US",
+        )
+        self._context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        """)
+        self.page = self._context.new_page()
 
         self.page.route("**/*", self._block_media)
         return self
 
     def __exit__(self, exc_type, exc, tb):
         try:
+            if self._context:
+                self._context.close()
             if self._browser:
                 self._browser.close()
         finally:
