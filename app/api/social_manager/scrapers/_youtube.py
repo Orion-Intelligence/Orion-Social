@@ -13,6 +13,7 @@ class YoutubeScraper(BaseScraper):
 
     def __init__(self, username: str, max_followers: int = 0, max_following: int = 0):
         super().__init__(username, max_followers, max_following)
+        self._username = self._username.replace("@", "")
 
     @property
     def base_url(self) -> str:

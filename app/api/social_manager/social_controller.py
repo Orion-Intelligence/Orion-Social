@@ -90,7 +90,10 @@ class social_controller:
         else:
             page.goto(scraper.seed_url, wait_until="domcontentloaded")
         if hasattr(scraper, "scrape_posts"):
-            return {"status": "active", "platform": scraper.name, "data": scraper.scrape_posts(page, max_posts)}
+            try:
+                return {"status": "active", "platform": scraper.name, "data": scraper.scrape_posts(page, max_posts)}
+            except Exception:
+                return {"status": "active", "platform": scraper.name, "data": []}
         return {"status": "error", "message": "posts_not_supported", "platform": scraper.name}
 
     def _scrape_user(self, platform, username, max_followers, max_following) -> Dict[str, Any]:

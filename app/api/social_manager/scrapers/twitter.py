@@ -60,7 +60,10 @@ class TwitterScraper(BaseScraper):
 
     def scrape_posts(self, page: Page, max_posts: int = 5) -> List[Dict[str, Any]]:
         page.goto(self.seed_url, wait_until="domcontentloaded")
-        page.wait_for_selector('[data-testid="tweet"]', timeout=10000)
+        try:
+            page.wait_for_selector('[data-testid="tweet"]', timeout=10000)
+        except Exception:
+            return []
         page.wait_for_timeout(2000)
 
         collected_posts = []
