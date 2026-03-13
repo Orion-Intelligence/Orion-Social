@@ -68,15 +68,34 @@ class FacebookScraper(BaseScraper):
 
     @staticmethod
     def _text_from_article(article: ElementHandle) -> str:
-        el = article.query_selector('div[dir="auto"][style*="text-align"]')
-        if el:
-            return el.inner_text().strip()
-        el = article.query_selector('div[dir="auto"] div[dir="auto"]')
-        if el:
-            return el.inner_text().strip()
-        el = article.query_selector('div[dir="auto"]')
-        if el:
-            return el.inner_text().strip()
+        # Try to extract plain text first
+        for sel in [
+            'div[dir="auto"][style*="text-align"]',
+            'div[dir="auto"] div[dir="auto"]',
+            'div[dir="auto"]',
+        ]:
+            el = article.query_selector(sel)
+            if el:
+                text = el.inner_text().strip()
+                if text:
+                    return text
+
+        # Sticker comment (e.g. "nice" sticker, animated stickers)
+        sticker = article.query_selector('[aria-label*="sticker" i][role="button"]')
+        if sticker:
+            label = (sticker.get_attribute("aria-label") or "").strip()
+            return f"[sticker: {label}]" if label else "[sticker]"
+
+        # Photo / image attachment
+        img = article.query_selector('a[role="link"] img[src], img[alt][src]')
+        if img:
+            alt = (img.get_attribute("alt") or "").strip()
+            return f"[image: {alt}]" if alt else "[image]"
+
+        # Video share or link card
+        if article.query_selector('a[href*="/videos/"], a[href*="watch"]'):
+            return "[video]"
+
         return ""
 
     def _extract_post_stats(self, page: Page, post: ElementHandle) -> Tuple[str, str, str]:
@@ -200,9 +219,14 @@ class FacebookScraper(BaseScraper):
                 if len(commenters) >= 20:
                     break
                 username = self._author_from_aria(article)
-                comment_text = self._text_from_article(article)
-                if not username or not comment_text:
+                if not username:
                     continue
+
+                comment_text = self._text_from_article(article)
+                # Accept any comment — text, sticker, image, video, or empty fallback
+                if not comment_text:
+                    comment_text = "[media]"
+
                 key = f"{username}::{comment_text[:80]}"
                 if key in seen_keys:
                     continue
