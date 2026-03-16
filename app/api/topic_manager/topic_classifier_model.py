@@ -3,7 +3,7 @@ from pathlib import Path
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import logging
-from api.system_micros.topic_manager.topic_classifier_enums import TOPIC_CATEGORIES, TOPIC_CLASSFIER_MODEL
+from api.topic_manager.topic_classifier_enums import TOPIC_CATEGORIES, TOPIC_CLASSFIER_MODEL
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class topic_classifier_model:
 
     def __init__(self):
-        base_dir = Path(__file__).resolve().parents[4]
+        base_dir = Path(__file__).resolve().parents[2]
         self.local_model_dir = str(base_dir / "raw/model/topic_classifier")
         self.tokenizer = AutoTokenizer.from_pretrained(self.local_model_dir)
         self.model = AutoModelForSequenceClassification.from_pretrained(self.local_model_dir)

@@ -34,7 +34,7 @@ class SocialFollowingRequest(BaseModel):
 class SocialPostsRequest(BaseModel):
     platform: Optional[str] = Field(default=None)
     username: Optional[str] = Field(default=None)
-    max_posts: int = Field(default=5, ge=1, le=100)
+    max_posts: int = Field(default=20, ge=1, le=100)
 
     @field_validator("platform", "username", mode="before")
     def sanitize(cls, value: str) -> str:
@@ -121,6 +121,7 @@ class PostData(BaseModel):
     likes: Optional[str] = "0"
     retweets: Optional[str] = None
     views: Optional[str] = None
+    category: Optional[List[str]] = None
 
 
 class PostsResponse(BaseModel):

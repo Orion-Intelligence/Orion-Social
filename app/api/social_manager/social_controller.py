@@ -17,9 +17,13 @@ from api.social_manager.scrapers.tiktok import TikTokScraper
 from api.social_manager.scrapers._youtube import YoutubeScraper
 from api.social_manager.scrapers.live_search_handler import live_search_handler
 from api.social_manager.models import social_model
+from api.topic_manager.topic_classifier_model import topic_classifier_model
+from api.topic_manager.topic_classifier_enums import TOPIC_CLASSFIER_COMMANDS, TOPIC_CLASSFIER_MODEL
 
 
 class social_controller:
+
+    _shared_classifier = None
 
     def __init__(self):
         self._recon = social_recon()
@@ -28,6 +32,21 @@ class social_controller:
         self.job_id = None
         self.command = None
         self._ddg = live_search_handler()
+        if social_controller._shared_classifier is None:
+            social_controller._shared_classifier = topic_classifier_model()
+
+    def _classify_posts(self, posts):
+        if not posts:
+            return posts
+        for post in posts:
+            comments_text = post.get("comments_text") or []
+            description = " ".join(comments_text) if isinstance(comments_text, list) else str(comments_text)
+            preds = social_controller._shared_classifier.sync_invoke_trigger(
+                TOPIC_CLASSFIER_MODEL.S_PREDICT_CLASSIFIER,
+                ["", description, ""]
+            )
+            post["category"] = preds if preds else ["general"]
+        return posts
 
     def init_job(self, job_id: str, command):
         self.job_id = job_id
@@ -236,7 +255,7 @@ class social_controller:
             try:
                 username = data.get("username")
                 platform = data.get("platform")
-                max_posts = data.get("max_posts", 5)
+                max_posts = data.get("max_posts", 20)
                 username = (username or "").strip()
                 if not username:
                     result = {"status": "error", "message": "username_required", "data": None}
@@ -254,13 +273,17 @@ class social_controller:
                 ]
                 if platform in native_platforms:
                     result = self._scrape_posts(platform, username, max_posts)
+                    if result.get("data"):
+                        self._classify_posts(result["data"])
                     self._progress.done(self.job_id, result)
                     return result
                 ddg_result = self._ddg.scrape_posts_search(username, platform, max_posts)
+                posts = ddg_result.get("posts", [])
+                self._classify_posts(posts)
                 result = {
                     "status": "suggested",
                     "platform": platform,
-                    "data": ddg_result.get("posts", []),
+                    "data": posts,
                 }
                 self._progress.done(self.job_id, result)
                 return result
