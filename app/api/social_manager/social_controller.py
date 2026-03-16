@@ -19,11 +19,13 @@ from api.social_manager.scrapers.live_search_handler import live_search_handler
 from api.social_manager.models import social_model
 from api.topic_manager.topic_classifier_model import topic_classifier_model
 from api.topic_manager.topic_classifier_enums import TOPIC_CLASSFIER_COMMANDS, TOPIC_CLASSFIER_MODEL
+from api.topic_manager.hate_speech_model import hate_speech_model
 
 
 class social_controller:
 
     _shared_classifier = None
+    _shared_hate_classifier = None
 
     def __init__(self):
         self._recon = social_recon()
@@ -34,6 +36,8 @@ class social_controller:
         self._ddg = live_search_handler()
         if social_controller._shared_classifier is None:
             social_controller._shared_classifier = topic_classifier_model()
+        if social_controller._shared_hate_classifier is None:
+            social_controller._shared_hate_classifier = hate_speech_model()
 
     def _classify_posts(self, posts):
         if not posts:
@@ -41,11 +45,20 @@ class social_controller:
         for post in posts:
             comments_text = post.get("comments_text") or []
             description = " ".join(comments_text) if isinstance(comments_text, list) else str(comments_text)
+
+            # Topic classification
             preds = social_controller._shared_classifier.sync_invoke_trigger(
                 TOPIC_CLASSFIER_MODEL.S_PREDICT_CLASSIFIER,
                 ["", description, ""]
             )
             post["category"] = preds if preds else ["general"]
+
+            # Hate speech detection - append "hate" or "not hate" to category
+            hate_result = social_controller._shared_hate_classifier.predict(description)
+            if hate_result["label"] == "hate":
+                post["category"].append("hate")
+            else:
+                post["category"].append("not hate")
         return posts
 
     def init_job(self, job_id: str, command):
