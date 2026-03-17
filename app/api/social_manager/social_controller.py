@@ -53,12 +53,9 @@ class social_controller:
             )
             post["category"] = preds if preds else ["general"]
 
-            # Hate speech detection - append "hate" or "not hate" to category
+            # Hate speech detection as a separate boolean field
             hate_result = social_controller._shared_hate_classifier.predict(description)
-            if hate_result["label"] == "hate":
-                post["category"].append("hate")
-            else:
-                post["category"].append("not hate")
+            post["is_hate"] = hate_result["label"] == "hate"
         return posts
 
     def init_job(self, job_id: str, command):

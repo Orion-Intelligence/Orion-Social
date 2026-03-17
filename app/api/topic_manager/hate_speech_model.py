@@ -1,5 +1,4 @@
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -9,26 +8,31 @@ logger = logging.getLogger(__name__)
 class hate_speech_model:
 
     def __init__(self):
-        self.model_name = "facebook/roberta-hate-speech-dynabench-r4-target"
-        logger.info(f"Loading hate speech model: {self.model_name}")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name)
-        self.model.eval()
+        self.model = pipeline(
+            "text-classification",
+            model="TaiwoOgun/minilm-hate-speech",
+        )
+
+    @staticmethod
+    def _is_hate_label(raw_label: str) -> bool:
+        label = (raw_label or "").strip().lower().replace("_", "-")
+        if label in {"hate", "label-1", "toxic", "offensive"}:
+            return True
+        if label in {"nothate", "non-hate", "not-hate", "label-0"}:
+            return False
+        return "hate" in label and "non" not in label and "not" not in label
 
     def predict(self, text: str) -> dict:
         if not text or not text.strip():
             return {"label": "nothate", "score": 1.0}
 
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
+        result = self.model(text, truncation=True)[0]
+        predicted_label = result.get("label", "")
+        predicted_score = float(result.get("score", 0.0))
 
-        logits = outputs.logits
-        probabilities = torch.softmax(logits, dim=-1)
-        predicted_class = torch.argmax(probabilities, dim=-1).item()
-        score = probabilities[0][predicted_class].item()
+        is_hate = self._is_hate_label(predicted_label)
+        toxicity = predicted_score if is_hate else (1.0 - predicted_score)
 
-        # Model labels: 0 = nothate, 1 = hate
-        label = "hate" if predicted_class == 1 else "nothate"
+        label = "hate" if is_hate else "nothate"
 
-        return {"label": label, "score": round(score, 4)}
+        return {"label": label, "score": round(toxicity, 4)}
