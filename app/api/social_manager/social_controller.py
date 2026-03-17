@@ -46,16 +46,14 @@ class social_controller:
             comments_text = post.get("comments_text") or []
             description = " ".join(comments_text) if isinstance(comments_text, list) else str(comments_text)
 
-            # Topic classification
             preds = social_controller._shared_classifier.sync_invoke_trigger(
                 TOPIC_CLASSFIER_MODEL.S_PREDICT_CLASSIFIER,
                 ["", description, ""]
             )
             post["category"] = preds if preds else ["general"]
 
-            # Hate speech detection as a separate boolean field
             hate_result = social_controller._shared_hate_classifier.predict(description)
-            post["is_hate"] = hate_result["label"] == "hate"
+            post["is_hate"] = hate_result.get("is_hate", False)
         return posts
 
     def init_job(self, job_id: str, command):
