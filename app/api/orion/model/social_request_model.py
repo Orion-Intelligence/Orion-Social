@@ -85,6 +85,26 @@ class SocialScrapeRequest(BaseModel):
     targets: List[SocialTarget]
 
 
+class SocialProfileSimilarityModel(BaseModel):
+    real_name: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    total_posts: Optional[int] = Field(default=0, ge=0)
+    total_followers: Optional[int] = Field(default=0, ge=0)
+    total_following: Optional[int] = Field(default=0, ge=0)
+    profile_url: Optional[str] = None
+
+
+class SocialProfileSimilarityRequest(BaseModel):
+    personnas: List[SocialProfileSimilarityModel]
+
+    @field_validator("personnas")
+    def validate_personnas_count(cls, value: List[SocialProfileSimilarityModel]) -> List[SocialProfileSimilarityModel]:
+        if len(value) < 2:
+            raise ValueError("personnas must contain at least 2 profiles")
+        return value
+
+
 class ProfileResponse(BaseModel):
     username: Optional[str] = None
     real_name: Optional[str] = None

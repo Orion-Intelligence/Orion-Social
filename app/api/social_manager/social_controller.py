@@ -4,6 +4,7 @@ from typing import Dict, Any, List
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.helper_methods.social_recon import social_recon
 from api.social_manager.helper_methods.phone_recon import phone_recon
+from api.social_manager.helper_methods.personna import personna
 from api.social_manager.sessions.playwright_session import playwright_session
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS, SOCIAL_PLATFORMS
 from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
@@ -28,6 +29,7 @@ class social_controller:
         self.job_id = None
         self.command = None
         self._ddg = live_search_handler()
+        self._personna = personna()
 
     def init_job(self, job_id: str, command):
         self.job_id = job_id
@@ -325,7 +327,44 @@ class social_controller:
                 self._progress.error(self.job_id, str(exc))
                 raise
 
+
+
+
+
+        if command == SOCIAL_REQUEST_COMMANDS.PROFILE_SIMILARITY:
+            self.init_job(data.get("job_id"), command)
+            try:
+                personnas = data.get("personnas") or []
+                if len(personnas) < 2:
+                    result = {
+                        "status": "error",
+                        "message": "personnas must be 2 or more than 2",
+                        "data": None,
+                    }
+                    self._progress.done(self.job_id, result)
+                    return result
+
+                comparison = self._personna.compare_profiles(personnas[0], personnas[1])
+                likely_original_profile = self._personna.estimate_original_profile(personnas[0], personnas[1])
+                result = {
+                    "status": "success",
+                    "platform": "profile_similarity",
+                    "data": {
+                        "overall_similarity": comparison.get("overall_similarity", 0.0),
+                        "likely_original_profile": likely_original_profile,
+                    },
+                }
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
         return None
+
+
+
+
 
     def get_scrape_status(self, job_id: str) -> Dict[str, Any]:
         return self._progress.get(job_id)

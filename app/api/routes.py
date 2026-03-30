@@ -3,7 +3,7 @@ import hashlib
 from fastapi import APIRouter, UploadFile, File
 
 from api.orion.model.social_request_model import SocialReconRequest, SocialPhoneReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest
-from api.orion.model.social_request_model import SocialReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest
+from api.orion.model.social_request_model import SocialReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest, SocialProfileSimilarityRequest
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
 
@@ -22,6 +22,7 @@ class SocialRoutes:
         self.router.add_api_route("/social/online/usernames", self.online_usernames, methods=["POST"])
         self.router.add_api_route("/social/online/images", self.online_images, methods=["POST"])
         self.router.add_api_route("/social/metadata", self.metadata, methods=["POST"])
+        self.router.add_api_route("/social/profile/similarity", self.profile_similarity, methods=["POST"])
 
     async def social_recon(self, p: SocialReconRequest):
         job_id = str(hash(f"recon:{p.query}:default"))
@@ -69,3 +70,11 @@ class SocialRoutes:
     async def metadata(self, p: DuckDuckGoMetadataRequest):
         job_id = str(hash(f"ddg_metadata:{p.platform}:{p.username}:{p.tokens}"))
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_DDG_METADATA, {"job_id": job_id, "platform": p.platform, "username": p.username, "tokens": p.tokens})
+
+    async def profile_similarity(self, p: SocialProfileSimilarityRequest):
+        job_id = str(hash(f"profile_similarity:{p.model_dump()}"))
+        return await self.orion.social_trigger(
+            job_id,
+            SOCIAL_REQUEST_COMMANDS.PROFILE_SIMILARITY,
+            {"job_id": job_id, "personnas": [profile.model_dump() for profile in p.personnas]},
+        )
