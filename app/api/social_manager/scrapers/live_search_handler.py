@@ -74,8 +74,7 @@ class live_search_handler:
         )
 
     def _log_ddgs_error(self, context: str, exc: Exception) -> None:
-        # DDGS transport/no-result failures are expected in some environments (e.g. Tor).
-        # Keep them as single-line logs because direct fallback already handles recovery.
+       
         if self._should_retry_direct(exc):
             print(f"[live_search_handler] {context}: {exc}", flush=True)
             return
