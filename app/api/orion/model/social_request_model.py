@@ -41,8 +41,6 @@ class SocialPostsRequest(BaseModel):
         if value is None:
             return None
         value = value.strip().lower()
-        if " " in value:
-            raise ValueError("must not contain spaces")
         return value
 
 class DuckDuckGoUsernamesRequest(BaseModel):

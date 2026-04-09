@@ -255,10 +255,6 @@ class social_controller:
                     result = {"status": "error", "message": "username_required", "data": None}
                     self._progress.done(self.job_id, result)
                     return result
-                if " " in username:
-                    result = {"status": "error", "message": "invalid_username", "data": None}
-                    self._progress.done(self.job_id, result)
-                    return result
                 native_platforms = [
                     SOCIAL_PLATFORMS.INSTAGRAM,
                     SOCIAL_PLATFORMS.TWITTER,
