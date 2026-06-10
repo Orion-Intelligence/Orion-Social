@@ -17,6 +17,7 @@ from api.social_manager.scrapers.tiktok import TikTokScraper
 from api.social_manager.scrapers._youtube import YoutubeScraper
 from api.social_manager.scrapers.live_search_handler import live_search_handler
 from api.social_manager.models import social_model
+from api.social_manager.scrapers._duckduckgo_dorker import DuckDuckGoDorker
 
 
 class social_controller:
@@ -285,7 +286,14 @@ class social_controller:
                     result = {"status": "error", "message": "username_required", "data": None}
                     self._progress.done(self.job_id, result)
                     return result
-                result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.collect_social_handles(username, data.get("platform"))}
+
+
+                dorker = DuckDuckGoDorker()
+                dork_result = dorker.smart_search(query=username, platform=data.get("platform"))
+
+
+                result = {"status": "success", "platform": "duckduckgo", "data": dork_result}
+
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
