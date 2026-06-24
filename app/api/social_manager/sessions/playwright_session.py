@@ -22,10 +22,11 @@ BLOCKED_RESOURCES = {"image", "media", "font"}
 
 
 class playwright_session:
-    def __init__(self, browser_args: Optional[List[str]] = None, blocked_resources: Optional[Set[str]] = None, headless: bool = True):
+    def __init__(self, browser_args: Optional[List[str]] = None, blocked_resources: Optional[Set[str]] = None, headless: bool = True, proxy: Optional[dict] = None):
         self.browser_args = browser_args or BROWSER_ARGS
         self.blocked_resources = blocked_resources or BLOCKED_RESOURCES
         self.headless = headless
+        self.proxy = proxy
         self._playwright = None
         self._browser = None
         self._context = None
@@ -44,7 +45,10 @@ class playwright_session:
     def __enter__(self):
         self._playwright = sync_playwright().start()
 
-        self._browser = self._playwright.chromium.launch(headless=self.headless, args=self.browser_args)
+        if self.proxy:
+            self._browser = self._playwright.chromium.launch(headless=self.headless, args=self.browser_args, proxy=self.proxy)
+        else:
+            self._browser = self._playwright.chromium.launch(headless=self.headless, args=self.browser_args)
 
         self._context = self._browser.new_context(
             user_agent=(

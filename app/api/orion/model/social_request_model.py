@@ -11,18 +11,25 @@ class SocialPhoneReconRequest(BaseModel):
 
 
 class SocialProfileRequest(BaseModel):
-    platform: Optional[str] = Field(default=None)
-    username: Optional[str] = Field(default=None)
+    platform: str = Field(..., min_length=1)
+    username: str = Field(..., min_length=1)
+
     @field_validator("platform", "username", mode="before")
     def to_lowercase(cls, value: str) -> str:
         if value is None:
             return None
-        return value.lower()
+        return value.strip().lower()
 
 class SocialFollowersRequest(BaseModel):
     platform: str = Field(..., min_length=1)
     username: str = Field(..., min_length=1)
     max_followers: int = Field(default=50, ge=1, le=5000)
+
+    @field_validator("platform", "username", mode="before")
+    def sanitize(cls, value: str) -> str:
+        if value is None:
+            return None
+        return value.strip().lower()
 
 
 class SocialFollowingRequest(BaseModel):
@@ -30,10 +37,16 @@ class SocialFollowingRequest(BaseModel):
     username: str = Field(..., min_length=1)
     max_following: int = Field(default=50, ge=1, le=5000)
 
+    @field_validator("platform", "username", mode="before")
+    def sanitize(cls, value: str) -> str:
+        if value is None:
+            return None
+        return value.strip().lower()
+
 
 class SocialPostsRequest(BaseModel):
-    platform: Optional[str] = Field(default=None)
-    username: Optional[str] = Field(default=None)
+    platform: str = Field(..., min_length=1)
+    username: str = Field(..., min_length=1)
     max_posts: int = Field(default=5, ge=1, le=100)
 
     @field_validator("platform", "username", mode="before")
@@ -42,6 +55,30 @@ class SocialPostsRequest(BaseModel):
             return None
         value = value.strip().lower()
         return value
+
+
+class SocialVideosRequest(BaseModel):
+    platform: str = Field(..., min_length=1)
+    username: str = Field(..., min_length=1)
+    max_videos: int = Field(default=5, ge=1, le=100)
+
+    @field_validator("platform", "username", mode="before")
+    def sanitize(cls, value: str) -> str:
+        if value is None:
+            return None
+        return value.strip().lower()
+
+
+class SocialShortsRequest(BaseModel):
+    platform: str = Field(..., min_length=1)
+    username: str = Field(..., min_length=1)
+    max_shorts: int = Field(default=5, ge=1, le=100)
+
+    @field_validator("platform", "username", mode="before")
+    def sanitize(cls, value: str) -> str:
+        if value is None:
+            return None
+        return value.strip().lower()
 
 class DuckDuckGoUsernamesRequest(BaseModel):
     username: str = Field(..., min_length=1)
@@ -70,17 +107,6 @@ class DuckDuckGoMetadataRequest(BaseModel):
         if value is None:
             return None
         return value.lower()
-
-
-class SocialTarget(BaseModel):
-    usernames: List[str] = Field(..., min_length=1)
-    platform: str
-    max_followers: int = Field(default=50, ge=1, le=5000)
-    max_following: int = Field(default=50, ge=1, le=5000)
-
-
-class SocialScrapeRequest(BaseModel):
-    targets: List[SocialTarget]
 
 
 class ProfileResponse(BaseModel):

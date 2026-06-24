@@ -9,8 +9,10 @@ rapidfuzz
 holehe
 email-validator
 ddgs
+redis==5.0.0
 requests
 beautifulsoup4
 tranco
 PicImageSearch
+TikTokApi
 tldextract

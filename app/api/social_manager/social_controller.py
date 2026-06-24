@@ -1,22 +1,24 @@
-import time
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.helper_methods.social_recon import social_recon
 from api.social_manager.helper_methods.phone_recon import phone_recon
 from api.social_manager.sessions.playwright_session import playwright_session
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS, SOCIAL_PLATFORMS
-from api.social_manager.helper_methods.cross_platform_mapping import cross_platform_mapper
 from api.social_manager.login_session.session_manager import SessionManager
 from api.social_manager.scrapers.instagram import InstagramScraper
-from api.social_manager.scrapers.facebook import FacebookScraper
-from api.social_manager.scrapers.behance_scraper import BehanceScraper
-from api.social_manager.scrapers.vimeo import VimeoScraper
-from api.social_manager.scrapers.twitter import TwitterScraper
+try:
+    from api.social_manager.scrapers.facebook import FacebookScraper
+except ModuleNotFoundError:
+    FacebookScraper = None
+# from api.social_manager.scrapers.behance_scraper import BehanceScraper
+# from api.social_manager.scrapers.vimeo import VimeoScraper
+from api.social_manager.scrapers.twitter import _twitter as TwitterScraper
 from api.social_manager.scrapers.tiktok import TikTokScraper
 from api.social_manager.scrapers._youtube import YoutubeScraper
+from api.social_manager.scrapers._mastodon import _mastodon as MastodonScraper
+from api.social_manager.scrapers.pastebin import _pastebin as PastebinScraper
 from api.social_manager.scrapers.live_search_handler import live_search_handler
-from api.social_manager.models import social_model
 
 
 class social_controller:
@@ -37,26 +39,39 @@ class social_controller:
 
     @staticmethod
     def _session_for_scraper(scraper):
+        import os
+        from api.social_manager.crawler.crawler_instance.local_shared_model.rule_model import FetchProxy
+        proxy = None
+        if hasattr(scraper, 'rule_config') and getattr(scraper.rule_config, 'm_fetch_proxy', None) == FetchProxy.TOR:
+            tor_url = os.getenv("TOR_PROXY_URL") or "socks5://127.0.0.1:9150"
+            tor_url = tor_url.replace("socks5h://", "socks5://")
+            proxy = {"server": tor_url}
+            
         if isinstance(scraper, YoutubeScraper):
-            return playwright_session(headless=True, blocked_resources=set())
-        return playwright_session(headless=True)
+            return playwright_session(headless=True, blocked_resources=set(), proxy=proxy)
+        return playwright_session(headless=True, proxy=proxy)
 
     def _get_scraper(self, platform, username, max_followers, max_following):
+        platform = (platform or "").strip().lower()
         scraper = None
         if platform == SOCIAL_PLATFORMS.INSTAGRAM:
             scraper = InstagramScraper(username, max_followers, max_following)
-        elif platform == SOCIAL_PLATFORMS.FACEBOOK:
+        elif platform == SOCIAL_PLATFORMS.FACEBOOK and FacebookScraper:
             scraper = FacebookScraper(username, max_followers, max_following)
-        elif platform == SOCIAL_PLATFORMS.BEHANCE:
-            scraper = BehanceScraper(username, max_followers, max_following)
-        elif platform == SOCIAL_PLATFORMS.VIMEO:
-            scraper = VimeoScraper(username, max_followers, max_following)
+        # elif platform == SOCIAL_PLATFORMS.BEHANCE:
+        #     scraper = BehanceScraper(username, max_followers, max_following)
+        # elif platform == SOCIAL_PLATFORMS.VIMEO:
+        #     scraper = VimeoScraper(username, max_followers, max_following)
         elif platform == SOCIAL_PLATFORMS.TWITTER:
-            scraper = TwitterScraper(username, max_followers, max_following)
+            scraper = TwitterScraper(username)
         elif platform == SOCIAL_PLATFORMS.TIKTOK:
-            scraper = TikTokScraper(username, max_followers, max_following)
+            scraper = TikTokScraper(username)
         elif platform == SOCIAL_PLATFORMS.YOUTUBE:
-            scraper = YoutubeScraper(username, max_followers, max_following)
+            scraper = YoutubeScraper(username)
+        elif platform == SOCIAL_PLATFORMS.MASTODON:
+            scraper = MastodonScraper(username)
+        elif platform == SOCIAL_PLATFORMS.PASTEBIN:
+            scraper = PastebinScraper(username)
 
         if scraper and hasattr(scraper, 'set_scope'):
             scraper.set_scope(self.command)
@@ -96,6 +111,24 @@ class social_controller:
                 return {"status": "active", "platform": scraper.name, "data": []}
         return {"status": "error", "message": "posts_not_supported", "platform": scraper.name}
 
+    def _run_videos_scraper(self, scraper, page, max_videos: int) -> Dict[str, Any]:
+        page.goto(scraper.seed_url, wait_until="domcontentloaded")
+        if hasattr(scraper, "scrape_videos"):
+            try:
+                return {"status": "active", "platform": scraper.name, "data": scraper.scrape_videos(page, max_videos)}
+            except Exception as exc:
+                return {"status": "error", "message": str(exc), "platform": scraper.name, "data": []}
+        return {"status": "error", "message": "videos_not_supported", "platform": scraper.name}
+
+    def _run_shorts_scraper(self, scraper, page, max_shorts: int) -> Dict[str, Any]:
+        page.goto(scraper.seed_url, wait_until="domcontentloaded")
+        if hasattr(scraper, "scrape_shorts"):
+            try:
+                return {"status": "active", "platform": scraper.name, "data": scraper.scrape_shorts(page, max_shorts)}
+            except Exception as exc:
+                return {"status": "error", "message": str(exc), "platform": scraper.name, "data": []}
+        return {"status": "error", "message": "shorts_not_supported", "platform": scraper.name}
+
     def _scrape_user(self, platform, username, max_followers, max_following) -> Dict[str, Any]:
         scraper = self._get_scraper(platform, username, max_followers, max_following)
         if not scraper:
@@ -118,32 +151,27 @@ class social_controller:
             self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")
         return result
 
-    def _scrape_multiple(self, targets: List[Dict[str, Any]], compare_results: bool, threshold: int) -> Dict[str, Any]:
-        cross_platform_mapper.clear_cards()
-        total = sum(len(t.get("usernames", [])) for t in targets) or 1
-        done = 0
-        results = []
-        for t in targets:
-            for u in t.get("usernames", []):
-                self._progress.update(self.job_id, int((done / total) * 100), f"scraping:{t.get('platform')}:{u}")
-                time.sleep(1)
-                r = self._scrape_user(t.get("platform"), u, t.get("max_followers", 0), t.get("max_following", 0))
-                results.append(r)
-                if r.get("status") == "success":
-                    d = r.get("data") or {}
-                    cross_platform_mapper.add_card(social_model(
-                        m_platform=r.get("platform"),
-                        m_username=d.get("username", u),
-                        m_followers=d.get("followers", []),
-                        m_following=d.get("following", []),
-                        m_mutual_usernames=d.get("mutual", []),
-                    ))
-                done += 1
-        response = {"status": "success", "scrape_results": results, "total_scraped": len(results)}
-        if compare_results:
-            self._progress.update(self.job_id, 95, "analyzing")
-            response["analysis"] = cross_platform_mapper.get_full_analysis(threshold)
-        return response
+    def _scrape_videos(self, platform, username, max_videos: int) -> Dict[str, Any]:
+        scraper = self._get_scraper(platform, username, 0, 0)
+        if not scraper:
+            return {"status": "error", "message": f"Unsupported platform: {platform}"}
+        self._progress.update(self.job_id, 10, f"initializing:{platform}:{username}")
+        with self._session_for_scraper(scraper) as s:
+            self._progress.update(self.job_id, 30, f"loading:{platform}:{username}")
+            result = self._run_videos_scraper(scraper, s.page, max_videos)
+            self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")
+        return result
+
+    def _scrape_shorts(self, platform, username, max_shorts: int) -> Dict[str, Any]:
+        scraper = self._get_scraper(platform, username, 0, 0)
+        if not scraper:
+            return {"status": "error", "message": f"Unsupported platform: {platform}"}
+        self._progress.update(self.job_id, 10, f"initializing:{platform}:{username}")
+        with self._session_for_scraper(scraper) as s:
+            self._progress.update(self.job_id, 30, f"loading:{platform}:{username}")
+            result = self._run_shorts_scraper(scraper, s.page, max_shorts)
+            self._progress.update(self.job_id, 80, f"parsing:{platform}:{username}")
+        return result
 
     def invoke_trigger(self, command: int, data: Any = None) -> Any:
         data = data or {}
@@ -172,16 +200,6 @@ class social_controller:
                 self._progress.error(self.job_id, str(exc))
                 raise
 
-        if command == SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE:
-            self.init_job(data.get("job_id"), command)
-            try:
-                result = self._scrape_multiple(data.get("targets", []), data.get("compare_results", False), data.get("similarity_threshold", 70))
-                self._progress.done(self.job_id, result)
-                return result
-            except Exception as exc:
-                self._progress.error(self.job_id, str(exc))
-                raise
-
         if command in {
             SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY,
             SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY,
@@ -190,7 +208,7 @@ class social_controller:
             self.init_job(data.get("job_id"), command)
             try:
                 username = data.get("username")
-                platform = data.get("platform")
+                platform = (data.get("platform") or "").strip().lower()
                 if not username:
                     result = {"status": "error", "message": "username_required", "data": None}
                     self._progress.done(self.job_id, result)
@@ -205,7 +223,7 @@ class social_controller:
                 ]
 
                 if command in {SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY, SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY} and platform not in followers_following_supported_platforms:
-                    result = {"status": "success", "data": {}}
+                    result = {"status": "error", "message": f"{platform}_followers_following_not_supported", "data": None}
                     self._progress.done(self.job_id, result)
                     return result
 
@@ -215,6 +233,8 @@ class social_controller:
                     SOCIAL_PLATFORMS.FACEBOOK,
                     SOCIAL_PLATFORMS.TIKTOK,
                     SOCIAL_PLATFORMS.YOUTUBE,
+                    SOCIAL_PLATFORMS.MASTODON,
+                    SOCIAL_PLATFORMS.PASTEBIN,
                 ]
                 if command == SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY and platform not in supported_platforms:
                     ddg_result = self._ddg.scrape_profile(username, platform)
@@ -222,6 +242,40 @@ class social_controller:
                     self._progress.done(self.job_id, result)
                     return result
                 result = self._scrape_user(platform, username, data.get("max_followers", 0), data.get("max_following", 0))
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_VIDEOS:
+            self.init_job(data.get("job_id"), command)
+            try:
+                username = (data.get("username") or "").strip()
+                platform = (data.get("platform") or "").strip().lower()
+                max_videos = data.get("max_videos", 5)
+                if not username:
+                    result = {"status": "error", "message": "username_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = self._scrape_videos(platform, username, max_videos)
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_SHORTS:
+            self.init_job(data.get("job_id"), command)
+            try:
+                username = (data.get("username") or "").strip()
+                platform = (data.get("platform") or "").strip().lower()
+                max_shorts = data.get("max_shorts", 5)
+                if not username:
+                    result = {"status": "error", "message": "username_required", "data": None}
+                    self._progress.done(self.job_id, result)
+                    return result
+                result = self._scrape_shorts(platform, username, max_shorts)
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:
@@ -248,7 +302,7 @@ class social_controller:
             self.init_job(data.get("job_id"), command)
             try:
                 username = data.get("username")
-                platform = data.get("platform")
+                platform = (data.get("platform") or "").strip().lower()
                 max_posts = data.get("max_posts", 5)
                 username = (username or "").strip()
                 if not username:
@@ -260,6 +314,9 @@ class social_controller:
                     SOCIAL_PLATFORMS.TWITTER,
                     SOCIAL_PLATFORMS.FACEBOOK,
                     SOCIAL_PLATFORMS.YOUTUBE,
+                    SOCIAL_PLATFORMS.TIKTOK,
+                    SOCIAL_PLATFORMS.MASTODON,
+                    SOCIAL_PLATFORMS.PASTEBIN,
                 ]
                 if platform in native_platforms:
                     result = self._scrape_posts(platform, username, max_posts)

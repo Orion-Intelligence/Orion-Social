@@ -8,7 +8,6 @@ class SOCIAL_REQUEST_COMMANDS(IntEnum):
     FOLLOWERS_FOLLOWING = 4
     PROFILE_FOLLOWERS = 5
     PROFILE_FOLLOWING = 6
-    S_SCRAPE_MULTIPLE = 7
     S_RECON_USER = 8
     S_POSTS = 9
     S_DDG_USERNAMES = 10
@@ -16,6 +15,8 @@ class SOCIAL_REQUEST_COMMANDS(IntEnum):
     S_RECON_IMAGE = 12
     S_RECON_PHONE = 13
     S_DDG_METADATA = 14
+    S_VIDEOS = 15
+    S_SHORTS = 16
 
 
 class SOCIAL_PLATFORMS:
@@ -26,6 +27,8 @@ class SOCIAL_PLATFORMS:
     TWITTER = "twitter"
     TIKTOK = "tiktok"
     YOUTUBE = "youtube"
+    MASTODON = "mastodon"
+    PASTEBIN = "pastebin"
     DUCKDUCKGO = "duckduckgo"
 
 

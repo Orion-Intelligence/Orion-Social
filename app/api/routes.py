@@ -2,8 +2,7 @@ import hashlib
 
 from fastapi import APIRouter, UploadFile, File
 
-from api.orion.model.social_request_model import SocialReconRequest, SocialPhoneReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest
-from api.orion.model.social_request_model import SocialReconRequest, SocialScrapeRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest
+from api.orion.model.social_request_model import SocialReconRequest, SocialPhoneReconRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, SocialVideosRequest, SocialShortsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
 
@@ -14,11 +13,12 @@ class SocialRoutes:
         self.router.add_api_route("/social/recon", self.social_recon, methods=["POST"])
         self.router.add_api_route("/social/phone", self.phone_recon, methods=["POST"])
         self.router.add_api_route("/social/recon/image", self.social_recon_image, methods=["POST"])
-        self.router.add_api_route("/social/scrape", self.social_scrape, methods=["POST"])
         self.router.add_api_route("/social/profile", self.social_profile, methods=["POST"])
         self.router.add_api_route("/social/followers", self.social_followers, methods=["POST"])
         self.router.add_api_route("/social/following", self.social_following, methods=["POST"])
         self.router.add_api_route("/social/posts", self.social_posts, methods=["POST"])
+        self.router.add_api_route("/social/videos", self.social_videos, methods=["POST"])
+        self.router.add_api_route("/social/shorts", self.social_shorts, methods=["POST"])
         self.router.add_api_route("/social/online/usernames", self.online_usernames, methods=["POST"])
         self.router.add_api_route("/social/online/images", self.online_images, methods=["POST"])
         self.router.add_api_route("/social/metadata", self.metadata, methods=["POST"])
@@ -37,11 +37,6 @@ class SocialRoutes:
         job_id = f"recon_image:{content_hash}"
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_RECON_IMAGE, {"job_id": job_id, "filename": file.filename, "file_bytes": content},)
 
-    async def social_scrape(self, p: SocialScrapeRequest):
-        job_id = str(hash(f"scrape:{p.model_dump()}"))
-        targets = [{"platform": t.platform, "usernames": t.usernames, "max_followers": t.max_followers, "max_following": t.max_following} for t in p.targets]
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_SCRAPE_MULTIPLE, {"job_id": job_id, "scrape_key": job_id, "targets": targets, "compare_results": True, "similarity_threshold": 70})
-
     async def social_profile(self, p: SocialProfileRequest):
         job_id = str(hash(f"profile:{p.platform}:{p.username}"))
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY, {"job_id": job_id, "platform": p.platform, "username": p.username})
@@ -57,6 +52,14 @@ class SocialRoutes:
     async def social_posts(self, p: SocialPostsRequest):
         job_id = str(hash(f"posts:{p.platform}:{p.username}:{p.max_posts}"))
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_POSTS, {"job_id": job_id, "platform": p.platform, "username": p.username, "max_posts": p.max_posts})
+
+    async def social_videos(self, p: SocialVideosRequest):
+        job_id = str(hash(f"videos:{p.platform}:{p.username}:{p.max_videos}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_VIDEOS, {"job_id": job_id, "platform": p.platform, "username": p.username, "max_videos": p.max_videos})
+
+    async def social_shorts(self, p: SocialShortsRequest):
+        job_id = str(hash(f"shorts:{p.platform}:{p.username}:{p.max_shorts}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_SHORTS, {"job_id": job_id, "platform": p.platform, "username": p.username, "max_shorts": p.max_shorts})
 
     async def online_usernames(self, p: DuckDuckGoUsernamesRequest):
         job_id = str(hash(f"ddg_usernames:{p.platform}:{p.username}"))
