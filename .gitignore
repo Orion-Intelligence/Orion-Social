@@ -13,6 +13,7 @@ global_raw
 env/*
 .env
 venv/*
+.venv/
 app/data/*
 app/logs/*
 mongo-data/*

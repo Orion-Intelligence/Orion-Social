@@ -9,6 +9,7 @@ import uuid
 from urllib.parse import urlparse
 
 from api.orion.request_manager.progress_controller import progress_controller
+from api.social_manager.helper_methods.custom_recon import custom_recon
 from api.social_manager.scrapers.live_search_handler import live_search_handler
 from api.social_manager.social_enums import SITE_DATA
 
@@ -33,6 +34,7 @@ class social_recon:
             return
         self._initialized = True
         self._progress = progress_controller.get_instance()
+        self._custom_recon = custom_recon()
 
     def _clean_maigret(self, data: dict) -> dict:
         out = {}
@@ -84,6 +86,23 @@ class social_recon:
             if not ident:
                 continue
 
+            if plat == "reddit":
+                proof = ((r or {}).get("data") or {}).get("profile_existence_proof") or {}
+                proof_url = " ".join(
+                    str(value or "").lower()
+                    for value in (
+                        meta.get("url"),
+                        proof.get("checked_url"),
+                        proof.get("final_url"),
+                    )
+                )
+                bare_ident = ident.split("/", 1)[-1] if ident.startswith(("u/", "r/", "user/")) else ident
+                account_type = str(proof.get("account_type") or "").lower()
+                if account_type == "subreddit" or "/r/" in proof_url:
+                    ident = f"r/{bare_ident}"
+                elif account_type == "user" or "/user/" in proof_url or "/u/" in proof_url:
+                    ident = f"user/{bare_ident}"
+
             per_plat = seen.get(plat)
             if per_plat is None:
                 per_plat = set()
@@ -93,10 +112,11 @@ class social_recon:
                 continue
 
             should_skip = False
-            for s in per_plat:
-                if s in ident or ident in s:
-                    should_skip = True
-                    break
+            if plat != "reddit":
+                for s in per_plat:
+                    if s in ident or ident in s:
+                        should_skip = True
+                        break
             if should_skip:
                 continue
 
@@ -450,7 +470,43 @@ class social_recon:
                 pass
 
         if job_id:
-            self._progress.update(job_id, 95, "finalizing")
+            self._progress.update(job_id, 95, "custom_recon")
+
+        try:
+            custom_results = self._custom_recon.parse_username(base_uname, existing_results=results)
+            if custom_results:
+                existing_keys: set[tuple[str, str]] = set()
+                for r in results:
+                    meta = r.get("metadata") or {}
+                    uname = (meta.get("username") or "").lower()
+                    handle = (meta.get("social_handle") or "").lower()
+                    plat = (meta.get("platform") or "").lower()
+                    ident = uname or handle
+                    if plat and ident:
+                        existing_keys.add((plat, ident))
+
+                custom_total = len(custom_results) or 1
+                for i, item in enumerate(custom_results, start=1):
+                    if job_id and (i == 1 or i == custom_total or i % 10 == 0):
+                        self._progress.update(job_id, 95, f"custom:merge:{i}/{custom_total}")
+                    meta = item.get("metadata") or {}
+                    plat = (meta.get("platform") or "").lower()
+                    uname = (meta.get("username") or "").lower()
+                    handle = (meta.get("social_handle") or meta.get("username") or "").lower()
+                    ident = uname or handle
+                    if not plat or not ident:
+                        continue
+                    k = (plat, ident)
+                    if k in existing_keys:
+                        continue
+                    existing_keys.add(k)
+                    results.append(item)
+        except Exception:
+            if job_id:
+                self._progress.update(job_id, 95, "custom:error")
+
+        if job_id:
+            self._progress.update(job_id, 96, "finalizing")
 
         return self._dedup_results(results)
 
@@ -525,6 +581,20 @@ class social_recon:
 
         if job_id:
             self._progress.update(job_id, 1, "init")
+
+        try:
+            custom_direct = self._custom_recon.parse_direct(v)
+            if custom_direct:
+                if job_id:
+                    self._progress.update(job_id, 95, "custom:direct")
+                return self._dedup_results(custom_direct)
+            if re.match(r"^https?://", v, flags=re.IGNORECASE) or re.match(r"^[A-Za-z0-9.-]+\.[A-Za-z]{2,}(/.*)?$", v):
+                if job_id:
+                    self._progress.update(job_id, 100, "custom:direct:not_supported")
+                return []
+        except Exception:
+            if job_id:
+                self._progress.update(job_id, 3, "custom:direct:error")
 
         is_email = "@" in v and re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", v) is not None
         if is_email:

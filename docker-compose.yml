@@ -20,6 +20,7 @@ services:
       - "8020:8020"
     volumes:
       - ./app/api:/app/api:cached
+      - ./crawler:/app/crawler:cached
       - ./app/raw:/app/raw:cached
     deploy:
       resources:

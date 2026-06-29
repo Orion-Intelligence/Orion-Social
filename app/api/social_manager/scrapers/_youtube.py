@@ -1,60 +1,36 @@
 import re
+import random
 from abc import ABC
-from typing import List, Optional
+from typing import List
 from datetime import datetime
-from urllib.parse import urlparse, parse_qs
-import urllib.request
 
-from crawler.crawler_instance.local_interface_model.leak.leak_extractor_interface import leak_extractor_interface
+from crawler.crawler_instance.local_interface_model.extractor.extraction_interface import extraction_interface
 from crawler.crawler_instance.local_shared_model.data_model.entity_model import entity_model
-from crawler.crawler_instance.local_shared_model.data_model.social_model import social_model
-from crawler.crawler_instance.local_shared_model.rule_model import RuleModel, FetchProxy, FetchConfig, ThreatType,RuleType, SocialDataType
+from crawler.crawler_instance.local_shared_model.data_model.social_model import social_comment_model, social_model
+from crawler.crawler_instance.local_shared_model.rule_model import RuleModel, FetchProxy, FetchConfig, ThreatType, RuleType, SocialDataType
 from crawler.crawler_services.redis_manager.redis_controller import redis_controller
-from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
 
-class YoutubeScraper(leak_extractor_interface, ABC):
+class _youtube(extraction_interface, ABC):
     _instance = None
 
-    def __init__(self, username: str = "", callback=None):
-        if callable(username) and callback is None:
-            callback = username
-            username = ""
+    def __init__(self, callback=None):
+        super().__init__()
         self.callback = callback
         self._card_data = []
         self._entity_data = []
         self._initialized = None
-        self._username = (username or "").strip()
-        self._scope = SOCIAL_REQUEST_COMMANDS.S_POSTS
-        self.m_seed_url = self._channel_url_from_username(self._username)
-        self.m_extract_info_only = False
+        self.m_seed_url = "https://www.youtube.com/@BrutalBikes"
         self._redis_instance = redis_controller()
         self._is_crawled = False
-        self._requested_videos_limit = None
-        self._requested_shorts_limit = None
+        self._last_status = ""
+        self._last_reason = ""
 
     def init_callback(self, callback=None):
         self.callback = callback
 
-    def set_scope(self, scope: int):
-        self._scope = scope
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-
-    @staticmethod
-    def _channel_url_from_username(username: str) -> str:
-        username = (username or "").strip()
-        if not username:
-            return "https://www.youtube.com"
-        if username.startswith("http://") or username.startswith("https://"):
-            return username.rstrip("/")
-        if username.startswith("@"):
-            return f"https://www.youtube.com/{username}"
-        return f"https://www.youtube.com/@{username}"
+    def __new__(cls):
+        return super().__new__(cls)
 
     @property
     def is_crawled(self) -> bool:
@@ -63,10 +39,6 @@ class YoutubeScraper(leak_extractor_interface, ABC):
     @property
     def seed_url(self) -> str:
         return self.m_seed_url
-
-    @property
-    def name(self) -> str:
-        return "YouTube"
 
     @property
     def developer_signature(self) -> str:
@@ -81,9 +53,9 @@ class YoutubeScraper(leak_extractor_interface, ABC):
         rule = RuleModel(
             m_fetch_proxy=FetchProxy.NONE,
             m_fetch_config=FetchConfig.PLAYRIGHT,
-            m_threat_type=ThreatType.SOCIAL,
+            m_threat_type=ThreatType.YOUTUBE,
             m_rule_type=RuleType.YOUTUBE,
-            m_social_data_type=SocialDataType.VIDEOS
+            m_social_data_type=getattr(self, "m_social_data_type", SocialDataType.DEFAULT)
         )
         rule.m_resoource_block = False
         rule.m_resource_block = False
@@ -97,23 +69,16 @@ class YoutubeScraper(leak_extractor_interface, ABC):
     def entity_data(self) -> List[entity_model]:
         return self._entity_data
 
-    def invoke_db(self, command: int, key: str, default_value, expiry: int = None):
+    def invoke_db(self, command: int, key: str, default_value, expiry: int | None = None):
         return self._redis_instance.invoke_trigger(command, [key + self.__class__.__name__, default_value, expiry])
 
     def contact_page(self) -> str:
         return "https://www.youtube.com/t/contact_us"
 
-    def append_leak_data(self, leak: social_model, entity: entity_model):
-        self._card_data.append(leak)
-        self._entity_data.append(entity)
-        if self.callback:
-            if self.callback():
-                self._card_data.clear()
-                self._entity_data.clear()
-
     @staticmethod
     def _parse_counts(text: str) -> int:
         if not text: return 0
+        text = str(text)
         text = text.upper().replace(' VIEWS', '').replace(' SUBSCRIBERS', '').strip()
         text = re.sub(r'[^\x00-\x7F]+', '', text).strip()
 
@@ -122,1001 +87,496 @@ class YoutubeScraper(leak_extractor_interface, ABC):
             if 'M' in text: return int(float(text.replace('M', '').strip()) * 1000000)
             if 'B' in text: return int(float(text.replace('B', '').strip()) * 1000000000)
             return int(re.sub(r'[^0-9]', '', text))
-        except (ValueError, TypeError, AttributeError):
+        except Exception:
             return 0
 
-    def _unshorten_urls(self, text: str) -> List[str]:
-        short_domains = ['bit.ly', 'tinyurl.com', 't.co', 'cutt.ly', 'is.gd', 'rb.gy', 'buff.ly']
-        found_urls = re.findall(r'(https?://[^\s]+)', text)
-        unmasked = []
+    @staticmethod
+    def _video_id_from_url(url: str) -> str:
+        match = re.search(r"(?:[?&]v=|/shorts/)([^?&#/]+)", url or "")
+        return match.group(1) if match else ""
 
-        for url in found_urls:
-            if any(sd in url for sd in short_domains):
-                try:
-                    req = urllib.request.Request(url, method='HEAD')
-                    with urllib.request.urlopen(req, timeout=5) as response:
-                        final_url = response.url
-                        if final_url and final_url != url:
-                            unmasked.append(f"{url} -> {final_url}")
-                except Exception:
-                    pass
-        return list(set(unmasked))
-
-    def _fetch_channel_info(self, page, channel_url):
-        # try:
-            page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
-
-            channel_url = self.seed_url
-            if not channel_url:
-                channel_url = "https://www.youtube.com/@CarryisLive"
-
-            channel_url = channel_url.split("?")[0].rstrip("/")
-            if channel_url.endswith("/videos"):
-                channel_url = channel_url[:-7]
-            if channel_url.endswith("/shorts"):
-                channel_url = channel_url[:-7]
-
-            channel_country = "Unknown"
-            channel_joined = "Unknown"
-            channel_description = "Unknown"
-            channel_avatar = "Unknown"
-            channel_banner = "Unknown"
-            social_profiles = []
-
-            try:
-                page.goto(channel_url, wait_until="domcontentloaded", timeout=60000)
-                page.wait_for_timeout(3000)
-
-                try:
-                    images_data = page.evaluate("""() => {
-                        let avatarEl = document.querySelector('yt-decorated-avatar-view-model img') || document.querySelector('yt-avatar-shape img') || document.querySelector('#avatar img');
-                        let bannerEl = document.querySelector('yt-image-banner-view-model img') || document.querySelector('#page-header-banner img');
-                        return {
-                            avatar: avatarEl ? avatarEl.src : 'Unknown',
-                            banner: bannerEl ? bannerEl.src : 'Unknown'
-                        };
-                    }""")
-                    channel_avatar = images_data.get('avatar', 'Unknown')
-                    channel_banner = images_data.get('banner', 'Unknown')
-                except Exception:
-                    pass
-
-                page.keyboard.press("Escape")
-                page.wait_for_timeout(1000)
-
-                page.evaluate("""() => {
-                    let descBtn = document.querySelector('yt-description-preview-view-model') || 
-                                  document.querySelector('#page-header-description') ||
-                                  document.querySelector('page-header-view-model span[role="button"]');
-                    if(descBtn) descBtn.click();
-                }""")
-                page.wait_for_timeout(2000)
-
-                modal_data = page.evaluate("""() => {
-                    let dialog = document.querySelector('ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-about-this-channel"]') || 
-                                 document.querySelector('tp-yt-paper-dialog') || 
-                                 document.querySelector('#about-container');
-                    let links = [];
-                    if(dialog) {
-                        dialog.querySelectorAll('a').forEach(a => links.push(a.href));
-                        return { text: dialog.innerText, links: links };
-                    }
-                    return { text: "", links: [] };
-                }""")
-
-                raw_text = modal_data.get('text', '')
-                raw_links = modal_data.get('links', [])
-
-                if raw_text:
-                    lines = [line.strip() for line in raw_text.split('\n') if line.strip()]
-                    for idx, line in enumerate(lines):
-                        if line.lower().startswith("joined "):
-                            channel_joined = line[7:].strip()
-                            if idx > 0:
-                                prev_line = lines[idx - 1]
-                                if "youtube.com" not in prev_line and "email address" not in prev_line.lower() and "more info" not in prev_line.lower():
-                                    channel_country = prev_line
-
-                    if "Description" in lines:
-                        desc_start = lines.index("Description") + 1
-                        desc_end = len(lines)
-                        if "Links" in lines:
-                            desc_end = lines.index("Links")
-                        elif "More info" in lines:
-                            desc_end = lines.index("More info")
-
-                        channel_description = " ".join(lines[desc_start:desc_end])
-
-                clean_profiles = []
-                for url in raw_links:
-                    if 'redirect?' in url and 'q=' in url:
-                        try:
-                            parsed = parse_qs(urlparse(url).query)
-                            if 'q' in parsed:
-                                clean_profiles.append(parsed['q'][0])
-                        except Exception:
-                            clean_profiles.append(url)
-                    else:
-                        clean_profiles.append(url)
-                social_profiles = list(set(clean_profiles))
-
-            except Exception:
-                pass
-
-            channel_name = page.evaluate(
-                "() => { let el = document.querySelector('meta[property=\"og:title\"]'); return el ? el.content : 'Unknown'; }")
-
-            combined_content = f"CHANNEL NAME: {channel_name}\nCHANNEL URL: {channel_url}\nCOUNTRY: {channel_country}\nJOINED: {channel_joined}\nAVATAR URL: {channel_avatar}\nBANNER URL: {channel_banner}\n"
-            if channel_description != "Unknown":
-                combined_content += f"\nCHANNEL DESCRIPTION:\n{channel_description}"
-
-            card_data = social_model(
-                m_title=channel_name,
-                m_channel_url=channel_url,
-                m_sender_name=channel_name,
-                m_bio=channel_description,
-                m_platform_joined=channel_joined,
-                m_profile_pic_url=channel_avatar,
-                m_profile_cover_pic_url=channel_banner,
-                m_message_sharable_link=channel_url,
-                m_weblink=social_profiles,
-                m_content=combined_content,
-                m_content_type=["social_collector", "youtube_channel_info"],
-                m_network="clearnet",
-                m_message_date=datetime.now().date(),
-                m_message_id=channel_url.split("@")[-1],
-                m_platform="youtube",
-                m_likes="0",
-                m_comment_count="0",
-                m_retweets="0",
-                m_views="0",
-            )
-
-            entity = entity_model(
-                m_scrap_file=self.__class__.__name__,
-                m_name=channel_name,
-            )
-
-            try:
-                if channel_country != "Unknown":
-                    entity.m_country = [channel_country]
-                if social_profiles:
-                    entity.m_social_media_profiles = social_profiles
-            except Exception:
-                pass
-
-            self.append_leak_data(card_data, entity)
-
-
-    def _fetch_videos(self, page, channel_url, include_shorts=True, max_videos: Optional[int] = None):
-        valid_video_links = []
-
-        channel_country = "Unknown"
-        channel_name = "Unknown"
-        channel_joined = "Unknown"
-        channel_description = "Unknown"
-        channel_avatar = "Unknown"
-        channel_banner = "Unknown"
-        has_shorts = False
-        social_profiles = []
-
-        videos_tab_url = channel_url + "/videos"
+    def _item_limit(self) -> int:
         try:
-            page.goto(videos_tab_url, wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(3000)
+            return max(1, min(int(getattr(self, "m_item_limit", 10) or 10), 100))
+        except Exception:
+            return 10
 
-            page.evaluate("""() => {
-                      let chips = document.querySelectorAll('yt-chip-cloud-chip-renderer');
-                      for (let chip of chips) {
-                          if (chip.innerText.trim().toLowerCase() === 'latest') {
-                              if (!chip.classList.contains('selected')) {
-                                  chip.click();
-                              }
-                              break;
-                          }
-                      }
-                  }""")
-            page.wait_for_timeout(2000)
+    def _comment_limit(self) -> int:
+        try:
+            return max(1, min(int(getattr(self, "m_comment_limit", 10) or 10), 10))
+        except Exception:
+            return 10
 
-            stop_videos_scrolling = False
-            for _ in range(20):
-                if stop_videos_scrolling: break
+    def _comment_offset(self) -> int:
+        try:
+            return max(0, int(getattr(self, "m_comment_offset", 0) or 0))
+        except Exception:
+            return 0
 
-                video_elements = page.evaluate("""() => {
-                          let results = [];
-                          let items = document.querySelectorAll('ytd-rich-item-renderer');
-                          for (let item of items) {
-                              if (item.offsetParent === null) continue; 
+    def _requested_hash_id(self) -> str:
+        return str(getattr(self, "m_hash_id", "") or "").strip()
 
-                              let a = item.querySelector('a.ytLockupMetadataViewModelTitle') || 
-                                      item.querySelector('a#video-title-link') || 
-                                      item.querySelector('a#video-title') ||
-                                      item.querySelector('h3 a');
+    def _is_target_hash_request(self, data_type: SocialDataType) -> bool:
+        return data_type == SocialDataType.COMMENTS and bool(self._requested_hash_id())
 
-                              if (!a || a.href.includes('/shorts/')) continue;
+    def _is_requested_hash_url(self, url: str) -> bool:
+        requested_hash_id = self._requested_hash_id()
+        return bool(requested_hash_id and social_model.unique_identifier("youtube", url, "", "", "") == requested_hash_id)
 
-                              let timeText = "";
-                              let metaSpans = item.querySelectorAll('.inline-metadata-item');
-                              for (let span of metaSpans) {
-                                  let txt = span.innerText.toLowerCase();
-                                  if (txt.includes('ago') || txt.includes('streamed') || txt.includes('premiered')) {
-                                      timeText = txt;
-                                      break;
-                                  }
-                              }
-                              if (!timeText) {
-                                  let match = item.innerText.toLowerCase().match(/[0-9]+\\s*(second|minute|hour|day|week|month|year|s|m|h|d|w|mo|y)s?\\s*ago/);
-                                  if (match) timeText = match[0];
-                              }
-                              results.push({href: a.href, time: timeText});
-                          }
-                          return results;
-                      }""")
-
-                for vid in video_elements:
-                    href = vid.get('href', '')
-                    time_text = vid.get('time', '').lower()
-
-                    if not href or href in valid_video_links:
-                        continue
-
-                    if max_videos is not None and len(valid_video_links) >= max_videos:
-                        stop_videos_scrolling = True
-                        break
-
-                    if not time_text:
-                        valid_video_links.append(href)
-                        continue
-
-                    if re.search(r'\d+\s*(year|years|y)\b', time_text):
-                        stop_videos_scrolling = True
-                        break
-                    elif re.search(r'\d+\s*(month|months|mo)\b', time_text):
-                        if re.search(r'\b1\s*(month|mo)\b', time_text):
-                            valid_video_links.append(href)
-                        else:
-                            stop_videos_scrolling = True
-                            break
-                    else:
-                        valid_video_links.append(href)
-
-                if not stop_videos_scrolling:
-                    page.mouse.wheel(0, 3000)
-                    page.wait_for_timeout(1500)
+    def _collect_comments(self, page, limit: int = 10, offset: int = 0) -> list[dict]:
+        comments: list[dict] = []
+        seen = set()
+        idle_scrolls = 0
+        limit = max(1, min(int(limit or 10), 10))
+        offset = max(0, int(offset or 0))
+        target_count = offset + limit
+        try:
+            for _ in range(4):
+                page.keyboard.press("PageDown")
+                page.wait_for_timeout(500)
         except Exception:
             pass
 
-        valid_media_links = valid_video_links
-
-        if not valid_media_links:
-            return
-
-        btc_pattern = re.compile(r'\b([13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[ac-hj-np-z02-9]{11,71})\b')
-        eth_pattern = re.compile(r'\b0x[a-fA-F0-9]{40}\b')
-        tg_pattern = re.compile(r'(?:https?://)?(?:www\.)?t\.me/([a-zA-Z0-9_]+)')
-        discord_pattern = re.compile(r'(?:https?://)?(?:www\.)?discord\.(?:gg|com/invite)/([a-zA-Z0-9]+)')
-        onion_pattern = re.compile(r'\b([a-z2-7]{16,56}\.onion)\b')
-
-        parsed_video_links = valid_media_links if max_videos is None else valid_media_links[:max_videos]
-
-        for video_idx, original_video_url in enumerate(parsed_video_links, 1):
-            print(f"currently parsing index : {video_idx}")
+        for _ in range(30):
             try:
-                is_short_media = "/shorts/" in original_video_url
+                page.evaluate("""() => {
+                    for (const button of document.querySelectorAll('#more, #more-replies, ytd-button-renderer, tp-yt-paper-button')) {
+                        const text = (button.innerText || '').toLowerCase();
+                        if (text.includes('more') || text.includes('reply')) {
+                            try { button.click(); } catch (e) {}
+                        }
+                    }
+                }""")
+            except Exception:
+                pass
+            try:
+                rows = page.evaluate("""() => Array.from(document.querySelectorAll('ytd-comment-thread-renderer')).map(thread => ({
+                    username: thread.querySelector('#author-text')?.innerText.trim() || '',
+                    text: thread.querySelector('#content-text')?.innerText.trim() || '',
+                    time: thread.querySelector('#published-time-text a, #published-time-text')?.innerText.trim() || '',
+                    likes: thread.querySelector('#vote-count-middle')?.innerText.trim() || ''
+                })).filter(comment => comment.text)""")
+            except Exception:
+                rows = []
 
-                visit_url = original_video_url
-                if is_short_media:
-                    visit_url = original_video_url.replace("/shorts/", "/watch?v=")
+            before_count = len(comments)
+            for row in rows:
+                key = "|".join([str(row.get("username") or ""), str(row.get("time") or ""), str(row.get("text") or "")])
+                if key in seen:
+                    continue
+                seen.add(key)
+                comments.append(row)
+                if len(comments) >= target_count:
+                    return comments[offset:target_count]
 
-                page.goto(visit_url, wait_until="domcontentloaded", timeout=30000)
+            idle_scrolls = idle_scrolls + 1 if len(comments) == before_count else 0
+            if idle_scrolls >= 5:
+                break
+            try:
+                page.mouse.wheel(0, 3500)
+                page.wait_for_timeout(750)
+            except Exception:
+                break
+        return comments[offset:target_count]
 
-                try:
-                    page.evaluate(
-                        "() => { document.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('autoplay'); }); }")
-                except Exception:
-                    pass
+    @staticmethod
+    def _comment_models(top_comments: list[dict]) -> tuple[list[str], list[str], list[social_comment_model]]:
+        comment_texts = [str(comment.get("text", "")).strip() for comment in top_comments if comment.get("text")]
+        commenters = [str(comment.get("username", "")).strip() for comment in top_comments if comment.get("username")]
+        comments = [
+            social_comment_model(
+                m_username=str(comment.get("username", "")).strip() or None,
+                m_time=str(comment.get("time", "")).strip() or None,
+                m_likes=str(comment.get("likes", "")).strip() or None,
+                m_text=str(comment.get("text", "")).strip() or None,
+            )
+            for comment in top_comments
+            if comment.get("text")
+        ]
+        return comment_texts, commenters, comments
 
+    def _append_channel_info(self, page, channel_url: str, data_type: SocialDataType):
+        page.goto(channel_url, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(random.randint(1000, 10000))
+        info = page.evaluate("""() => {
+            const cleanUrl = value => {
+                if (!value) return '';
+                const match = String(value).match(/url\\(["']?([^"')]+)["']?\\)/);
+                const url = match ? match[1] : String(value);
+                if (!url || url.startsWith('data:') || /^(none|initial|inherit|unset)$/i.test(url.trim())) return '';
+                return url.startsWith('//') ? `https:${url}` : url;
+            };
+            const firstAttr = (selectors, attr) => {
+                for (const selector of selectors) {
+                    const node = document.querySelector(selector);
+                    const value = node?.getAttribute(attr) || node?.[attr] || '';
+                    if (value) return cleanUrl(value);
+                }
+                return '';
+            };
+            const title = document.querySelector('meta[property="og:title"]')?.content || document.title.replace(' - YouTube', '');
+            const description = document.querySelector('meta[name="description"]')?.content || '';
+            const text = document.body.innerText || '';
+            const subs = text.match(/[\\d.,]+[KMB]?\\s+subscribers/i);
+            const profileIcon = firstAttr([
+                'meta[property="og:image"]',
+                'link[itemprop="thumbnailUrl"]',
+                '#avatar img',
+                'yt-decorated-avatar-view-model img',
+                'yt-avatar-shape img'
+            ], 'content') || firstAttr(['#avatar img', 'yt-decorated-avatar-view-model img', 'yt-avatar-shape img'], 'src');
+            const coverpage = firstAttr([
+                'ytd-c4-tabbed-header-renderer #banner img',
+                '#page-header-banner img',
+                'yt-page-header-view-model img',
+                'yt-image-banner-view-model img'
+            ], 'src') || cleanUrl(getComputedStyle(document.querySelector('#banner, #page-header-banner') || document.body).backgroundImage);
+            return {title, description, subscribers: subs ? subs[0] : '', profileIcon, coverpage};
+        }""")
+        title = info.get("title") or "Unknown"
+        subscribers = info.get("subscribers") or ""
+        description = info.get("description") or ""
+        content_type = (
+            "profile_info"
+            if data_type in (SocialDataType.PROFILE, SocialDataType.CHANNEL, SocialDataType.FOLLOWERS, SocialDataType.FOLLOWING)
+            else str(data_type.value)
+        )
+        card_data = social_model(
+            m_title=title,
+            m_channel_url=channel_url,
+            m_sender_name=title,
+            m_url=channel_url,
+            m_weblink=[channel_url],
+            m_content=description,
+            m_content_type=["social_collector", "youtube_profile", content_type],
+            m_network="clearnet",
+            m_date=datetime.now().date(),
+            m_platform="youtube",
+            m_group_name=title,
+            m_group_info=f"SUBSCRIBERS: {subscribers}" if subscribers else None,
+            m_img_src=info.get("profileIcon") or None,
+            m_coverpage=info.get("coverpage") or None,
+            m_scrap_file=self.__class__.__name__,
+        )
+        self.append_leak_data(card_data, entity_model())
+
+    def _collect_video_links(self, page, channel_url: str, is_shorts: bool, limit: int = 10, target_hash: bool = False) -> list[str]:
+        page.goto(channel_url.rstrip("/") + ("/shorts" if is_shorts else "/videos"), wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(1000)
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(500)
+        if not is_shorts:
+            page.evaluate("""() => {
+                for (let chip of document.querySelectorAll('yt-chip-cloud-chip-renderer')) {
+                    if (chip.innerText.trim().toLowerCase() === 'latest') {
+                        if (!chip.classList.contains('selected')) chip.click();
+                        break;
+                    }
+                }
+            }""")
+            page.wait_for_timeout(1000)
+
+        links = []
+        seen_links = set()
+        no_new_scrolls = 0
+        max_scrolls = 20 if target_hash else (5 if limit <= 5 else 20)
+        for _ in range(max_scrolls):
+            before_count = len(seen_links)
+            for href in page.evaluate("""() => Array.from(document.querySelectorAll('ytd-rich-item-renderer a[href]'))
+                .map(a => a.getAttribute('href'))
+                .filter(Boolean)"""):
+                if (is_shorts and "/shorts/" not in href) or (not is_shorts and "/shorts/" in href):
+                    continue
+                full_link = self.base_url + href if href.startswith("/") else href
+                if self._is_requested_hash_url(full_link):
+                    return [full_link] if target_hash else links
+                if full_link in seen_links:
+                    continue
+                seen_links.add(full_link)
+                if target_hash:
+                    continue
+                links.append(full_link)
+                if len(links) >= limit:
+                    return links
+            if len(seen_links) == before_count:
+                no_new_scrolls += 1
+            else:
+                no_new_scrolls = 0
+            if no_new_scrolls >= 3:
+                break
+            page.mouse.wheel(0, 3000)
+            page.wait_for_timeout(750)
+        return links
+
+    def _parse_video_data(self, page, channel_url: str, data_type: SocialDataType, is_shorts: bool, check_latest: bool = False):
+        video_content_type = "youtube_short" if is_shorts else "youtube_video"
+        social_data_type = str(data_type.value)
+        target_hash = self._is_target_hash_request(data_type)
+        for video_idx, video_url in enumerate(self._collect_video_links(page, channel_url, is_shorts, self._item_limit(), target_hash), 1):
+            try:
+                if not target_hash and self._is_requested_hash_url(video_url):
+                    return
+                video_id = self._video_id_from_url(video_url)
+                page.goto(f"{self.base_url}/watch?v={video_id}" if is_shorts and video_id else video_url, wait_until="domcontentloaded", timeout=30000)
+                page.wait_for_timeout(1000)
                 page.wait_for_selector("h1.ytd-watch-metadata", state="visible", timeout=15000)
+                page.wait_for_selector("ytd-video-owner-renderer", state="visible", timeout=10000)
 
-                exact_date_str = page.evaluate("""() => {
-                                let meta = document.querySelector('meta[itemprop="datePublished"]');
-                                return meta ? meta.getAttribute('content') : '';
-                            }""")
-
-                if exact_date_str:
-                    try:
-                        exact_date = datetime.strptime(exact_date_str[:10], "%Y-%m-%d").date()
-                    except Exception:
-                        exact_date = datetime.now().date()
-                else:
-                    exact_date = datetime.now().date()
-
-                title = "Unknown"
                 title_elem = page.locator("h1.ytd-watch-metadata yt-formatted-string").first
-                if title_elem.count() > 0: title = title_elem.inner_text(timeout=2000)
+                title = title_elem.inner_text(timeout=3000) if title_elem.count() > 0 else "Unknown"
 
-                views_count = 0
-                views_elem = page.locator("yt-formatted-string#info span").nth(0)
-                views_text = views_elem.inner_text(timeout=2000) if views_elem.count() > 0 else "0"
+                views_text = page.evaluate("""() => {
+                    const metaViews = Array.from(document.querySelectorAll('meta[itemprop="interactionCount"], meta[itemprop="userInteractionCount"]'))
+                        .map(meta => Number((meta.content || '').replace(/[^0-9]/g, '')))
+                        .filter(Boolean)
+                        .sort((a, b) => b - a)[0];
+                    if (metaViews) return metaViews;
+                    const viewAria = document.querySelector('[aria-label*="views" i]')?.getAttribute('aria-label');
+                    if (viewAria) return viewAria;
+                    return document.querySelector('yt-formatted-string#info span')?.innerText || '0';
+                }""")
                 views_count = self._parse_counts(views_text)
 
                 likes_count = 0
                 try:
-                    likes_text = page.evaluate("""() => {
-                                    let btn = document.querySelector('like-button-view-model button');
-                                    if (!btn) return '0';
-                                    let aria = btn.getAttribute('aria-label');
-                                    if (aria) {
-                                        let match = aria.match(/with\\s+([\\d,]+)\\s+other/i) || aria.match(/([\\d,]+)\\s+likes/i);
-                                        if (match) return match[1];
-                                    }
-                                    let textDiv = btn.querySelector('.ytSpecButtonShapeNextButtonTextContent');
-                                    return textDiv ? textDiv.innerText : btn.innerText;
-                                }""")
-                    likes_count = self._parse_counts(likes_text)
+                    likes_count = self._parse_counts(page.evaluate("""() => {
+                        let btn = document.querySelector('like-button-view-model button');
+                        if (!btn) return '0';
+                        let aria = btn.getAttribute('aria-label');
+                        if (aria) {
+                            let match = aria.match(/with\\s+([\\d,]+)\\s+other/i) || aria.match(/([\\d,]+)\\s+likes/i);
+                            if (match) return match[1];
+                        }
+                        let textDiv = btn.querySelector('.ytSpecButtonShapeNextButtonTextContent');
+                        if (textDiv && textDiv.innerText) return textDiv.innerText;
+                        return btn.innerText;
+                    }"""))
                 except Exception:
                     pass
 
-                subs_count = 0
-                try:
-                    subs_elem = page.locator("ytd-video-owner-renderer #owner-sub-count").first
-                    subs_text = subs_elem.inner_text(timeout=2000) if subs_elem.count() > 0 else "0"
-                    subs_count = self._parse_counts(subs_text)
-                except Exception:
-                    pass
+                channel_elem = page.locator("ytd-video-owner-renderer #channel-name a").first
+                channel_name = channel_elem.inner_text(timeout=3000) if channel_elem.count() > 0 else "Unknown"
+                subs_elem = page.locator("ytd-video-owner-renderer #owner-sub-count").first
+                subs_count = self._parse_counts(subs_elem.inner_text(timeout=3000) if subs_elem.count() > 0 else "0")
+                is_viral = (views_count / subs_count) > 0.20 if subs_count > 0 else False
 
-                viral_ratio = (views_count / subs_count) if subs_count > 0 else 0
-                is_viral = viral_ratio > 0.20
+                video_content = page.evaluate("""() => {
+                    const expand = document.querySelector('#expand, tp-yt-paper-button#expand');
+                    if (expand) expand.click();
+                    const selectors = [
+                        'ytd-watch-metadata #description-inline-expander',
+                        'ytd-watch-metadata ytd-text-inline-expander',
+                        '#description #content',
+                    ];
+                    for (const selector of selectors) {
+                        const el = document.querySelector(selector);
+                        if (el && el.innerText.trim()) return el.innerText.trim();
+                    }
+                    return document.querySelector('meta[name="description"]')?.content || '';
+                }""")
+                thumbnail = page.evaluate("""() => {
+                    const value = document.querySelector('meta[property="og:image"], link[itemprop="thumbnailUrl"]')?.content || '';
+                    return value.startsWith('//') ? `https:${value}` : value;
+                }""") or (f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg" if video_id else "")
 
-                top_comments = []
-                try:
-                    for _ in range(4):
-                        page.keyboard.press("PageDown")
-                        page.wait_for_timeout(1000)
-
-                    page.wait_for_selector("ytd-comment-thread-renderer", state="visible", timeout=10000)
-
-                    prev_count = 0
-                    same_count_rounds = 0
-                    for scroll_idx in range(40):
-                        current_count = page.evaluate(
-                            "document.querySelectorAll('ytd-comment-thread-renderer').length")
-                        if current_count >= 200: break
-
-                        if current_count == prev_count:
-                            same_count_rounds += 1
-                            if same_count_rounds >= 3:
-                                break
-                        else:
-                            same_count_rounds = 0
-
-                        prev_count = current_count
-                        page.evaluate(
-                            "() => { let scroller = document.querySelector('#comments') || window; scroller.scrollBy(0, 1500); }")
-                        page.wait_for_timeout(1500)
-
-                    extracted_comments = page.evaluate("""() => {
-                                    let elems = document.querySelectorAll('ytd-comment-thread-renderer #content-text');
-                                    let texts = [];
-                                    for(let i=0; i<elems.length && i<200; i++) {
-                                        let txt = elems[i].innerText.trim();
-                                        if(txt) texts.push(txt);
-                                    }
-                                    return texts;
-                                }""")
-                    top_comments.extend(extracted_comments)
-                except Exception:
-                    pass
-
-                iocs = []
-                unmasked_links = []
-                try:
-                    page_text = page.evaluate("document.body.innerText")
-                    desc_text = channel_description if channel_description != "Unknown" else ""
-                    unmasked_links = self._unshorten_urls(page_text + desc_text)
-
-                    for match in btc_pattern.findall(page_text): iocs.append(f"BTC Wallet: {match}")
-                    for match in eth_pattern.findall(page_text): iocs.append(f"ETH Wallet: {match}")
-                    for match in onion_pattern.findall(page_text): iocs.append(f"DarkWeb Link: {match}")
-                    for match in tg_pattern.findall(page_text): iocs.append(f"Telegram: t.me/{match}")
-                    for match in discord_pattern.findall(page_text): iocs.append(f"Discord: discord.gg/{match}")
-
-                    iocs = list(set(iocs))
-                except Exception:
-                    pass
-
-                media_type_label = "SHORT" if is_short_media else "VIDEO"
-                combined_content = f"TITLE: {title} [{media_type_label}]\nEXACT DATE: {exact_date}\nVIEWS: {views_count:,}\nLIKES: {likes_count:,}\nCHANNEL: {channel_name}\nSUBSCRIBERS: {subs_count:,}\nCOUNTRY: {channel_country}\nJOINED: {channel_joined}\nAVATAR URL: {channel_avatar}\nBANNER URL: {channel_banner}\nVIRAL RATIO: {viral_ratio:.2f}x\nIS VIRAL: {'YES' if is_viral else 'NO'}\nCHANNEL HAS SHORTS: {has_shorts}"
-
-                if channel_description != "Unknown":
-                    combined_content += f"\n\nCHANNEL DESCRIPTION:\n{channel_description[:250]}..."
-
-                if unmasked_links:
-                    combined_content += "\n\n⚠️ UNMASKED URLs (POTENTIAL THREATS):\n"
-                    for ul in unmasked_links:
-                        combined_content += f"- {ul}\n"
-
-                if iocs:
-                    combined_content += "\n\n⚠️ THREAT IOCs FOUND:\n"
-                    for ioc in iocs:
-                        combined_content += f"- {ioc}\n"
-
-                if top_comments:
-                    combined_content += "\n\nTOP COMMENTS:\n"
-                    for idx, comment in enumerate(top_comments, 1):
-                        combined_content += f"{idx}. {comment[:100]}...\n"
-
+                load_comments = data_type == SocialDataType.COMMENTS
+                top_comments = self._collect_comments(page, self._comment_limit(), self._comment_offset()) if load_comments else []
+                comment_texts, _, comments = self._comment_models(top_comments)
                 card_data = social_model(
                     m_title=title,
                     m_channel_url=channel_url,
                     m_sender_name=channel_name,
-                    m_message_sharable_link=original_video_url,
+                    m_url=video_url,
                     m_weblink=[],
-                    m_content=combined_content,
-                    m_content_type=["social_collector", "youtube_video", media_type_label.lower()],
+                    m_content=video_content,
+                    m_content_type=["social_collector", video_content_type, social_data_type],
                     m_network="clearnet",
-                    m_message_date=exact_date,
-                    m_message_id=original_video_url.split("/")[-1].split("?")[0],
+                    m_date=datetime.now().date(),
+                    m_message_id=video_id or str(video_idx),
                     m_platform="youtube",
                     m_likes=str(likes_count),
-                    m_comment_count=str(len(top_comments)),
-                    m_retweets="0",
+                    m_comment_count=str(len(comment_texts)) if load_comments else None,
+                    m_comments=comments,
                     m_views=str(views_count),
-                    m_commenters=top_comments,
-                )
-
-                entity = entity_model(
+                    m_viral=is_viral,
+                    m_group_name=channel_name,
+                    m_group_info=f"SUBSCRIBERS: {subs_count}" if subs_count else None,
+                    m_img_src=thumbnail or None,
                     m_scrap_file=self.__class__.__name__,
-                    m_name=channel_name
                 )
-
-                try:
-                    if channel_country != "Unknown":
-                        entity.m_country = channel_country
-                    if social_profiles:
-                        entity.m_social_media_profiles = social_profiles
-                    if channel_avatar != "Unknown":
-                        entity.m_avatar = channel_avatar
-                    if channel_banner != "Unknown":
-                        entity.m_banner = channel_banner
-                except Exception:
-                    pass
-
-                self.append_leak_data(card_data, entity)
-
+                if target_hash:
+                    if self._is_requested_hash_id(card_data):
+                        self.append_leak_data(card_data, entity_model())
+                    return
+                if self._is_requested_hash_id(card_data):
+                    return
+                self.append_leak_data(card_data, entity_model())
             except Exception:
                 continue
 
-    def _fetch_posts(self, page, channel_url):
-
-        channel_country = "Unknown"
-        channel_name = "Unknown"
-        channel_avatar = "Unknown"
-        channel_banner = "Unknown"
-        social_profiles = []
-
-        btc_pattern = re.compile(r'\b([13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[ac-hj-np-z02-9]{11,71})\b')
-        eth_pattern = re.compile(r'\b0x[a-fA-F0-9]{40}\b')
-        tg_pattern = re.compile(r'(?:https?://)?(?:www\.)?t\.me/([a-zA-Z0-9_]+)')
-        discord_pattern = re.compile(r'(?:https?://)?(?:www\.)?discord\.(?:gg|com/invite)/([a-zA-Z0-9]+)')
-        onion_pattern = re.compile(r'\b([a-z2-7]{16,56}\.onion)\b')
-
-        has_posts = "No"
-        try:
-            tabs_info = page.evaluate("""() => {
-                                const tabs = Array.from(document.querySelectorAll('yt-tab-shape'));
-                                return {
-                                    posts: tabs.some(tab => tab.getAttribute('tab-title') === 'Posts' || tab.getAttribute('tab-title') === 'Community' || tab.innerText.includes('Posts') || tab.innerText.includes('Community')) ? 'Yes' : 'No'
-                                };
-                            }""")
-            has_posts = tabs_info.get('posts', 'No')
-        except Exception:
-            pass
-
-        if has_posts == "Yes":
-            posts_tab_url = channel_url + "/posts"
+    def _parse_posts(self, page, channel_url: str, data_type: SocialDataType, check_latest: bool = False):
+        seen_urls = set()
+        limit = self._item_limit()
+        social_data_type = str(data_type.value)
+        target_hash = self._is_target_hash_request(data_type)
+        collected_posts = []
+        hit_hash_cut = False
+        navigation_errors = []
+        for suffix in ("/community", "/posts"):
             try:
-                page.goto(posts_tab_url, wait_until="domcontentloaded", timeout=60000)
-                page.wait_for_timeout(3000)
-
-                stop_posts_scrolling = False
-                for _ in range(50):
-                    if stop_posts_scrolling: break
-
-                    last_time = page.evaluate("""() => {
-                        let times = document.querySelectorAll('ytd-backstage-post-renderer #published-time-text');
-                        if (times.length === 0) return "";
-                        return times[times.length - 1].innerText.toLowerCase();
-                    }""")
-
-                    if not last_time:
-                        break
-
-                    match = re.search(r'(\d+)\s*(year|years|y)\b', last_time)
-                    if match and int(match.group(1)) >= 1:
-                        stop_posts_scrolling = True
-                        break
-
-                    page.mouse.wheel(0, 4000)
-                    page.wait_for_timeout(1500)
-
-                page.evaluate(
-                    "() => { document.querySelectorAll('tp-yt-paper-button#more').forEach(b => b.click()); }")
-                page.wait_for_timeout(1500)
-
-                extracted_posts = page.evaluate("""() => {
-                    let results = [];
-                    let items = document.querySelectorAll('ytd-backstage-post-renderer');
-                    for (let item of items) {
-                        if (item.offsetParent === null) continue;
-
-                        let timeEl = item.querySelector('#published-time-text a');
-                        let timeText = timeEl ? timeEl.innerText.trim() : "";
-                        let url = timeEl ? timeEl.href : "";
-
-                        let textEl = item.querySelector('#content-text');
-                        let postText = textEl ? textEl.innerText.trim() : "";
-
-                        let likesEl = item.querySelector('#vote-count-middle');
-                        let likes = likesEl ? likesEl.innerText.trim() : "0";
-
-                        let commentEl = item.querySelector('ytd-comment-action-buttons-renderer #reply-button-end span, ytd-comment-action-buttons-renderer #text');
-                        let comments = commentEl ? commentEl.innerText.trim() : "0";
-
-                        let imgEls = item.querySelectorAll('ytd-backstage-image-renderer img');
-                        let images = [];
-                        for(let img of imgEls){
-                            if(img.src && img.src.includes('http')) images.push(img.src);
-                        }
-
-                        results.push({
-                            url: url,
-                            time: timeText,
-                            text: postText,
-                            likes: likes,
-                            comments: comments,
-                            images: images
+                page.goto(channel_url.rstrip("/") + suffix, wait_until="domcontentloaded", timeout=60000)
+            except Exception as ex:
+                navigation_errors.append(f"{suffix}: {ex}")
+                continue
+            page.wait_for_timeout(random.randint(1000, 3000))
+            no_new_scrolls = 0
+            max_scrolls = 20 if target_hash else (5 if limit <= 5 else 20)
+            for _ in range(max_scrolls):
+                before_count = len(seen_urls)
+                posts = page.evaluate("""() => Array.from(document.querySelectorAll(
+                    'ytd-backstage-post-thread-renderer, ytd-backstage-post-renderer, ytd-post-renderer, ytd-rich-item-renderer'
+                )).map((post, index) => {
+                    const content = post.querySelector('#content-text, yt-formatted-string#content-text, #content')?.innerText.trim() || '';
+                    const author = post.querySelector('#author-text, #author-name, #channel-name')?.innerText.trim() || '';
+                    const url = post.querySelector('a[href*="/post/"]')?.href || `${location.href}#post-${index}-${content.slice(0, 24)}`;
+                    const likes = post.querySelector('#vote-count-middle, #vote-count-left')?.innerText.trim() || '';
+                    const comments = post.querySelector('a[href*="/post/"] #count, #reply-count')?.innerText.trim() || '';
+                    const cssUrl = value => {
+                        const match = String(value || '').match(/url\\(["']?([^"')]+)["']?\\)/);
+                        return match ? match[1] : '';
+                    };
+                    const srcsetUrl = value => String(value || '').split(',').pop().trim().split(/\\s+/)[0] || '';
+                    const imageMedia = Array.from(post.querySelectorAll('img'))
+                        .filter(img => !img.closest('#author-thumbnail, #avatar, yt-avatar-shape'))
+                        .filter(img => {
+                            const box = img.getBoundingClientRect();
+                            return (img.naturalWidth || img.width || box.width) > 80 && (img.naturalHeight || img.height || box.height) > 80;
+                        })
+                        .map(img => img.currentSrc || img.src || img.getAttribute('src') || img.getAttribute('data-thumb') || srcsetUrl(img.getAttribute('srcset')));
+                    const backgroundMedia = Array.from(post.querySelectorAll('*'))
+                        .filter(node => {
+                            const box = node.getBoundingClientRect();
+                            return box.width > 120 && box.height > 80;
+                        })
+                        .map(node => cssUrl(getComputedStyle(node).backgroundImage));
+                    const videoThumbs = Array.from(post.querySelectorAll('a[href*="/watch?v="]'))
+                        .map(a => {
+                            const match = String(a.href || a.getAttribute('href') || '').match(/[?&]v=([^&]+)/);
+                            return match ? `https://i.ytimg.com/vi/${match[1]}/hqdefault.jpg` : '';
                         });
-                    }
-                    return results;
-                }""")
-
-                for p in extracted_posts:
-                    post_time = p.get('time', '').lower()
-                    match = re.search(r'(\d+)\s*(year|years|y)\b', post_time)
-                    if match and int(match.group(1)) > 1:
+                    const media = Array.from(new Set([...imageMedia, ...backgroundMedia, ...videoThumbs]))
+                        .filter(src => src && !src.startsWith('data:'));
+                    return {content, author, url, likes, comments, media};
+                }).filter(post => post.content)""")
+                for post in posts:
+                    post_url = post.get("url") or ""
+                    if not post_url or post_url in seen_urls:
                         continue
-
-                    post_text = p.get('text', '')
-                    post_url = p.get('url', channel_url)
-                    post_likes = str(self._parse_counts(p.get('likes', '0')))
-                    post_comments = str(self._parse_counts(p.get('comments', '0')))
-                    post_images = p.get('images', [])
-
-                    post_iocs = []
-                    post_unmasked_links = self._unshorten_urls(post_text)
-
-                    for m in btc_pattern.findall(post_text): post_iocs.append(f"BTC Wallet: {m}")
-                    for m in eth_pattern.findall(post_text): post_iocs.append(f"ETH Wallet: {m}")
-                    for m in onion_pattern.findall(post_text): post_iocs.append(f"DarkWeb Link: {m}")
-                    for m in tg_pattern.findall(post_text): post_iocs.append(f"Telegram: t.me/{m}")
-                    for m in discord_pattern.findall(post_text): post_iocs.append(f"Discord: discord.gg/{m}")
-                    post_iocs = list(set(post_iocs))
-
-                    combined_content = f"TITLE: Community Post [{channel_name}]\nPOSTED: {post_time}\nLIKES: {post_likes}\nCOMMENTS: {post_comments}\nCHANNEL: {channel_name}\n\nPOST TEXT:\n{post_text}"
-
-                    if post_images:
-                        combined_content += "\n\nATTACHED IMAGES:\n"
-                        for img in post_images:
-                            combined_content += f"- {img}\n"
-
-                    if post_unmasked_links:
-                        combined_content += "\n\n⚠️ UNMASKED URLs (POTENTIAL THREATS):\n"
-                        for ul in post_unmasked_links:
-                            combined_content += f"- {ul}\n"
-
-                    if post_iocs:
-                        combined_content += "\n\n⚠️ THREAT IOCs FOUND:\n"
-                        for ioc in post_iocs:
-                            combined_content += f"- {ioc}\n"
-
-                    card_data = social_model(
-                        m_title=post_text,
-                        m_channel_url=channel_url,
-                        m_sender_name=channel_name,
-                        m_message_sharable_link=post_url,
-                        m_post_pic_url=post_images,
-                        m_post_time=post_time,
-                        m_post_url=post_url,
-                        m_weblink=post_images,
-                        m_content=combined_content,
-                        m_content_type=["social_collector", "youtube_post"],
-                        m_network="clearnet",
-                        m_message_date=datetime.now().date(),
-                        m_message_id=post_url.split("/")[-1] if post_url else str(hash(post_text)),
-                        m_platform="youtube",
-                        m_likes=post_likes,
-                        m_commenters=[post_comments],
-                        m_retweets="0",
-                        m_views="0",
-                    )
-
-                    entity = entity_model(
-                        m_scrap_file=self.__class__.__name__,
-                        m_name=channel_name
-                    )
-
-                    try:
-                        if channel_country != "Unknown":
-                            entity.m_country = channel_country
-                        if social_profiles:
-                            entity.m_social_media_profiles = social_profiles
-                        if channel_avatar != "Unknown":
-                            entity.m_avatar = channel_avatar
-                        if channel_banner != "Unknown":
-                            entity.m_banner = channel_banner
-                    except Exception:
-                        pass
-
-                    self.append_leak_data(card_data, entity)
-
-            except Exception:
-                pass
-
-    def _fetch_shorts(self, page, channel_url, max_shorts: Optional[int] = None):
-        btc_pattern = re.compile(r'\b([13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[ac-hj-np-z02-9]{11,71})\b')
-        eth_pattern = re.compile(r'\b0x[a-fA-F0-9]{40}\b')
-        tg_pattern = re.compile(r'(?:https?://)?(?:www\.)?t\.me/([a-zA-Z0-9_]+)')
-        discord_pattern = re.compile(r'(?:https?://)?(?:www\.)?discord\.(?:gg|com/invite)/([a-zA-Z0-9]+)')
-        onion_pattern = re.compile(r'\b([a-z2-7]{16,56}\.onion)\b')
-
-        channel_country = "Unknown"
-        channel_name = "Unknown"
-        channel_avatar = "Unknown"
-        channel_banner = "Unknown"
-        channel_description = "Unknown"
-        channel_joined = "Unknown"
-
-        social_profiles = []
-
-        valid_shorts_links = []
-        has_shorts = "No"
-        try:
-            tabs_info = page.evaluate("""() => {
-                                const tabs = Array.from(document.querySelectorAll('yt-tab-shape'));
-                                return {
-                                    shorts: tabs.some(tab => tab.getAttribute('tab-title') === 'Shorts' || tab.innerText.includes('Shorts')) ? 'Yes' : 'No',
-                                };
-                            }""")
-            has_shorts = tabs_info.get('shorts', 'No')
-        except Exception:
-            pass
-
-        if has_shorts == "Yes":
-            shorts_tab_url = channel_url + "/shorts"
-            try:
-                page.goto(shorts_tab_url, wait_until="domcontentloaded", timeout=60000)
-                page.wait_for_timeout(3000)
-
-                page.evaluate("""() => {
-                    let chips = document.querySelectorAll('yt-chip-cloud-chip-renderer');
-                    for (let chip of chips) {
-                        if (chip.innerText.trim().toLowerCase() === 'latest') {
-                            if (!chip.classList.contains('selected')) {
-                                chip.click();
-                            }
-                            break;
-                        }
-                    }
-                }""")
-                page.wait_for_timeout(2000)
-
-                stop_shorts_scrolling = False
-                for _ in range(15):
-                    if stop_shorts_scrolling: break
-
-                    shorts_elements = page.evaluate("""() => {
-                        let results = [];
-                        let items = document.querySelectorAll('ytd-rich-item-renderer');
-                        for (let item of items) {
-                            if (item.offsetParent === null) continue;
-                            let a = item.querySelector('a');
-                            if (!a || !a.href.includes('/shorts/')) continue;
-
-                            let aria = a.getAttribute('aria-label') || "";
-                            let title = a.innerText.split('\\n')[0];
-
-                            let timeMatch = aria.match(/[0-9]+\\s*(second|minute|hour|day|week|month|year|s|m|h|d|w|mo|y)s?\\s*ago/i);
-                            let timeText = timeMatch ? timeMatch[0] : "";
-
-                            results.push({href: a.href, time: timeText, title: title});
-                        }
-                        return results;
-                    }""")
-
-                    for s_vid in shorts_elements:
-                        href = s_vid.get('href', '')
-                        time_text = s_vid.get('time', '').lower()
-
-                        if not href or href in valid_shorts_links:
-                            continue
-
-                        if max_shorts is not None and len(valid_shorts_links) >= max_shorts:
-                            stop_shorts_scrolling = True
-                            break
-
-                        if not time_text:
-                            valid_shorts_links.append(href)
-                            continue
-
-                        if re.search(r'\d+\s*(year|years|y)\b', time_text):
-                            stop_shorts_scrolling = True
-                            break
-                        elif re.search(r'\d+\s*(month|months|mo)\b', time_text):
-                            if re.search(r'\b1\s*(month|mo)\b', time_text):
-                                valid_shorts_links.append(href)
-                            else:
-                                stop_shorts_scrolling = True
-                                break
+                    seen_urls.add(post_url)
+                    if self._is_requested_hash_url(post_url):
+                        if target_hash:
+                            collected_posts.append(post)
                         else:
-                            valid_shorts_links.append(href)
+                            hit_hash_cut = True
+                        break
+                    if target_hash:
+                        continue
+                    collected_posts.append(post)
+                    if len(collected_posts) >= limit:
+                        break
+                if collected_posts and target_hash:
+                    break
+                if hit_hash_cut:
+                    break
+                if not target_hash and len(collected_posts) >= limit:
+                    break
+                if len(seen_urls) == before_count:
+                    no_new_scrolls += 1
+                else:
+                    no_new_scrolls = 0
+                if no_new_scrolls >= 3:
+                    break
+                page.mouse.wheel(0, 3000)
+                page.wait_for_timeout(random.randint(1000, 3000))
+            if collected_posts or hit_hash_cut:
+                break
 
-                    if not stop_shorts_scrolling:
-                        page.mouse.wheel(0, 2000)
-                        page.wait_for_timeout(1500)
-            except Exception:
-                pass
+        if not collected_posts:
+            if navigation_errors:
+                self._last_status = "navigation_error"
+                self._last_reason = " | ".join(navigation_errors)[-500:]
+            else:
+                self._last_status = "no_public_posts"
+                self._last_reason = "youtube channel exposed no community post cards"
+            return
 
-            valid_media_links =  valid_shorts_links
-
-            if not valid_media_links:
-                return
-
-            parsed_shorts_links = valid_media_links if max_shorts is None else valid_media_links[:max_shorts]
-
-            for video_idx, original_video_url in enumerate(parsed_shorts_links, 1):
-                print(f"currently parsing index : {video_idx}")
+        for post in collected_posts:
+            post_url = post.get("url") or ""
+            top_comments = []
+            if data_type == SocialDataType.COMMENTS and post_url and "#post-" not in post_url:
                 try:
-                    is_short_media = "/shorts/" in original_video_url
-
-                    visit_url = original_video_url
-                    if is_short_media:
-                        visit_url = original_video_url.replace("/shorts/", "/watch?v=")
-
-                    page.goto(visit_url, wait_until="domcontentloaded", timeout=30000)
-
-                    try:
-                        page.evaluate(
-                            "() => { document.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('autoplay'); }); }")
-                    except Exception:
-                        pass
-
-                    page.wait_for_selector("h1.ytd-watch-metadata", state="visible", timeout=15000)
-
-                    exact_date_str = page.evaluate("""() => {
-                                    let meta = document.querySelector('meta[itemprop="datePublished"]');
-                                    return meta ? meta.getAttribute('content') : '';
-                                }""")
-
-                    if exact_date_str:
-                        try:
-                            exact_date = datetime.strptime(exact_date_str[:10], "%Y-%m-%d").date()
-                        except Exception:
-                            exact_date = datetime.now().date()
-                    else:
-                        exact_date = datetime.now().date()
-
-                    title = "Unknown"
-                    title_elem = page.locator("h1.ytd-watch-metadata yt-formatted-string").first
-                    if title_elem.count() > 0: title = title_elem.inner_text(timeout=2000)
-
-                    views_count = 0
-                    views_elem = page.locator("yt-formatted-string#info span").nth(0)
-                    views_text = views_elem.inner_text(timeout=2000) if views_elem.count() > 0 else "0"
-                    views_count = self._parse_counts(views_text)
-
-                    likes_count = 0
-                    try:
-                        likes_text = page.evaluate("""() => {
-                                        let btn = document.querySelector('like-button-view-model button');
-                                        if (!btn) return '0';
-                                        let aria = btn.getAttribute('aria-label');
-                                        if (aria) {
-                                            let match = aria.match(/with\\s+([\\d,]+)\\s+other/i) || aria.match(/([\\d,]+)\\s+likes/i);
-                                            if (match) return match[1];
-                                        }
-                                        let textDiv = btn.querySelector('.ytSpecButtonShapeNextButtonTextContent');
-                                        return textDiv ? textDiv.innerText : btn.innerText;
-                                    }""")
-                        likes_count = self._parse_counts(likes_text)
-                    except Exception:
-                        pass
-
-                    subs_count = 0
-                    try:
-                        subs_elem = page.locator("ytd-video-owner-renderer #owner-sub-count").first
-                        subs_text = subs_elem.inner_text(timeout=2000) if subs_elem.count() > 0 else "0"
-                        subs_count = self._parse_counts(subs_text)
-                    except Exception:
-                        pass
-
-                    viral_ratio = (views_count / subs_count) if subs_count > 0 else 0
-                    is_viral = viral_ratio > 0.20
-
-                    top_comments = []
-                    try:
-                        for _ in range(4):
-                            page.keyboard.press("PageDown")
-                            page.wait_for_timeout(1000)
-
-                        page.wait_for_selector("ytd-comment-thread-renderer", state="visible", timeout=10000)
-
-                        prev_count = 0
-                        same_count_rounds = 0
-                        for scroll_idx in range(40):
-                            current_count = page.evaluate(
-                                "document.querySelectorAll('ytd-comment-thread-renderer').length")
-                            if current_count >= 200: break
-
-                            if current_count == prev_count:
-                                same_count_rounds += 1
-                                if same_count_rounds >= 3:
-                                    break
-                            else:
-                                same_count_rounds = 0
-
-                            prev_count = current_count
-                            page.evaluate(
-                                "() => { let scroller = document.querySelector('#comments') || window; scroller.scrollBy(0, 1500); }")
-                            page.wait_for_timeout(1500)
-
-                        extracted_comments = page.evaluate("""() => {
-                                        let elems = document.querySelectorAll('ytd-comment-thread-renderer #content-text');
-                                        let texts = [];
-                                        for(let i=0; i<elems.length && i<200; i++) {
-                                            let txt = elems[i].innerText.trim();
-                                            if(txt) texts.push(txt);
-                                        }
-                                        return texts;
-                                    }""")
-                        top_comments.extend(extracted_comments)
-                    except Exception:
-                        pass
-
-                    iocs = []
-                    unmasked_links = []
-                    try:
-                        page_text = page.evaluate("document.body.innerText")
-                        desc_text = channel_description if channel_description != "Unknown" else ""
-                        unmasked_links = self._unshorten_urls(page_text + desc_text)
-
-                        for match in btc_pattern.findall(page_text): iocs.append(f"BTC Wallet: {match}")
-                        for match in eth_pattern.findall(page_text): iocs.append(f"ETH Wallet: {match}")
-                        for match in onion_pattern.findall(page_text): iocs.append(f"DarkWeb Link: {match}")
-                        for match in tg_pattern.findall(page_text): iocs.append(f"Telegram: t.me/{match}")
-                        for match in discord_pattern.findall(page_text): iocs.append(f"Discord: discord.gg/{match}")
-
-                        iocs = list(set(iocs))
-                    except Exception:
-                        pass
-
-                    media_type_label = "SHORT" if is_short_media else "VIDEO"
-                    combined_content = f"TITLE: {title} [{media_type_label}]\nEXACT DATE: {exact_date}\nVIEWS: {views_count:,}\nLIKES: {likes_count:,}\nCHANNEL: {channel_name}\nSUBSCRIBERS: {subs_count:,}\nCOUNTRY: {channel_country}\nJOINED: {channel_joined}\nAVATAR URL: {channel_avatar}\nBANNER URL: {channel_banner}\nVIRAL RATIO: {viral_ratio:.2f}x\nIS VIRAL: {'YES' if is_viral else 'NO'}\nCHANNEL HAS SHORTS: {has_shorts}"
-
-                    if channel_description != "Unknown":
-                        combined_content += f"\n\nCHANNEL DESCRIPTION:\n{channel_description[:250]}..."
-
-                    if unmasked_links:
-                        combined_content += "\n\n⚠️ UNMASKED URLs (POTENTIAL THREATS):\n"
-                        for ul in unmasked_links:
-                            combined_content += f"- {ul}\n"
-
-                    if iocs:
-                        combined_content += "\n\n⚠️ THREAT IOCs FOUND:\n"
-                        for ioc in iocs:
-                            combined_content += f"- {ioc}\n"
-
-                    if top_comments:
-                        combined_content += "\n\nTOP COMMENTS:\n"
-                        for idx, comment in enumerate(top_comments, 1):
-                            combined_content += f"{idx}. {comment[:100]}...\n"
-
-                    card_data = social_model(
-                        m_title=title,
-                        m_channel_url=channel_url,
-                        m_sender_name=channel_name,
-                        m_subscriber=subs_count,
-                        m_message_sharable_link=original_video_url,
-                        m_message_date=exact_date,
-                        m_commenters=top_comments,
-                        m_weblink=[],
-                        m_content=combined_content,
-                        m_content_type=["social_collector", "youtube_video", media_type_label.lower()],
-                        m_network="clearnet",
-                        m_message_id=original_video_url.split("/")[-1].split("?")[0],
-                        m_platform="youtube",
-                        m_likes=str(likes_count),
-                        m_comment_count=str(len(top_comments)),
-                        m_retweets="0",
-                        m_views=str(views_count),
-                    )
-
-                    entity = entity_model(
-                        m_scrap_file=self.__class__.__name__,
-                        m_name=channel_name
-                    )
-
-                    try:
-                        if channel_country != "Unknown":
-                            entity.m_country = channel_country
-                        if social_profiles:
-                            entity.m_social_media_profiles = social_profiles
-                        if channel_avatar != "Unknown":
-                            entity.m_avatar = channel_avatar
-                        if channel_banner != "Unknown":
-                            entity.m_banner = channel_banner
-                    except Exception:
-                        pass
-
-                    self.append_leak_data(card_data, entity)
-
+                    page.goto(post_url, wait_until="domcontentloaded", timeout=30000)
+                    page.wait_for_timeout(1000)
+                    top_comments = self._collect_comments(page, self._comment_limit(), self._comment_offset())
                 except Exception:
-                    continue
-
-    def parse_page(self, page):
-        self._card_data = []
-        self._entity_data = []
-        self.parse_leak_data(page)
-        return {
-            "username": self._username,
-            "profile_url": self.seed_url,
-            "platform": "youtube",
-            "cards": [card.model_dump(mode="json") for card in self._card_data],
-            "entities": [entity.model_dump(mode="json") for entity in self._entity_data],
-            "followers": [],
-            "following": [],
-            "mutual": [],
-        }
-
-    def scrape_posts(self, page, max_posts: int = 5):
-        data = self.parse_page(page)
-        return data.get("cards", [])[:max_posts]
-
-    def scrape_videos(self, page, max_videos: int):
-        self._requested_videos_limit = max_videos
-        self.set_scope(SOCIAL_REQUEST_COMMANDS.S_VIDEOS)
-        data = self.parse_page(page)
-        return data.get("cards", [])[:max_videos]
-
-    def scrape_shorts(self, page, max_shorts: int):
-        self._requested_shorts_limit = max_shorts
-        self.set_scope(SOCIAL_REQUEST_COMMANDS.S_SHORTS)
-        data = self.parse_page(page)
-        return data.get("cards", [])[:max_shorts]
+                    top_comments = []
+            comment_texts, _, comments = self._comment_models(top_comments)
+            card_data = social_model(
+                m_title=post.get("content", "")[:80] or "YouTube post",
+                m_channel_url=channel_url,
+                m_sender_name=post.get("author") or "",
+                m_url=post_url,
+                m_weblink=[post_url],
+                m_content=post.get("content") or "",
+                m_content_type=["social_collector", "youtube_post", social_data_type],
+                m_network="clearnet",
+                m_date=datetime.now().date(),
+                m_platform="youtube",
+                m_post_likes=post.get("likes") or None,
+                m_comment_count=str(len(comment_texts)) if comment_texts else post.get("comments") or None,
+                m_comments=comments,
+                m_img_src=(post.get("media") or [None])[0],
+                m_scrap_file=self.__class__.__name__,
+            )
+            if target_hash:
+                if self._is_requested_hash_id(card_data):
+                    self.append_leak_data(card_data, entity_model())
+                return
+            if self._is_requested_hash_id(card_data):
+                return
+            self.append_leak_data(card_data, entity_model())
+        self._last_status = "ok"
+        self._last_reason = f"youtube returned {len(collected_posts)} community post cards"
 
     def parse_leak_data(self, page):
         try:
+            self._card_data = []
+            self._entity_data = []
+            self._last_status = ""
+            self._last_reason = ""
             page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
-
-            channel_url = self.seed_url
-            page.goto(channel_url, wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(3000)
-
-            if self._scope == SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY:
-                self._fetch_channel_info(page, channel_url)
-                return
-
-            if self._scope == SOCIAL_REQUEST_COMMANDS.S_POSTS:
-                self._fetch_posts(page, channel_url)
-                return
-
-            if self._scope == SOCIAL_REQUEST_COMMANDS.S_VIDEOS:
-                self._fetch_videos(page,channel_url,include_shorts=False,max_videos=self._requested_videos_limit,)
-                return
-
-            if self._scope == SOCIAL_REQUEST_COMMANDS.S_SHORTS:
-                self._fetch_shorts(page, channel_url, max_shorts=self._requested_shorts_limit)
-                return
-
-        except Exception as e:
-            raise e
+            seed_url = self.seed_url
+            data_type = (self.rule_config.m_social_data_types or [SocialDataType.DEFAULT])[0]
+            if data_type in (SocialDataType.PROFILE, SocialDataType.CHANNEL, SocialDataType.FOLLOWERS, SocialDataType.FOLLOWING):
+                self._append_channel_info(page, seed_url, data_type)
+            elif data_type == SocialDataType.VIDEOS:
+                self._parse_video_data(page, seed_url, data_type, is_shorts=False)
+            elif data_type == SocialDataType.SHORTS:
+                self._parse_video_data(page, seed_url, data_type, is_shorts=True)
+            elif data_type == SocialDataType.POSTS:
+                self._parse_posts(page, seed_url, data_type)
+            elif data_type == SocialDataType.COMMENTS:
+                request_kind = getattr(self, "m_request_kind", "posts")
+                if request_kind == "videos":
+                    self._parse_video_data(page, seed_url, data_type, is_shorts=False)
+                elif request_kind == "shorts":
+                    self._parse_video_data(page, seed_url, data_type, is_shorts=True)
+                else:
+                    self._parse_posts(page, seed_url, data_type)
+            elif data_type == SocialDataType.DEFAULT:
+                self._append_channel_info(page, seed_url, SocialDataType.DEFAULT)
+                self._parse_video_data(page, seed_url, SocialDataType.VIDEOS, is_shorts=False, check_latest=True)
+                self._parse_video_data(page, seed_url, SocialDataType.SHORTS, is_shorts=True, check_latest=True)
+                self._parse_posts(page, seed_url, SocialDataType.POSTS, check_latest=True)
+        except Exception:
+            raise

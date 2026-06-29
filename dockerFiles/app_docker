@@ -69,6 +69,7 @@ COPY app/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
 COPY app /app
+COPY crawler /app/crawler
 COPY config /app
 
 WORKDIR /app

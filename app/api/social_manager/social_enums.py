@@ -27,6 +27,8 @@ class SOCIAL_PLATFORMS:
     TWITTER = "twitter"
     TIKTOK = "tiktok"
     YOUTUBE = "youtube"
+    LINKEDIN = "linkedin"
+    REDDIT = "reddit"
     MASTODON = "mastodon"
     PASTEBIN = "pastebin"
     DUCKDUCKGO = "duckduckgo"

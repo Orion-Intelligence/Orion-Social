@@ -1,5 +1,6 @@
 import asyncio
 import difflib
+import hashlib
 import os
 import re
 import traceback
@@ -13,8 +14,11 @@ from urllib.parse import urlparse
 from datetime import datetime, timezone
 
 from api.social_manager.social_enums import SITE_DATA
-from PicImageSearch import Yandex
 
+try:
+    from PicImageSearch import Yandex
+except ModuleNotFoundError:
+    Yandex = None
 
 
 class live_search_handler:
@@ -97,6 +101,9 @@ class live_search_handler:
                 return []
 
     def _search_yandex(self, image_path: str):
+        if Yandex is None:
+            return None
+
         try:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -306,6 +313,35 @@ class live_search_handler:
 
     def _build_image_queries(self, username: str, platform: str) -> List[str]:
         queries = []
+        username = (username or "").strip()
+        platform = (platform or "").lower().strip()
+        if platform == "reddit":
+            reddit_handle = username.strip("/")
+            reddit_handle_lower = reddit_handle.lower()
+            if reddit_handle_lower.startswith("r/"):
+                subreddit = reddit_handle[2:].strip("/")
+                return [
+                    f'site:reddit.com/r/{subreddit} "{subreddit}"',
+                    f'"r/{subreddit}" reddit',
+                    f'reddit.com/r/{subreddit} images',
+                    f'{subreddit} subreddit images',
+                ]
+            if reddit_handle_lower.startswith("u/"):
+                reddit_user = reddit_handle[2:].strip("/")
+                return [
+                    f'site:reddit.com/user/{reddit_user} "{reddit_user}"',
+                    f'"u/{reddit_user}" reddit',
+                    f'reddit.com/user/{reddit_user} images',
+                    f'{reddit_user} reddit profile images',
+                ]
+            if reddit_handle_lower.startswith("user/"):
+                reddit_user = reddit_handle[5:].strip("/")
+                return [
+                    f'site:reddit.com/user/{reddit_user} "{reddit_user}"',
+                    f'"u/{reddit_user}" reddit',
+                    f'reddit.com/user/{reddit_user} images',
+                    f'{reddit_user} reddit profile images',
+                ]
         split_name = self._split_username(username)
         has_split = split_name.lower() != username.lower()
 
@@ -376,8 +412,33 @@ class live_search_handler:
                 continue
         return results
 
-    def scrape_images(self, username: str, platform: str, limit: int = 10) -> Dict[str, Any]:
+    @staticmethod
+    def _image_hash(image: Dict[str, Any]) -> str:
+        raw_hash = "|".join([
+            str(image.get("image_url") or ""),
+            str(image.get("thumbnail") or ""),
+            str(image.get("source") or ""),
+            str(image.get("title") or ""),
+        ])
+        return hashlib.sha256(raw_hash.encode("utf-8")).hexdigest()
+
+    def _add_image_hashes(self, images: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        for image in images:
+            image["hash_id"] = self._image_hash(image)
+        return images
+
+    @staticmethod
+    def _cut_images_by_hash(images: List[Dict[str, Any]], hash_id: str | None) -> List[Dict[str, Any]]:
+        if not hash_id:
+            return images
+        for index, image in enumerate(images):
+            if image.get("hash_id") == hash_id:
+                return images[:index]
+        return images
+
+    def scrape_images(self, username: str, platform: str, limit: int = 10, hash_id: str | None = None) -> Dict[str, Any]:
         platform = (platform or "").lower().strip()
+        limit = max(1, min(int(limit or 10), 100))
         queries = self._build_image_queries(username, platform)
 
         image_results, seen_urls = self._image_search(queries, limit)
@@ -387,6 +448,7 @@ class live_search_handler:
                 self._text_image_fallback(username, platform, limit - len(image_results), seen_urls)
             )
 
+        image_results = self._cut_images_by_hash(self._add_image_hashes(image_results), hash_id)
         return {
             "searched_username": username,
             "platform": platform,

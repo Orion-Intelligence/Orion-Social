@@ -24,7 +24,7 @@ BLOCKED_RESOURCES = {"image", "media", "font"}
 class playwright_session:
     def __init__(self, browser_args: Optional[List[str]] = None, blocked_resources: Optional[Set[str]] = None, headless: bool = True, proxy: Optional[dict] = None):
         self.browser_args = browser_args or BROWSER_ARGS
-        self.blocked_resources = blocked_resources or BLOCKED_RESOURCES
+        self.blocked_resources = BLOCKED_RESOURCES if blocked_resources is None else blocked_resources
         self.headless = headless
         self.proxy = proxy
         self._playwright = None
@@ -63,6 +63,8 @@ class playwright_session:
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
         """)
         self.page = self._context.new_page()
+        self.page.set_default_timeout(int(os.getenv("PLAYWRIGHT_DEFAULT_TIMEOUT_MS", "15000")))
+        self.page.set_default_navigation_timeout(int(os.getenv("PLAYWRIGHT_NAVIGATION_TIMEOUT_MS", "25000")))
 
         self.page.route("**/*", self._block_media)
         return self

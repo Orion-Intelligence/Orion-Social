@@ -29,7 +29,7 @@ class orion_controller:
 
             if state["status"] == "done":
                 result = state.get("result") or {}
-                if isinstance(result, dict) and "data" in result:
+                if isinstance(result, dict) and "data" in result and result.get("status") != "error":
                     result = result.get("data")
                 return {"job_id": job_id, "result": result}
 

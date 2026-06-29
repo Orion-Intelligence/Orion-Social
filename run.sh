@@ -56,9 +56,9 @@ if [ "$ACTION" = "stop" ]; then
     echo "crawler service stopped"
 elif [ "$ACTION" = "build" ]; then
     docker compose -p "$PROJECT_NAME" build
-    docker compose -p "$PROJECT_NAME" up -d
+    docker compose -p "$PROJECT_NAME" up
     echo "crawler service started"
 else
-    docker compose -p "$PROJECT_NAME" up -d
+    docker compose -p "$PROJECT_NAME" up
     echo "crawler service started"
 fi

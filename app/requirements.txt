@@ -11,6 +11,7 @@ email-validator
 ddgs
 redis==5.0.0
 requests
+PySocks
 beautifulsoup4
 tranco
 PicImageSearch
