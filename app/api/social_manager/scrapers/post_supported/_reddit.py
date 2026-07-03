@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 import json
 import os
 import random
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qs, urlsplit, urlunsplit
 
 from crawler.crawler_instance.genbot_service.helpers.reddit.reddit_helper_method import RedditHelperMethod
 from crawler.crawler_instance.local_interface_model.extractor.extraction_interface import extraction_interface
@@ -18,10 +18,11 @@ from crawler.crawler_services.shared.helper_method import helper_method
 
 class _reddit(extraction_interface, ABC):
     _instance = None
-    REDDIT_ONION_BASE_URL = "https://www.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion"
+    REDDIT_BASE_URL = "https://old.reddit.com"
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "reddit"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -36,8 +37,8 @@ class _reddit(extraction_interface, ABC):
         self.callback = callback
 
     @classmethod
-    def _configured_onion_base_url(cls) -> str:
-        configured = (os.getenv("REDDIT_ONION_BASE_URL") or cls.REDDIT_ONION_BASE_URL).strip()
+    def _configured_base_url(cls) -> str:
+        configured = (os.getenv("REDDIT_BASE_URL") or cls.REDDIT_BASE_URL).strip()
         if "://" not in configured:
             configured = f"https://{configured}"
         parts = urlsplit(configured)
@@ -53,41 +54,34 @@ class _reddit(extraction_interface, ABC):
         if "://" not in raw:
             return raw.startswith("/")
         hostname = (urlsplit(raw).hostname or "").lower()
-        onion_hostname = (urlsplit(cls._configured_onion_base_url()).hostname or "").lower()
-        onion_root_hostname = onion_hostname[4:] if onion_hostname.startswith("www.") else onion_hostname
-        host_root = hostname[4:] if hostname.startswith("www.") else hostname
         return bool(
-            host_root == onion_root_hostname
-            or hostname == "reddit.com"
+            hostname == "reddit.com"
             or hostname.endswith(".reddit.com")
         )
 
     @classmethod
-    def _to_reddit_tor_url(cls, url: str | None) -> str:
-        onion_base = cls._configured_onion_base_url()
-        onion_parts = urlsplit(onion_base)
+    def _to_reddit_url(cls, url: str | None) -> str:
+        base_url = cls._configured_base_url()
+        base_parts = urlsplit(base_url)
         if not url:
-            return onion_base
+            return base_url
 
         raw = str(url).strip()
         if raw.startswith("//"):
             raw = f"https:{raw}"
         elif "://" not in raw:
-            raw = f"https://www.reddit.com{'' if raw.startswith('/') else '/'}{raw}"
+            raw = f"{base_url}{'' if raw.startswith('/') else '/'}{raw}"
 
         try:
             parts = urlsplit(raw)
         except Exception:
-            return onion_base
+            return base_url
 
         hostname = (parts.hostname or "").lower()
-        onion_hostname = (onion_parts.hostname or "").lower()
-        onion_root_hostname = onion_hostname[4:] if onion_hostname.startswith("www.") else onion_hostname
-        host_root = hostname[4:] if hostname.startswith("www.") else hostname
-        if host_root == onion_root_hostname or hostname == "reddit.com" or hostname.endswith(".reddit.com"):
+        if hostname == "reddit.com" or hostname.endswith(".reddit.com"):
             return urlunsplit((
-                onion_parts.scheme or "http",
-                onion_parts.netloc,
+                base_parts.scheme or "https",
+                base_parts.netloc,
                 parts.path or "/",
                 parts.query,
                 parts.fragment,
@@ -100,7 +94,7 @@ class _reddit(extraction_interface, ABC):
 
     @property
     def seed_url(self) -> str:
-        return self._to_reddit_tor_url(self.m_seed_url)
+        return self._to_reddit_url(self.m_seed_url)
 
     @property
     def developer_signature(self) -> str:
@@ -108,7 +102,7 @@ class _reddit(extraction_interface, ABC):
 
     @property
     def base_url(self) -> str:
-        return self._configured_onion_base_url()
+        return self._configured_base_url()
 
     @property
     def rule_config(self) -> RuleModel:
@@ -129,7 +123,7 @@ class _reddit(extraction_interface, ABC):
         return self._entity_data
 
     def contact_page(self) -> str:
-        return self._to_reddit_tor_url("https://www.reddit.com/contact")
+        return self._to_reddit_url("https://old.reddit.com/contact")
 
     def invoke_db(self, command: int, key: str, default_value, expiry: int | None = None):
         return self._redis_instance.invoke_trigger(
@@ -148,9 +142,16 @@ class _reddit(extraction_interface, ABC):
     @staticmethod
     def _reddit_identity_from_url(url: str) -> tuple[str, str]:
         try:
-            path_parts = [part for part in urlsplit(url).path.split("/") if part]
+            parts = urlsplit(url)
+            path_parts = [part for part in parts.path.split("/") if part]
+            query = parse_qs(parts.query)
         except Exception:
             path_parts = []
+            query = {}
+        if path_parts and path_parts[0].lower() == "search":
+            return "search", (query.get("q") or [""])[0]
+        if not path_parts and query.get("q"):
+            return "search", query.get("q", [""])[0]
         if len(path_parts) >= 2 and path_parts[0].lower() == "r":
             return "subreddit", path_parts[1]
         if len(path_parts) >= 2 and path_parts[0].lower() in {"u", "user"}:
@@ -185,7 +186,7 @@ class _reddit(extraction_interface, ABC):
         requested_hash_id = str(getattr(self, "m_hash_id", "") or "").strip()
         if not requested_hash_id or not url:
             return False
-        candidates = {url, self._to_reddit_tor_url(url)}
+        candidates = {url, self._to_reddit_url(url)}
         return any(
             social_model.unique_identifier("reddit", candidate, "", "", "") == requested_hash_id
             for candidate in candidates
@@ -199,7 +200,7 @@ class _reddit(extraction_interface, ABC):
         comment_offset = max(0, int(comment_offset or 0))
         target_count = comment_offset + max_comments
         try:
-            post_url = self._to_reddit_tor_url(post_url)
+            post_url = self._to_reddit_url(post_url)
             page.goto(post_url, wait_until="domcontentloaded", timeout=30000)
             idle_scrolls = 0
             for _ in range(30):
@@ -355,7 +356,7 @@ class _reddit(extraction_interface, ABC):
                 rows = []
 
             for row in rows:
-                post_url = self._to_reddit_tor_url(helper_method.scalar_text(row.get("url")))
+                post_url = self._to_reddit_url(helper_method.scalar_text(row.get("url")))
                 if not post_url or post_url in seen:
                     continue
                 parsed_date = self.data_parsre(helper_method.scalar_text(row.get("timestamp")))
@@ -364,7 +365,7 @@ class _reddit(extraction_interface, ABC):
                 seen.add(post_url)
                 row["url"] = post_url
                 row["weblinks"] = [
-                    self._to_reddit_tor_url(link) if self._is_reddit_url(link) else helper_method.scalar_text(link)
+                    self._to_reddit_url(link) if self._is_reddit_url(link) else helper_method.scalar_text(link)
                     for link in (row.get("weblinks") or [])
                     if helper_method.scalar_text(link)
                 ]
@@ -395,6 +396,84 @@ class _reddit(extraction_interface, ABC):
         if posts:
             return posts
         return self._collect_html_posts(page, desired_count, max_scrolls, filter_date)
+
+    def _collect_search_communities(self, page, query: str, limit: int) -> List[Dict[str, Any]]:
+        limit = max(1, min(int(limit or 10), 100))
+        try:
+            rows = page.evaluate("""() => {
+                const clean = value => String(value || '').replace(/\\s+/g, ' ').trim();
+                const absolute = value => {
+                    if (!value) return '';
+                    try { return new URL(value, location.href).href; } catch (_) { return String(value || ''); }
+                };
+                const roots = Array.from(document.querySelectorAll([
+                    '.search-result-subreddit',
+                    '.search-result',
+                    '.thing',
+                    '.listing .thing',
+                    'a[href*="/r/"]'
+                ].join(',')));
+                return roots.map(root => {
+                    const link = root.matches?.('a[href*="/r/"]') ? root : root.querySelector('a[href*="/r/"]');
+                    const href = absolute(link?.getAttribute('href') || '');
+                    if (!/\\/r\\/[A-Za-z0-9_]+\\/?/i.test(href)) return null;
+                    const title = clean(link?.innerText || root.querySelector('.search-title, h2, h3')?.innerText || '');
+                    const content = clean(
+                        root.querySelector('.search-result-body, .search-result-meta, .md, .usertext-body, p')?.innerText
+                        || root.innerText
+                        || title
+                    );
+                    const members = clean(root.querySelector('.search-result-meta, .subscribers, .users-online')?.innerText || '');
+                    const icon = absolute(root.querySelector('img')?.currentSrc || root.querySelector('img')?.src || '');
+                    return {url: href, title, content, members, icon};
+                }).filter(Boolean);
+            }""") or []
+        except Exception:
+            rows = []
+
+        communities = []
+        seen = set()
+        for row in rows:
+            url = self._to_reddit_url(helper_method.scalar_text(row.get("url")))
+            reddit_type, name = self._reddit_identity_from_url(url)
+            if reddit_type != "subreddit" or not name or name.lower() in seen:
+                continue
+            seen.add(name.lower())
+            communities.append({
+                "name": name,
+                "url": url,
+                "title": helper_method.scalar_text(row.get("title")) or f"r/{name}",
+                "content": helper_method.scalar_text(row.get("content")) or f"Reddit community result for {query}",
+                "members": helper_method.scalar_text(row.get("members")),
+                "icon": self._clean_asset_url(row.get("icon")),
+            })
+            if len(communities) >= limit:
+                break
+        return communities
+
+    def _append_search_community(self, community: dict, query: str):
+        name = helper_method.scalar_text(community.get("name"))
+        url = helper_method.scalar_text(community.get("url")) or self.seed_url
+        content = helper_method.scalar_text(community.get("content"))
+        card_data = social_model(
+            m_title=helper_method.scalar_text(community.get("title")) or f"r/{name}",
+            m_channel_url=self.seed_url,
+            m_sender_name=name,
+            m_url=url,
+            m_message_sharable_link=url,
+            m_weblink=[url],
+            m_content=content,
+            m_content_type=["social_collector", "reddit_community", "posts"],
+            m_network="tor",
+            m_date=datetime.now(UTC).date(),
+            m_message_id=f"search:{query}:{name}",
+            m_platform=[self.platform],
+            m_group_name=name,
+            m_group_info=helper_method.scalar_text(community.get("members")) or None,
+            m_img_src=helper_method.scalar_text(community.get("icon")) or None,
+            m_scrap_file=self.__class__.__name__,
+        )
+        self.append_leak_data(card_data, entity_model(m_username=[name] if name else []))
 
     @staticmethod
     def _clean_asset_url(value: Any) -> str:
@@ -572,13 +651,14 @@ class _reddit(extraction_interface, ABC):
             m_channel_url=self.seed_url,
             m_sender_name=subreddit_name,
             m_url=self.seed_url,
+            m_message_sharable_link=self.seed_url,
             m_weblink=[self.seed_url],
             m_content=content,
             m_content_type=["social_collector", "reddit_profile", content_type],
             m_network="tor",
             m_date=datetime.now(UTC).date(),
             m_message_id=subreddit_name,
-            m_platform="reddit",
+            m_platform=[self.platform],
             m_group_name=subreddit_name,
             m_group_info=f"MEMBERS: {members}" if members else None,
             m_img_src=profile_assets.get("profileIcon") or None,
@@ -598,13 +678,14 @@ class _reddit(extraction_interface, ABC):
             m_channel_url=self.seed_url,
             m_sender_name=username,
             m_url=self.seed_url,
+            m_message_sharable_link=self.seed_url,
             m_weblink=[self.seed_url],
             m_content=content,
             m_content_type=["social_collector", "reddit_profile", content_type],
             m_network="tor",
             m_date=datetime.now(UTC).date(),
             m_message_id=handle,
-            m_platform="reddit",
+            m_platform=[self.platform],
             m_group_name=handle,
             m_group_info=f"KARMA: {karma}" if karma else None,
             m_img_src=profile_assets.get("profileIcon") or None,
@@ -625,6 +706,15 @@ class _reddit(extraction_interface, ABC):
             raw_url = self.seed_url.rstrip('/')
             reddit_type, reddit_name = self._reddit_identity_from_url(raw_url)
             log.g().i(f"Starting deep extraction for {reddit_type}:{reddit_name}")
+            data_type = (self.rule_config.m_social_data_types or [SocialDataType.DEFAULT])[0]
+            if reddit_type == "search":
+                if data_type in (SocialDataType.VIDEOS, SocialDataType.SHORTS):
+                    return
+                limit = max(1, min(int(getattr(self, "m_item_limit", 10) or 10), 100))
+                for community in self._collect_search_communities(page, reddit_name, limit):
+                    self._append_search_community(community, reddit_name)
+                return
+
             if reddit_type == "user":
                 about_data = self._fetch_user_about(page, reddit_name)
                 metadata = self._user_metadata_from_about(about_data) if about_data else {}
@@ -655,7 +745,6 @@ class _reddit(extraction_interface, ABC):
                     )
                 group_name = reddit_name
                 group_info = f"MEMBERS: {metadata.get('members')}" if metadata.get("members") else None
-            data_type = (self.rule_config.m_social_data_types or [SocialDataType.DEFAULT])[0]
             if data_type in (SocialDataType.PROFILE, SocialDataType.CHANNEL):
                 if reddit_type == "user":
                     self._append_user_profile_info(reddit_name, metadata, profile_assets)
@@ -702,7 +791,7 @@ class _reddit(extraction_interface, ABC):
             for post in posts:
                 try:
                     raw_post_url = helper_method.scalar_text(post.get("url"))
-                    post_url = self._to_reddit_tor_url(raw_post_url) if raw_post_url else ""
+                    post_url = self._to_reddit_url(raw_post_url) if raw_post_url else ""
                     post_id = helper_method.scalar_text(post.get("id"))
                     post_title = helper_method.scalar_text(post.get("title"))
                     if not post_url or "/comments/" not in post_url:
@@ -736,9 +825,11 @@ class _reddit(extraction_interface, ABC):
                     username_value = helper_method.scalar_text(post.get("username")) or "unknown"
                     timestamp_value = post.get("timestamp")
                     post_timestamp = timestamp_value if isinstance(timestamp_value, str) else None
+                    if not post_url:
+                        continue
                     weblinks = post.get("weblinks") or []
                     weblinks = [
-                        self._to_reddit_tor_url(link) if self._is_reddit_url(link) else helper_method.scalar_text(link)
+                        self._to_reddit_url(link) if self._is_reddit_url(link) else helper_method.scalar_text(link)
                         for link in weblinks
                         if helper_method.scalar_text(link)
                     ]
@@ -747,15 +838,15 @@ class _reddit(extraction_interface, ABC):
                         m_title=post_title or 'No Title',
                         m_channel_url=self.seed_url,
                         m_sender_name=username_value,
-                        m_url=post_url or None,
-                        m_message_sharable_link=post_url or None,
+                        m_url=post_url,
+                        m_message_sharable_link=post_url,
                         m_weblink=weblinks or ([post_url] if post_url else []),
                         m_content=full_body,
                         m_content_type=["social_collector", "reddit_post", data_type.value if data_type == SocialDataType.COMMENTS else "posts"],
                         m_network="tor",
                         m_date=self.data_parsre(post_timestamp),
                         m_message_id=post_id,
-                        m_platform="reddit",
+                        m_platform=[self.platform],
                         m_post_likes=helper_method.scalar_text(post.get("score")) or None,
                         m_likes=helper_method.scalar_text(post.get("score")) or None,
                         m_comment_count=helper_method.scalar_text(post.get("comment_count")) or (str(len(structured_comments)) if load_comments else None),
@@ -766,7 +857,7 @@ class _reddit(extraction_interface, ABC):
                         m_scrap_file=self.__class__.__name__,
                     )
                     if target_hash:
-                        if self._is_requested_hash_id(card_data):
+                        if self._is_requested_hash_url(card_data.m_url or ""):
                             self.append_leak_data(card_data, entity_model(m_username=[username_value] if username_value else []))
                         return
 

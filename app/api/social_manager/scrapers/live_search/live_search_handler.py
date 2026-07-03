@@ -13,7 +13,6 @@ from typing import Dict, Any, Optional, List, Tuple
 from urllib.parse import urlparse
 from datetime import datetime, timezone
 
-from api.social_manager.helper_methods.custom_recon import custom_recon
 from api.social_manager.social_enums import SITE_DATA
 
 try:
@@ -25,21 +24,6 @@ except ModuleNotFoundError:
 class live_search_handler:
     def __init__(self) -> None:
         self.timestamp = datetime.now(timezone.utc).isoformat()
-
-    @staticmethod
-    def _known_site_keys() -> set[str]:
-        scraper_configs = custom_recon._public_platform_configs()
-        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
-        sites.update(scraper_configs.keys())
-        sites.update(str(config.get("name") or "").lower() for config in scraper_configs.values())
-        return sites
-
-    @staticmethod
-    def _platform_search_domain(platform: str) -> tuple[str, str]:
-        platform_key = custom_recon._platform_key(platform)
-        config = custom_recon._public_platform_configs().get(platform_key) or {}
-        domain = next(iter(config.get("domains") or (f"{platform}.com",)), f"{platform}.com")
-        return platform_key or platform, domain
 
     @staticmethod
     def _log_exception(context: str, exc: Exception) -> None:
@@ -143,14 +127,8 @@ class live_search_handler:
     @staticmethod
     def extract_platform_from_url(url: str) -> Optional[str]:
         try:
-            resolved = custom_recon.resolve_url(url)
-            if resolved and resolved.get("platform"):
-                return str(resolved["platform"])
             parsed = urlparse(url)
             domain = parsed.netloc.lower().replace("www.", "")
-            platform, _config = custom_recon._platform_for_host(domain)
-            if platform:
-                return platform
             if "." in domain:
                 parts = domain.split(".")
                 if len(parts) >= 2:
@@ -162,9 +140,6 @@ class live_search_handler:
     @staticmethod
     def extract_username_from_url(url: str, query: str = "") -> Optional[str]:
         try:
-            resolved = custom_recon.resolve_url(url)
-            if resolved and resolved.get("username"):
-                return str(resolved["username"])
             parsed = urlparse(url)
             path = parsed.path.strip("/")
             if not path:
@@ -266,14 +241,9 @@ class live_search_handler:
         platform_clean = platform.lower().strip() if platform and platform.lower().strip() not in ("string", "none",
                                                                                                    "") else None
 
-        if platform_clean:
-            platform_key, domain = self._platform_search_domain(platform_clean)
-            search_query = f'site:{domain} "{query}"'
-            platform_clean = platform_key
-        else:
-            search_query = f'"{query}" social profile'
+        search_query = f'site:{platform_clean}.com "{query}"' if platform_clean else f'"{query}" social profile'
 
-        sites = self._known_site_keys()
+        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
         results: List[Dict[str, Any]] = []
         seen_profiles: set[str] = set()
         query_lower = query.lower().strip()
@@ -287,11 +257,10 @@ class live_search_handler:
                 extracted_platform = self.extract_platform_from_url(url)
                 if extracted_platform is None:
                     continue
-                extracted_platform = custom_recon._platform_key(extracted_platform)
                 if platform_clean and extracted_platform != platform_clean:
                     continue
                 parsed = urlparse(url)
-                platform_url = url
+                platform_url = f"{parsed.scheme}://{parsed.netloc}/"
                 username = self.extract_username_from_url(url, query=query)
 
                 if username is None:
@@ -304,7 +273,6 @@ class live_search_handler:
                     continue
                 seen_profiles.add(profile_key)
                 if platform_clean or extracted_platform in sites:
-                    resolved = custom_recon.resolve_url(url) or {}
                     results.append({
                         "metadata": {
                             "platform": extracted_platform,
@@ -312,14 +280,11 @@ class live_search_handler:
                             "social_handle": username,
                             "url": platform_url,
                             "timestamp": self.timestamp,
-                            "target_type": resolved.get("target_type") or "profile",
                         },
                         "data": {
                             "title": r.get("title", ""),
                             "snippet": r.get("body", ""),
                             "real_name": self.extract_real_name(r.get("title", "")),
-                            "scraper_module": resolved.get("module"),
-                            "scraper_class": resolved.get("scraper_class"),
                         },
                     })
             return {
@@ -492,7 +457,7 @@ class live_search_handler:
         }
 
     def extract_accounts_from_image(self, image_path: str, threshold: float = 0.0) -> list[dict]:
-        sites = self._known_site_keys()
+        sites = {site.lower() for site in SITE_DATA.ALL_SITES}
         results = []
 
         try:
@@ -561,17 +526,13 @@ class live_search_handler:
 
     def check_username_exists(self, username: str, platform: str) -> bool:
         platform = platform.lower().strip()
-        platform_key, domain = self._platform_search_domain(platform)
         username_lower = username.lower()
         try:
-            search_query = f'site:{domain} "{username}"'
+            search_query = f'site:{platform}.com "{username}"'
             text_results = self._ddgs_search("text", search_query, max_results=10)
             for r in text_results:
                 url = r.get("href", "").lower()
-                if not url or domain not in url:
-                    continue
-                resolved = custom_recon.resolve_url(url) or {}
-                if resolved.get("platform") and resolved.get("platform") != platform_key:
+                if not url or f"{platform}.com" not in url:
                     continue
                 if username_lower in url:
                     return True
@@ -593,11 +554,7 @@ class live_search_handler:
             query_parts.append(username)
 
         query = " ".join(query_parts)
-        if platform:
-            _platform_key, domain = self._platform_search_domain(platform.lower().strip())
-            search_query = f"site:{domain} {query}"
-        else:
-            search_query = query
+        search_query = f'site:{platform.lower().strip()}.com {query}' if platform else query
 
         results: List[Dict[str, Any]] = []
         try:
@@ -633,8 +590,7 @@ class live_search_handler:
         platform_clean = (platform or "").lower().strip()
 
         if platform_clean:
-            platform_clean, domain = self._platform_search_domain(platform_clean)
-            search_query = f'site:{domain} "{username}" profile'
+            search_query = f'{username} {platform_clean} profile'
         else:
             search_query = f'{username} social media profile'
 
@@ -647,7 +603,6 @@ class live_search_handler:
                 extracted_platform = self.extract_platform_from_url(url)
                 if not extracted_platform:
                     continue
-                extracted_platform = custom_recon._platform_key(extracted_platform)
                 if platform_clean and extracted_platform != platform_clean:
                     continue
                 if username.lower() not in url.lower():
@@ -656,8 +611,7 @@ class live_search_handler:
                 if not extracted_username:
                     extracted_username = username
                 parsed = urlparse(url)
-                resolved = custom_recon.resolve_url(url) or {}
-                profile_url = resolved.get("url") or f"{parsed.scheme}://{parsed.netloc}/{extracted_username}"
+                profile_url = f"{parsed.scheme}://{parsed.netloc}/{extracted_username}"
                 title = r.get("title", "")
                 snippet = r.get("body", "")
                 real_name = self.extract_real_name(title)
@@ -693,9 +647,7 @@ class live_search_handler:
     def scrape_posts_search(self, username: str, platform: Optional[str] = None, max_posts: int = 10) -> Dict[str, Any]:
         platform_str = (platform or "").lower().strip()
         if platform_str:
-            platform_key, domain = self._platform_search_domain(platform_str)
-            platform_str = platform_key
-            search_query = f'site:{domain} "{username}" posts OR status OR video'
+            search_query = f'site:{platform_str}.com "{username}" posts OR status OR video'
         else:
             search_query = f'"{username}" posts OR status OR video social'
         posts = []

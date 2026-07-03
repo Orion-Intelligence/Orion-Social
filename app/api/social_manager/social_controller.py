@@ -14,7 +14,8 @@ from api.social_manager.scrapers.post_supported._tiktok import _tiktok as TikTok
 from api.social_manager.scrapers.post_supported._youtube import _youtube as YoutubeScraper
 from api.social_manager.scrapers.post_supported._reddit import _reddit as RedditScraper
 from api.social_manager.scrapers.post_supported._mastodon import _mastodon as MastodonScraper
-from api.social_manager.scrapers.other._pastebin import _pastebin as PastebinScraper
+from api.social_manager.scrapers.post_supported._linkedin import _linkedin as LinkedInScraper
+from api.social_manager.scrapers.post_supported._pastebin import _pastebin as PastebinScraper
 from api.social_manager.scrapers.other._about_me import _about_me as PlatformScraper_about_me
 from api.social_manager.scrapers.other._ameba_blog import _ameba_blog as PlatformScraper_ameba_blog
 from api.social_manager.scrapers.other._anilist import _anilist as PlatformScraper_anilist
@@ -357,13 +358,15 @@ class social_controller:
                 reddit_path = f"user/{handle}"
             else:
                 reddit_path = f"r/{handle}"
-            return RedditScraper._to_reddit_tor_url(f"https://www.reddit.com/{reddit_path}/")
+            return RedditScraper._to_reddit_url(f"https://old.reddit.com/{reddit_path}/")
         if platform == SOCIAL_PLATFORMS.MASTODON:
             handle = username.lstrip("@")
             if "@" in handle:
                 account, host = handle.split("@", 1)
                 return f"https://{host}/@{account}"
             return f"https://mastodon.social/@{handle}"
+        if platform == SOCIAL_PLATFORMS.LINKEDIN:
+            return LinkedInScraper.build_seed_url(username, SocialDataType.POSTS, target_type)
         if platform == SOCIAL_PLATFORMS.PASTEBIN:
             return f"https://pastebin.com/u/{username.lstrip('@').strip('/')}"
         scraper_class = PUBLIC_SOCIAL_SCRAPERS.get(platform)
@@ -404,9 +407,12 @@ class social_controller:
             SOCIAL_PLATFORMS.YOUTUBE: YoutubeScraper,
             SOCIAL_PLATFORMS.REDDIT: RedditScraper,
             SOCIAL_PLATFORMS.MASTODON: MastodonScraper,
+            SOCIAL_PLATFORMS.LINKEDIN: LinkedInScraper,
             SOCIAL_PLATFORMS.PASTEBIN: PastebinScraper,
         }.get(platform) or PUBLIC_SOCIAL_SCRAPERS.get(platform)
         if not scraper_class:
+            return None
+        if platform == SOCIAL_PLATFORMS.LINKEDIN and self.command != SOCIAL_REQUEST_COMMANDS.S_POSTS:
             return None
 
         scraper = cast(Any, scraper_class)()
@@ -688,6 +694,7 @@ class social_controller:
                     SOCIAL_PLATFORMS.REDDIT,
                     SOCIAL_PLATFORMS.TIKTOK,
                     SOCIAL_PLATFORMS.MASTODON,
+                    SOCIAL_PLATFORMS.LINKEDIN,
                     SOCIAL_PLATFORMS.PASTEBIN,
                 ]
                 if platform in native_platforms or platform in PUBLIC_SOCIAL_SCRAPERS:

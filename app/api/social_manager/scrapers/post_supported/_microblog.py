@@ -114,7 +114,7 @@ class _microblog(extraction_interface, ABC):
             m_fetch_proxy=FetchProxy.NONE,
             m_fetch_config=FetchConfig.PLAYRIGHT,
             m_resoource_block=False,
-            m_threat_type=ThreatType.SOCIAL,
+            m_threat_type=ThreatType.MICROBLOG,
             m_rule_type=RuleType.MICROBLOG,
             m_social_data_type=getattr(self, "m_social_data_type", SocialDataType.DEFAULT),
         )
@@ -155,6 +155,8 @@ class _microblog(extraction_interface, ABC):
                 if first and first not in {"www", "m"}:
                     return first
             if parts:
+                if host.endswith("micro.blog") and len(parts) > 1 and parts[0].lower() not in {"discover", "posts"}:
+                    return parts[0].lstrip("@")
                 last = parts[-1]
                 if last.lower() in {"profile", "profiles", "posts", "with_replies", "users", "user", "people", "member", "members", "shop", "channel", "channels", "group", "groups", "u", "id"} and len(parts) > 1:
                     last = parts[-2]
@@ -250,24 +252,46 @@ class _microblog(extraction_interface, ABC):
                         return {text: clean(String(html || '').replace(/<[^>]+>/g, ' ')), image: ''};
                     }
                 };
+                const fromDom = Array.from(document.querySelectorAll('article.h-entry, article.post, .h-entry')).map(root => {
+                    const contentNode = root.querySelector('.e-content') || root;
+                    const caption = clean(contentNode?.innerText || root.innerText || '');
+                    const title = clean(root.querySelector('.p-name, h1, h2')?.innerText || caption.split('\\n')[0] || document.title).slice(0, 180);
+                    const parts = location.pathname.split('/').filter(Boolean);
+                    const isMicroPermalink = location.hostname.endsWith('micro.blog') && parts.length > 1 && !['discover', 'posts'].includes(parts[0]);
+                    const isMicroProfile = location.hostname.endsWith('micro.blog') && parts.length === 1 && !['discover', 'posts'].includes(parts[0]);
+                    if (isMicroProfile) return null;
+                    return {
+                        url: isMicroPermalink ? location.href : absolutize(root.querySelector('.u-url[href]')?.getAttribute('href') || document.querySelector('link[rel="canonical"]')?.getAttribute('href') || location.href),
+                        title,
+                        caption,
+                        image: absolutize(contentNode?.querySelector('img')?.getAttribute('src') || root.querySelector('img')?.getAttribute('src') || ''),
+                        timestamp: root.querySelector('time[datetime], .dt-published')?.getAttribute('datetime') || '',
+                        author: clean(document.querySelector('#timeline_info b, .site-title')?.innerText || ''),
+                        username: '',
+                        avatar: absolutize(document.querySelector('#timeline_info img, link[rel*="icon"]')?.getAttribute('src') || document.querySelector('link[rel*="icon"]')?.getAttribute('href') || ''),
+                        messageId: ''
+                    };
+                }).filter(item => item && item.url && item.caption);
                 const pathParts = location.pathname.split('/').filter(Boolean);
                 const tag = pathParts[0] === 'discover' ? pathParts[1] || '' : '';
                 const username = pathParts[0] && pathParts[0] !== 'discover' && pathParts[0] !== 'posts' ? pathParts[0].replace(/^@/, '') : '';
                 const feedLink = document.querySelector('link[rel="alternate"][type*="json" i]')?.getAttribute('href');
                 const fetchPath = document.querySelector('#fetch_path')?.getAttribute('value');
                 const feedUrl = absolutize(feedLink || fetchPath || (tag ? `/posts/discover/${tag}` : (username ? `/posts/${username}` : '')));
-                if (!feedUrl) return [];
                 let feed = null;
+                let items = [];
                 try {
-                    const response = await fetch(feedUrl, {headers: {accept: 'application/feed+json, application/json'}});
-                    if (!response.ok) return [];
-                    feed = await response.json();
+                    if (feedUrl) {
+                        const response = await fetch(feedUrl, {headers: {accept: 'application/feed+json, application/json'}});
+                        if (response.ok) {
+                            feed = await response.json();
+                            items = Array.isArray(feed?.items) ? feed.items : [];
+                        }
+                    }
                 } catch (_) {
-                    return [];
                 }
-                const items = Array.isArray(feed?.items) ? feed.items : [];
                 const seen = new Set();
-                return items.map(item => {
+                return [...fromDom, ...items.map(item => {
                     const parsed = fromHtml(item.content_html || item.summary || '');
                     const caption = clean(item.content_text || parsed.text || item.summary || item.title || '');
                     const title = clean(item.title || caption.split('\\n')[0] || caption).slice(0, 180);
@@ -284,7 +308,7 @@ class _microblog(extraction_interface, ABC):
                         messageId: clean(item.id || item.url || ''),
                         tags: Array.isArray(item.tags) ? item.tags.map(clean).filter(Boolean) : [],
                     };
-                }).filter(item => {
+                })].filter(item => {
                     if (!item.url || !item.caption) return false;
                     const key = item.url;
                     if (seen.has(key)) return false;
@@ -305,13 +329,14 @@ class _microblog(extraction_interface, ABC):
             m_channel_url=self.seed_url,
             m_sender_name=username,
             m_url=helper_method.scalar_text(profile.get("canonical")) or self.seed_url,
+            m_message_sharable_link=helper_method.scalar_text(profile.get("canonical")) or self.seed_url,
             m_weblink=[helper_method.scalar_text(profile.get("canonical")) or self.seed_url],
             m_content=content,
             m_content_type=["social_collector", f"{self.platform}_profile", "profile_info"],
             m_network="clearnet",
             m_date=datetime.now().date(),
             m_message_id=username,
-            m_platform=self.platform,
+            m_platform=[self.platform],
             m_group_name=username,
             m_group_info=helper_method.scalar_text(profile.get("stats")) or None,
             m_img_src=helper_method.scalar_text(profile.get("profileIcon")) or None,
@@ -328,7 +353,10 @@ class _microblog(extraction_interface, ABC):
             if data_type in (SocialDataType.PROFILE, SocialDataType.CHANNEL):
                 self._append_profile_info(page)
                 return
-            limit = max(1, min(int(getattr(self, "m_item_limit", 10) or 10), 100))
+            raw_limit = getattr(self, "m_item_limit", 10)
+            limit = max(0, min(int(raw_limit if raw_limit is not None else 10), 100))
+            if limit == 0:
+                return
             try:
                 for _ in range(3):
                     page.mouse.wheel(0, 1800)
@@ -356,7 +384,7 @@ class _microblog(extraction_interface, ABC):
                     m_network="clearnet",
                     m_date=self._clean_date(post.get("timestamp")),
                     m_message_id=message_id,
-                    m_platform=self.platform,
+                    m_platform=[self.platform],
                     m_img_src=media_url or None,
                     m_group_name=username,
                     m_post_tags=[helper_method.scalar_text(tag) for tag in (post.get("tags") or []) if helper_method.scalar_text(tag)],

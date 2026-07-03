@@ -1,7 +1,7 @@
 from abc import ABC
 from datetime import datetime
 from typing import Any, Dict, List
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote_plus, urlparse
 
 from crawler.crawler_instance.local_interface_model.extractor.extraction_interface import extraction_interface
 from crawler.crawler_instance.local_shared_model.data_model.entity_model import entity_model
@@ -15,6 +15,7 @@ from crawler.crawler_services.shared.helper_method import helper_method
 PLATFORM_CONFIG: Dict[str, Any] = {
     "name": "Quora",
     "profile_url": "https://www.quora.com/profile/{username}",
+    "posts_url": "https://www.quora.com/search?q={username}",
     "domains": [
         "quora.com"
     ]
@@ -82,6 +83,8 @@ class _quora(extraction_interface, ABC):
             template_key = f"{target}_url"
         else:
             template_key = "posts_url" if data_type == SocialDataType.POSTS and cfg.get("posts_url") else "profile_url"
+        if template_key == "posts_url":
+            clean = quote_plus(clean)
         return str(cfg[template_key]).format(username=clean)
 
     @classmethod
@@ -114,7 +117,7 @@ class _quora(extraction_interface, ABC):
             m_fetch_proxy=FetchProxy.TOR,
             m_fetch_config=FetchConfig.PLAYRIGHT,
             m_resoource_block=False,
-            m_threat_type=ThreatType.SOCIAL,
+            m_threat_type=ThreatType.QUORA,
             m_rule_type=RuleType.QUORA,
             m_social_data_type=getattr(self, "m_social_data_type", SocialDataType.DEFAULT),
         )
@@ -144,6 +147,10 @@ class _quora(extraction_interface, ABC):
         try:
             parsed = urlparse(raw)
             query = parse_qs(parsed.query)
+            if parsed.path.rstrip("/").lower() == "/search":
+                value = query.get("q", [""])[0]
+                if value:
+                    return str(value).strip()
             for key in ("user", "id", "acct"):
                 value = query.get(key, [""])[0]
                 if value:
@@ -268,13 +275,14 @@ class _quora(extraction_interface, ABC):
             m_channel_url=self.seed_url,
             m_sender_name=username,
             m_url=helper_method.scalar_text(profile.get("canonical")) or self.seed_url,
+            m_message_sharable_link=helper_method.scalar_text(profile.get("canonical")) or self.seed_url,
             m_weblink=[helper_method.scalar_text(profile.get("canonical")) or self.seed_url],
             m_content=content,
             m_content_type=["social_collector", f"{self.platform}_profile", "profile_info"],
             m_network="clearnet",
             m_date=datetime.now().date(),
             m_message_id=username,
-            m_platform=self.platform,
+            m_platform=[self.platform],
             m_group_name=username,
             m_group_info=helper_method.scalar_text(profile.get("stats")) or None,
             m_img_src=helper_method.scalar_text(profile.get("profileIcon")) or None,
@@ -317,7 +325,7 @@ class _quora(extraction_interface, ABC):
                     m_network="clearnet",
                     m_date=self._clean_date(post.get("timestamp")),
                     m_message_id=post_url,
-                    m_platform=self.platform,
+                    m_platform=[self.platform],
                     m_img_src=media_url or None,
                     m_group_name=username,
                     m_scrap_file=self.__class__.__name__,

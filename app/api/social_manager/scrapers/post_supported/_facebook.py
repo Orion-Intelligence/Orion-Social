@@ -26,6 +26,7 @@ class _facebook(extraction_interface, ABC):
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "facebook"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -234,7 +235,7 @@ class _facebook(extraction_interface, ABC):
         if getattr(self, "_facebook_session_context_id", None) == context_id:
             return True
 
-        sessions_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
+        sessions_dir = os.getenv("ORION_SESSION_ROOT") or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
         session_paths = [
             os.path.join(sessions_dir, "facebookscraper_session.json.gz"),
             os.path.join(sessions_dir, "_facebook_session.json.gz"),
@@ -390,13 +391,14 @@ class _facebook(extraction_interface, ABC):
             m_channel_url=self.seed_url,
             m_sender_name=username,
             m_url=self.seed_url,
+            m_message_sharable_link=self.seed_url,
             m_weblink=[self.seed_url],
             m_content=helper_method.scalar_text(profile_assets.get("description")) or username,
             m_content_type=["social_collector", "facebook_profile", content_type],
             m_network="clearnet",
             m_date=date.today(),
             m_message_id=self.seed_url.rstrip("/").split("/")[-1],
-            m_platform="facebook",
+            m_platform=[self.platform],
             m_group_name=username,
             m_group_info=group_info or None,
             m_img_src=profile_assets.get("profileIcon") or None,
@@ -577,7 +579,7 @@ class _facebook(extraction_interface, ABC):
                 m_comments=structured_comments,
                 m_content=post.get("content") or "",
                 m_content_type=["social_collector", "facebook_post", data_type.value if data_type == SocialDataType.COMMENTS else "posts"],
-                m_platform="facebook",
+                m_platform=[self.platform],
                 m_network="clearnet",
                 m_post_tags=[],
                 m_date=msg_date,

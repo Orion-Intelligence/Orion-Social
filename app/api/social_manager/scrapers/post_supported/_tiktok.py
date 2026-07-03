@@ -28,6 +28,7 @@ class _tiktok(extraction_interface, ABC):
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "tiktok"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -101,7 +102,7 @@ class _tiktok(extraction_interface, ABC):
         if getattr(self, "_tiktok_session_context_id", None) == context_id:
             return True
 
-        sessions_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
+        sessions_dir = os.getenv("ORION_SESSION_ROOT") or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
         session_paths = [
             os.path.join(sessions_dir, "tiktokscraper_session.json.gz"),
             os.path.join(sessions_dir, "_tiktok_session.json.gz"),
@@ -527,7 +528,7 @@ class _tiktok(extraction_interface, ABC):
             m_content=content,
             m_content_type=["social_collector", content_group, content_kind],
             m_img_src=media_url,
-            m_platform="tiktok",
+            m_platform=[self.platform],
             m_network="clearnet",
             m_post_tags=[tag.lower().strip("#") for tag in re.findall(r"#\w+", content or "")],
             m_date=datetime.now(UTC).date(),
@@ -942,6 +943,7 @@ class _tiktok(extraction_interface, ABC):
             m_title=unique_id,
             m_sender_name=nickname,
             m_url=profile_url,
+            m_message_sharable_link=profile_url,
             m_weblink=[profile_url],
             m_content=user_data.get("signature") or "",
             m_content_type=["social_collector", "tiktok_profile", content_type],
@@ -949,7 +951,7 @@ class _tiktok(extraction_interface, ABC):
             m_date=datetime.now(UTC).date(),
             m_channel_url=profile_url,
             m_message_id=str(user_data.get("id") or unique_id),
-            m_platform="tiktok",
+            m_platform=[self.platform],
             m_group_name=unique_id,
             m_group_info=group_info,
             m_img_src=profile_icon or None,

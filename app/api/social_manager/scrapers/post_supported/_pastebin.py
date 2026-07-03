@@ -20,6 +20,7 @@ class _pastebin(extraction_interface, ABC):
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "pastebin"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -32,6 +33,9 @@ class _pastebin(extraction_interface, ABC):
 
     def init_callback(self, callback=None):
         self.callback = callback
+
+    def __new__(cls, callback=None):
+        return super().__new__(cls)
 
     @property
     def is_crawled(self) -> bool:
@@ -51,7 +55,7 @@ class _pastebin(extraction_interface, ABC):
     @property
     def rule_config(self) -> RuleModel:
         return RuleModel(
-            m_fetch_proxy=FetchProxy.NONE,
+            m_fetch_proxy=FetchProxy.TOR,
             m_fetch_config=FetchConfig.PLAYRIGHT,
             m_resoource_block=False,
             m_threat_type=ThreatType.PASTEBIN,
@@ -140,7 +144,7 @@ class _pastebin(extraction_interface, ABC):
         except Exception:
             return {}
 
-    def _append_profile_info(self, page: Page | None = None):
+    def _append_profile_info(self, page: Page | None = None, data_type: SocialDataType = SocialDataType.PROFILE):
         username = self.seed_url.rstrip("/").split("/")[-1]
         profile_assets = {}
         if page is not None:
@@ -156,13 +160,14 @@ class _pastebin(extraction_interface, ABC):
             m_channel_url=self.seed_url,
             m_sender_name=username,
             m_url=self.seed_url,
+            m_message_sharable_link=self.seed_url,
             m_weblink=[self.seed_url],
             m_content=username,
             m_content_type=["social_collector", "pastebin_profile", content_type],
             m_network="clearnet",
             m_date=datetime.now().date(),
             m_message_id=username,
-            m_platform="pastebin",
+            m_platform=[self.platform],
             m_group_name=username,
             m_img_src=profile_assets.get("profileIcon") or None,
             m_coverpage=profile_assets.get("coverpage") or None,
@@ -179,7 +184,7 @@ class _pastebin(extraction_interface, ABC):
             try:
                 data_type = (self.rule_config.m_social_data_types or [SocialDataType.DEFAULT])[0]
                 if data_type in (SocialDataType.PROFILE, SocialDataType.CHANNEL, SocialDataType.FOLLOWERS, SocialDataType.FOLLOWING):
-                    self._append_profile_info(page)
+                    self._append_profile_info(page, data_type)
                     return
                 if data_type in (SocialDataType.VIDEOS, SocialDataType.SHORTS):
                     return
@@ -262,7 +267,7 @@ class _pastebin(extraction_interface, ABC):
                             m_content=m_content,
                             m_network="clearnet",
                             m_content_type=content_type,
-                            m_platform="pastebin",
+                            m_platform=[self.platform],
                             m_date=date,
                             m_post_tags=tags,
                             m_post_views=visits,

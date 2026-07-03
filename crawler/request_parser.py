@@ -10,7 +10,7 @@ import cloudscraper
 from playwright.sync_api import Route, sync_playwright
 
 from crawler.crawler_instance.local_interface_model.extractor.model.leak_data_model import leak_data_model
-from crawler.crawler_instance.local_shared_model.rule_model import FetchConfig, FetchProxy
+from crawler.crawler_instance.local_shared_model.rule_model import FetchConfig, FetchProxy, ThreatType
 from crawler.crawler_services.redis_manager.redis_enums import CUSTOM_SCRIPT_REDIS_KEYS, REDIS_COMMANDS, REDIS_KEYS
 from crawler.session_manager import BrowserSessionManager
 
@@ -110,7 +110,8 @@ class RequestParser:
         if self.model.rule_config.m_fetch_proxy == FetchProxy.TOR:
             if isinstance(self.proxy, dict) and self.proxy.get("server"):
                 return {"server": self.proxy["server"].replace("socks5h://", "socks5://", 1)}
-            return {"server": "socks5://127.0.0.1:9150"}
+            tor_url = os.getenv("TOR_PROXY_URL") or "socks5://127.0.0.1:9150"
+            return {"server": tor_url.replace("socks5h://", "socks5://", 1)}
         return None
 
     def _requests_proxy_config(self) -> dict[str, str] | None:
@@ -170,7 +171,39 @@ class RequestParser:
     def parse(self, session: bool = False) -> tuple[leak_data_model, None]:
         threat_type = getattr(self.model.rule_config, "m_threat_type", None)
         rule_type = getattr(self.model.rule_config, "m_rule_type", None)
-        if hasattr(threat_type, "value"):
+        social_threat_types = {
+            ThreatType.SOCIAL,
+            ThreatType.BLOGGER,
+            ThreatType.BLUESKY,
+            ThreatType.DEVTO,
+            ThreatType.TWITTER,
+            ThreatType.REDDIT,
+            ThreatType.TIKTOK,
+            ThreatType.HABR,
+            ThreatType.HACKERNOON,
+            ThreatType.HASHNODE,
+            ThreatType.PASTEBIN,
+            ThreatType.MASTODON,
+            ThreatType.MEDIUM,
+            ThreatType.MICROBLOG,
+            ThreatType.MISSKEY,
+            ThreatType.NOSTR,
+            ThreatType.PLEROMA,
+            ThreatType.PRIMAL,
+            ThreatType.QUORA,
+            ThreatType.STACKOVERFLOW,
+            ThreatType.SUBSTACK,
+            ThreatType.THREADS,
+            ThreatType.YOUTUBE,
+            ThreatType.FACEBOOK,
+            ThreatType.INSTAGRAM,
+            ThreatType.LINKEDIN,
+            ThreatType.DISCORD,
+            ThreatType.WHATSAPP,
+        }
+        if threat_type in social_threat_types and hasattr(rule_type, "value"):
+            content_type = [rule_type.value]
+        elif hasattr(threat_type, "value"):
             content_type = [threat_type.value]
         elif hasattr(rule_type, "value"):
             content_type = [rule_type.value]

@@ -27,6 +27,12 @@ class CrossPlatformMapper:
     def clear_cards(self) -> None:
         self._cards = []
 
+    @staticmethod
+    def _platform_key(platform) -> str:
+        if isinstance(platform, list):
+            return ",".join(str(item) for item in platform)
+        return str(platform)
+
     def get_summary(self) -> Dict[str, Any]:
         if not self._cards:
             return {"total_cards": 0, "cards": []}
@@ -61,7 +67,7 @@ class CrossPlatformMapper:
 
     def compare_following_across_platforms(self, threshold: int = 70) -> Dict[str, Any]:
         platform_following = {
-            card.m_platform: list(set(card.m_following))
+            self._platform_key(card.m_platform): list(set(card.m_following))
             for card in self._cards
             if card.m_following
         }
@@ -118,7 +124,7 @@ class CrossPlatformMapper:
         for card in self._cards:
             if card.m_following:
                 for username in card.m_following:
-                    users.append((card.m_platform, username))
+                    users.append((self._platform_key(card.m_platform), username))
 
         if not users:
             return {"status": "no_data", "identity_groups": []}
@@ -169,7 +175,7 @@ class CrossPlatformMapper:
         user_profiles: Dict[str, Dict] = {}
 
         for card in self._cards:
-            platform = card.m_platform
+            platform = self._platform_key(card.m_platform)
             all_connections = []
 
             if card.m_followers:

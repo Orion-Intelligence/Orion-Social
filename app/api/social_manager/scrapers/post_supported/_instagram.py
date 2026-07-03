@@ -26,6 +26,7 @@ class _instagram(extraction_interface, ABC):
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "instagram"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -86,7 +87,7 @@ class _instagram(extraction_interface, ABC):
         if getattr(self, "_instagram_session_context_id", None) == context_id:
             return True
 
-        sessions_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
+        sessions_dir = os.getenv("ORION_SESSION_ROOT") or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
         session_paths = [
             os.path.join(sessions_dir, "instagramscraper_session.json.gz"),
             os.path.join(sessions_dir, "_instagram_session.json.gz"),
@@ -765,6 +766,7 @@ class _instagram(extraction_interface, ABC):
                 m_title=profile_info.get("username") or target_username,
                 m_sender_name=profile_info.get("real_name") or profile_info.get("username") or target_username,
                 m_url=target_url,
+                m_message_sharable_link=target_url,
                 m_weblink=[target_url],
                 m_network="clearnet",
                 m_content=profile_info.get("bio"),
@@ -772,7 +774,7 @@ class _instagram(extraction_interface, ABC):
                 m_date=datetime.now().date(),
                 m_channel_url=target_url,
                 m_message_id=target_username,
-                m_platform="instagram",
+                m_platform=[self.platform],
                 m_group_name=profile_info.get("username") or target_username,
                 m_group_info=profile_info.get("group_info") or None,
                 m_img_src=profile_info.get("profileIcon") or None,
@@ -822,6 +824,7 @@ class _instagram(extraction_interface, ABC):
                 m_title=title,
                 m_sender_name=target_username,
                 m_url=target_url,
+                m_message_sharable_link=target_url,
                 m_weblink=[target_url],
                 m_network="clearnet",
                 m_content=description,
@@ -829,7 +832,7 @@ class _instagram(extraction_interface, ABC):
                 m_date=datetime.now().date(),
                 m_channel_url=target_url,
                 m_message_id=target_username,
-                m_platform="instagram",
+                m_platform=[self.platform],
                 m_group_name=target_username,
                 m_group_info=description or None,
                 m_img_src=profile_assets.get("profileIcon") or None,
@@ -850,6 +853,7 @@ class _instagram(extraction_interface, ABC):
                     m_title=profile_info.get("username") or target_username,
                     m_sender_name=profile_info.get("real_name") or profile_info.get("username") or target_username,
                     m_url=target_url,
+                    m_message_sharable_link=target_url,
                     m_weblink=[target_url],
                     m_network="clearnet",
                     m_content=profile_info.get("bio"),
@@ -857,7 +861,7 @@ class _instagram(extraction_interface, ABC):
                     m_date=datetime.now().date(),
                     m_channel_url=target_url,
                     m_message_id=target_username,
-                    m_platform="instagram",
+                    m_platform=[self.platform],
                     m_group_name=profile_info.get("username") or target_username,
                     m_group_info=profile_info.get("group_info") or None,
                     m_img_src=profile_info.get("profileIcon") or None,
@@ -889,7 +893,7 @@ class _instagram(extraction_interface, ABC):
                         m_content_type=["social_collector", f"instagram_{item_type}", "posts"],
                         m_date=item_date,
                         m_channel_url=target_url,
-                        m_platform="instagram",
+                        m_platform=[self.platform],
                         m_group_name=profile_info.get("username") or target_username,
                         m_group_info=profile_info.get("bio") or None,
                         m_comments=[],
@@ -941,7 +945,7 @@ class _instagram(extraction_interface, ABC):
                         m_content_type=["social_collector", f"instagram_{item_type}", data_type.value if data_type == SocialDataType.COMMENTS else "posts"],
                         m_date=item_date,
                         m_channel_url=target_url,
-                        m_platform="instagram",
+                        m_platform=[self.platform],
                         m_group_name=target_username,
                         m_comments=[],
                         m_post_likes=helper_method.scalar_text(item.get("likes", "0")),
@@ -979,6 +983,7 @@ class _instagram(extraction_interface, ABC):
                 m_title=title,
                 m_sender_name=target_username,
                 m_url=target_url,
+                m_message_sharable_link=target_url,
                 m_weblink=[target_url],
                 m_network="clearnet",
                 m_content=helper_method.scalar_text(fallback.get("description")),
@@ -986,7 +991,7 @@ class _instagram(extraction_interface, ABC):
                 m_date=datetime.now().date(),
                 m_channel_url=target_url,
                 m_message_id=target_username,
-                m_platform="instagram",
+                m_platform=[self.platform],
                 m_group_name=target_username,
                 m_img_src=profile_assets.get("profileIcon") or None,
                 m_coverpage=profile_assets.get("coverpage") or None,
@@ -1012,6 +1017,7 @@ class _instagram(extraction_interface, ABC):
                 m_title=username or target_username,
                 m_sender_name=real_name or username or target_username,
                 m_url=target_url,
+                m_message_sharable_link=target_url,
                 m_weblink=[target_url],
                 m_network="clearnet",
                 m_content=bio_text,
@@ -1019,7 +1025,7 @@ class _instagram(extraction_interface, ABC):
                 m_date=datetime.now().date(),
                 m_channel_url=target_url,
                 m_message_id=target_username,
-                m_platform="instagram",
+                m_platform=[self.platform],
                 m_group_name=username or target_username,
                 m_group_info=header_text or None,
                 m_img_src=profile_assets.get("profileIcon") or None,
@@ -1062,7 +1068,7 @@ class _instagram(extraction_interface, ABC):
                 m_content_type=["social_collector", f"instagram_{item_type}", data_type.value if data_type == SocialDataType.COMMENTS else "posts"],
                 m_date=item_date,
                 m_channel_url=target_url,
-                m_platform="instagram",
+                m_platform=[self.platform],
                 m_group_name=username,
                 m_group_info=bio_text,
                 m_comments=item_comments,

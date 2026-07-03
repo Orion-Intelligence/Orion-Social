@@ -7,7 +7,7 @@ from crawler.crawler_instance.local_interface_model.app.base_model import base_m
 from crawler.crawler_services.shared.russian_translator import russian_translator
 
 NetworkType = Literal["clearnet", "i2p", "onion", "invalid", "tor"]
-PlatformType = str
+PlatformType = List[str]
 
 class social_comment_model(BaseModel):
     m_username: Optional[str] = None
@@ -74,7 +74,8 @@ class social_model(base_model):
     @model_validator(mode="after")
     def translate_forum_text(self):
         content_types = [str(content_type).strip().lower() for content_type in self.m_content_type]
-        if self.m_platform == "forum" or "forum" in content_types:
+        platforms = [str(platform).strip().lower() for platform in self.m_platform]
+        if "forum" in platforms or "forum" in content_types:
             self.m_title = russian_translator.forum_title(self.m_title)
             self.m_content = russian_translator.forum_content(self.m_content)
         return self
@@ -85,6 +86,9 @@ class social_model(base_model):
         data.pop("m_post_comments", None)
         data.pop("m_post_comments_list", None)
         data.pop("m_commenters", None)
+        data["m_message_sharable_link"] = str(
+            data.get("m_message_sharable_link") or data.get("m_url") or data.get("m_channel_url") or ""
+        )
         data["m_comments"] = data.get("m_comments") or []
         return data
 
@@ -94,7 +98,7 @@ class social_model(base_model):
             return self
         stable_id = self.m_url or self.m_message_sharable_link or self.m_message_id
         self.m_hash_id = self.unique_identifier(
-            self.m_platform,
+            ",".join(self.m_platform),
             stable_id,
             "" if stable_id else self.m_title,
             "" if stable_id else self.m_content,

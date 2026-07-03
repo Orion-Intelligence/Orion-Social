@@ -22,6 +22,7 @@ services:
       - ./app/api:/app/api:cached
       - ./crawler:/app/crawler:cached
       - ./app/raw:/app/raw:cached
+      - ./sessions:/app/sessions:cached
     deploy:
       resources:
         limits:

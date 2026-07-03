@@ -28,6 +28,7 @@ class custom_recon:
         "github sponsors": "github_sponsors",
         "hatena blog": "hatena_blog",
         "line voom": "line_voom",
+        "linked in": "linkedin",
         "lnk.bio": "lnk_bio",
         "my anime list": "myanimelist",
         "myanimelist": "myanimelist",
@@ -148,19 +149,18 @@ class custom_recon:
             "name": "Pastebin",
             "domains": ("pastebin.com",),
             "profile_url": "https://pastebin.com/u/{username}",
-            "module": "api.social_manager.scrapers.other._pastebin",
+            "module": "api.social_manager.scrapers.post_supported._pastebin",
             "scraper_class": "_pastebin",
         },
         "reddit": {
             "name": "Reddit",
             "domains": ("reddit.com", "old.reddit.com", "new.reddit.com", "np.reddit.com"),
-            "profile_url": "https://www.reddit.com/user/{username}/",
+            "profile_url": "https://old.reddit.com/user/{username}/",
             "url_templates": (
-                ("profile", "https://www.reddit.com/user/{username}/"),
                 ("profile", "https://old.reddit.com/user/{username}/"),
-                ("profile", "https://www.reddit.com/u/{username}/"),
-                ("group", "https://www.reddit.com/r/{username}/"),
+                ("profile", "https://old.reddit.com/u/{username}/"),
                 ("group", "https://old.reddit.com/r/{username}/"),
+                ("search", "https://old.reddit.com/search/?q={username}&type=communities"),
             ),
             "module": "api.social_manager.scrapers.post_supported._reddit",
             "scraper_class": "_reddit",
@@ -205,6 +205,7 @@ class custom_recon:
         "hackernoon": {"tag": "tag", "tagged": "tag"},
         "hashnode": {"tag": "tag", "tags": "tag", "search": "search"},
         "instagram": {"explore": "explore", "p": "post", "reel": "post", "stories": "story"},
+        "linkedin": {"company": "company", "showcase": "page", "in": "profile", "posts": "post"},
         "medium": {"tag": "tag", "tagged": "tag", "topic": "topic", "search": "search"},
         "nostr": {"p": "profile", "t": "tag"},
         "pastebin": {"u": "profile"},
@@ -578,6 +579,9 @@ class custom_recon:
                 return third, "tag"
             if first == "explore" and second.lower() == "locations":
                 return third, "location"
+        if platform == "linkedin":
+            if first in {"company", "showcase", "in", "posts"}:
+                return second, cls.ROUTE_PREFIXES.get(platform, {}).get(first) or "route"
         if platform == "facebook":
             if first == "pages":
                 return (parts[-1] if len(parts) > 2 else second), "page"

@@ -21,6 +21,7 @@ class _twitter(extraction_interface, ABC):
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "twitter"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -114,7 +115,7 @@ class _twitter(extraction_interface, ABC):
         if getattr(self, "_twitter_session_context_id", None) == context_id:
             return True
 
-        sessions_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
+        sessions_dir = os.getenv("ORION_SESSION_ROOT") or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sessions")
         session_paths = [
             os.path.join(sessions_dir, "twitterscraper_session.json.gz"),
             os.path.join(sessions_dir, "_twitter_session.json.gz"),
@@ -468,13 +469,14 @@ class _twitter(extraction_interface, ABC):
             m_title=profile_assets.get("fullName") or (f"@{username}" if username else self.seed_url),
             m_sender_name=f"@{username}" if username else "",
             m_url=self.seed_url,
+            m_message_sharable_link=self.seed_url,
             m_weblink=[self.seed_url],
             m_content=profile_content,
             m_content_type=["social_collector", "twitter_profile", "profile_info"],
             m_network="clearnet",
             m_date=datetime.now().date(),
             m_message_id=username,
-            m_platform="twitter",
+            m_platform=[self.platform],
             m_group_name=f"@{username}" if username else None,
             m_group_info=group_info or None,
             m_img_src=profile_assets.get("profileIcon") or None,
@@ -521,6 +523,8 @@ class _twitter(extraction_interface, ABC):
             tweet_url = helper_method.scalar_text(tweet.get("url"))
             tweet_content = helper_method.scalar_text(tweet.get("content"))
             tweet_id = helper_method.scalar_text(tweet.get("id"))
+            if not tweet_url or not tweet_id:
+                continue
             tweet_weblink_value = tweet.get("weblink")
             tweet_weblink = [str(url) for url in tweet_weblink_value if url] if isinstance(tweet_weblink_value, list) else []
             title = tweet_content[:80] or f"Tweet by @{username}"
@@ -528,15 +532,15 @@ class _twitter(extraction_interface, ABC):
                 m_title=title,
                 m_channel_url=self.seed_url,
                 m_sender_name=f"@{username}",
-                m_url=tweet_url or None,
-                m_message_sharable_link=tweet_url or None,
+                m_url=tweet_url,
+                m_message_sharable_link=tweet_url,
                 m_weblink=tweet_weblink or ([tweet_url] if tweet_url else []),
                 m_content=tweet_content,
                 m_content_type=["social_collector", "twitter_post", data_type.value if data_type == SocialDataType.COMMENTS else "posts"],
                 m_network="clearnet",
                 m_date=parsed_date,
-                m_message_id=tweet_id or None,
-                m_platform="twitter",
+                m_message_id=tweet_id,
+                m_platform=[self.platform],
                 m_post_likes=helper_method.scalar_text(tweet.get('likes') or 0),
                 m_post_shares=helper_method.scalar_text(tweet.get('retweets')),
                 m_likes=helper_method.scalar_text(tweet.get('likes') or 0),

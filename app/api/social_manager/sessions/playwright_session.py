@@ -2,7 +2,7 @@ import os
 from typing import Optional, List, Set
 from playwright.sync_api import sync_playwright
 
-SESSION_DIR = os.path.dirname(os.path.abspath(__file__))
+SESSION_DIR = os.getenv("ORION_SESSION_ROOT") or os.path.dirname(os.path.abspath(__file__))
 
 SESSION_FILE_MAP = {
     "InstagramScraper": "instagramscraper_session.json.gz",

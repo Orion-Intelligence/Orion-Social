@@ -22,6 +22,7 @@ class _mastodon(extraction_interface, ABC):
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "mastodon"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -211,6 +212,8 @@ class _mastodon(extraction_interface, ABC):
         for status in statuses:
             source = status.get("reblog") if isinstance(status.get("reblog"), dict) else status
             status_url = helper_method.scalar_text(source.get("url")) or helper_method.scalar_text(status.get("url"))
+            if not status_url:
+                continue
             if target_hash and not self._is_requested_hash_url(status_url):
                 continue
             if not target_hash and self._is_requested_hash_url(status_url):
@@ -236,7 +239,7 @@ class _mastodon(extraction_interface, ABC):
                 m_network="clearnet",
                 m_date=self._parse_api_date(source.get("created_at")),
                 m_message_id=helper_method.scalar_text(source.get("id")) or helper_method.scalar_text(status.get("id")),
-                m_platform="mastodon",
+                m_platform=[self.platform],
                 m_post_shares=helper_method.scalar_text(source.get("reblogs_count")),
                 m_post_likes=helper_method.scalar_text(source.get("favourites_count")),
                 m_likes=helper_method.scalar_text(source.get("favourites_count")),
@@ -398,13 +401,14 @@ class _mastodon(extraction_interface, ABC):
             m_title=display_name or self.seed_url,
             m_sender_name=username or display_name,
             m_url=self.seed_url,
+            m_message_sharable_link=self.seed_url,
             m_weblink=[self.seed_url],
             m_content=content,
             m_content_type=["social_collector", "mastodon_profile", content_type],
             m_network="clearnet",
             m_date=datetime.now().date(),
             m_message_id=username or self.seed_url.rstrip("/").split("/")[-1],
-            m_platform="mastodon",
+            m_platform=[self.platform],
             m_group_name=username,
             m_img_src=profile_assets.get("profileIcon") or None,
             m_coverpage=profile_assets.get("coverpage") or None,
@@ -576,7 +580,7 @@ class _mastodon(extraction_interface, ABC):
                     m_network="clearnet",
                     m_date=parsed_date,
                     m_message_id=helper_method.scalar_text(post.get("id")),
-                    m_platform="mastodon",
+                    m_platform=[self.platform],
                     m_post_shares=post.get("boosts", None),
                     m_post_likes=post.get("favourites", None),
                     m_likes=post.get("favourites", None),

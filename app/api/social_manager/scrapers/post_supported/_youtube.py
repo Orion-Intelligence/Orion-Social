@@ -16,6 +16,7 @@ class _youtube(extraction_interface, ABC):
 
     def __init__(self, callback=None):
         super().__init__()
+        self.platform = "youtube"
         self.callback = callback
         self._card_data = []
         self._entity_data = []
@@ -119,6 +120,26 @@ class _youtube(extraction_interface, ABC):
     def _is_requested_hash_url(self, url: str) -> bool:
         requested_hash_id = self._requested_hash_id()
         return bool(requested_hash_id and social_model.unique_identifier("youtube", url, "", "", "") == requested_hash_id)
+
+    def _is_requested_hash_id(self, card_data: social_model) -> bool:
+        requested_hash_id = self._requested_hash_id()
+        return bool(requested_hash_id and getattr(card_data, "m_hash_id", "") == requested_hash_id)
+
+    @staticmethod
+    def _message_id(*values) -> str:
+        for value in values:
+            text = str(value or "").strip()
+            if text:
+                return text
+        return social_model.unique_identifier("youtube", *values)
+
+    def _append_card_data(self, card_data: social_model) -> bool:
+        message_id = str(getattr(card_data, "m_message_id", "") or "").strip()
+        if not message_id:
+            return False
+        card_data.m_message_id = message_id
+        self.append_leak_data(card_data, entity_model())
+        return True
 
     def _collect_comments(self, page, limit: int = 10, offset: int = 0) -> list[dict]:
         comments: list[dict] = []
@@ -243,19 +264,21 @@ class _youtube(extraction_interface, ABC):
             m_channel_url=channel_url,
             m_sender_name=title,
             m_url=channel_url,
+            m_message_sharable_link=channel_url,
             m_weblink=[channel_url],
             m_content=description,
             m_content_type=["social_collector", "youtube_profile", content_type],
             m_network="clearnet",
             m_date=datetime.now().date(),
-            m_platform="youtube",
+            m_message_id=self._message_id(f"profile:{channel_url.rstrip('/')}", title),
+            m_platform=[self.platform],
             m_group_name=title,
             m_group_info=f"SUBSCRIBERS: {subscribers}" if subscribers else None,
             m_img_src=info.get("profileIcon") or None,
             m_coverpage=info.get("coverpage") or None,
             m_scrap_file=self.__class__.__name__,
         )
-        self.append_leak_data(card_data, entity_model())
+        self._append_card_data(card_data)
 
     def _collect_video_links(self, page, channel_url: str, is_shorts: bool, limit: int = 10, target_hash: bool = False) -> list[str]:
         page.goto(channel_url.rstrip("/") + ("/shorts" if is_shorts else "/videos"), wait_until="domcontentloaded", timeout=60000)
@@ -384,13 +407,14 @@ class _youtube(extraction_interface, ABC):
                     m_channel_url=channel_url,
                     m_sender_name=channel_name,
                     m_url=video_url,
+                    m_message_sharable_link=video_url,
                     m_weblink=[],
                     m_content=video_content,
                     m_content_type=["social_collector", video_content_type, social_data_type],
                     m_network="clearnet",
                     m_date=datetime.now().date(),
-                    m_message_id=video_id or str(video_idx),
-                    m_platform="youtube",
+                    m_message_id=self._message_id(video_id, video_url, f"{video_content_type}:{video_idx}"),
+                    m_platform=[self.platform],
                     m_likes=str(likes_count),
                     m_comment_count=str(len(comment_texts)) if load_comments else None,
                     m_comments=comments,
@@ -403,11 +427,11 @@ class _youtube(extraction_interface, ABC):
                 )
                 if target_hash:
                     if self._is_requested_hash_id(card_data):
-                        self.append_leak_data(card_data, entity_model())
+                        self._append_card_data(card_data)
                     return
                 if self._is_requested_hash_id(card_data):
                     return
-                self.append_leak_data(card_data, entity_model())
+                self._append_card_data(card_data)
             except Exception:
                 continue
 
@@ -523,12 +547,14 @@ class _youtube(extraction_interface, ABC):
                 m_channel_url=channel_url,
                 m_sender_name=post.get("author") or "",
                 m_url=post_url,
+                m_message_sharable_link=post_url,
                 m_weblink=[post_url],
                 m_content=post.get("content") or "",
                 m_content_type=["social_collector", "youtube_post", social_data_type],
                 m_network="clearnet",
                 m_date=datetime.now().date(),
-                m_platform="youtube",
+                m_message_id=self._message_id(post_url, post.get("content"), post.get("author")),
+                m_platform=[self.platform],
                 m_post_likes=post.get("likes") or None,
                 m_comment_count=str(len(comment_texts)) if comment_texts else post.get("comments") or None,
                 m_comments=comments,
@@ -537,11 +563,11 @@ class _youtube(extraction_interface, ABC):
             )
             if target_hash:
                 if self._is_requested_hash_id(card_data):
-                    self.append_leak_data(card_data, entity_model())
+                    self._append_card_data(card_data)
                 return
             if self._is_requested_hash_id(card_data):
                 return
-            self.append_leak_data(card_data, entity_model())
+            self._append_card_data(card_data)
         self._last_status = "ok"
         self._last_reason = f"youtube returned {len(collected_posts)} community post cards"
 
