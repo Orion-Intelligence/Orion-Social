@@ -14,8 +14,9 @@ class SocialProfileRequest(BaseModel):
     platform: str = Field(..., min_length=1)
     username: str = Field(..., min_length=1)
     social_data_type: Optional[str] = None
+    target_type: Optional[str] = None
 
-    @field_validator("platform", mode="before")
+    @field_validator("platform", "target_type", mode="before")
     def platform_to_lowercase(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
@@ -32,8 +33,9 @@ class SocialFollowersRequest(BaseModel):
     username: str = Field(..., min_length=1)
     max_followers: int = Field(default=50, ge=1, le=5000)
     social_data_type: Optional[str] = None
+    target_type: Optional[str] = None
 
-    @field_validator("platform", mode="before")
+    @field_validator("platform", "target_type", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
@@ -51,8 +53,9 @@ class SocialFollowingRequest(BaseModel):
     username: str = Field(..., min_length=1)
     max_following: int = Field(default=50, ge=1, le=5000)
     social_data_type: Optional[str] = None
+    target_type: Optional[str] = None
 
-    @field_validator("platform", mode="before")
+    @field_validator("platform", "target_type", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
@@ -73,8 +76,9 @@ class SocialPostsRequest(BaseModel):
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
+    target_type: Optional[str] = None
 
-    @field_validator("platform", mode="before")
+    @field_validator("platform", "target_type", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
@@ -95,8 +99,9 @@ class SocialVideosRequest(BaseModel):
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
+    target_type: Optional[str] = None
 
-    @field_validator("platform", mode="before")
+    @field_validator("platform", "target_type", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
@@ -117,8 +122,9 @@ class SocialShortsRequest(BaseModel):
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
+    target_type: Optional[str] = None
 
-    @field_validator("platform", mode="before")
+    @field_validator("platform", "target_type", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
