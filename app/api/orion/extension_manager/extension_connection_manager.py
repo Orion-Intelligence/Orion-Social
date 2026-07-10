@@ -51,7 +51,6 @@ class extension_connection_manager:
         self.router = APIRouter()
         self.router.add_api_websocket_route("/extensions/ws", self.websocket_endpoint)
         self.router.add_api_route("/extensions/status", self.status, methods=["GET"])
-        self.router.add_api_route("/extensions/download", self.download_extension, methods=["GET"])
         self.router.add_api_route("/extensions/download/chrome", self.download_chrome_extension, methods=["GET"])
         self.router.add_api_route("/extensions/download/firefox", self.download_firefox_extension, methods=["GET"])
         self.router.add_api_route("/extensions/auth/login", self.extension_auth_login, methods=["POST"])
@@ -100,10 +99,6 @@ class extension_connection_manager:
             if extension_id:
                 await self.unregister(extension_id)
 
-    async def online_count(self) -> int:
-        async with self._lock:
-            return len(self._connections)
-
     async def status(self) -> dict[str, Any]:
         async with self._lock:
             extensions = []
@@ -135,8 +130,6 @@ class extension_connection_manager:
         with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for path in extension_dir.rglob("*"):
                 if path.is_file():
-                    if not is_firefox and path.name == "manifest.firefox.json":
-                        continue
                     archive_path = Path("Orion-Extension") / path.relative_to(extension_dir)
                     zip_file.write(path, archive_path)
                     file_count += 1
@@ -351,14 +344,8 @@ class extension_connection_manager:
             return None
         return url[:1000]
 
-    def _orion_auth_login_url(self) -> str:
-        return f"{self._orion_auth_base_url()}/token"
-
     def _orion_auth_login_urls(self) -> list[str]:
         return [f"{base_url}/token" for base_url in self._orion_auth_base_urls()]
-
-    def _orion_auth_refresh_url(self) -> str:
-        return self._orion_auth_refresh_urls()[0]
 
     def _orion_auth_refresh_urls(self) -> list[str]:
         refresh_url = os.getenv("ORION_EXTENSION_AUTH_REFRESH_URL", "").strip()
