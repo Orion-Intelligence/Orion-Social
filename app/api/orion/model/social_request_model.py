@@ -14,6 +14,11 @@ class SocialProfileRequest(BaseModel):
     platform: str = Field(..., min_length=1)
     username: str = Field(..., min_length=1)
     social_data_type: Optional[str] = None
+    use_extension: bool = False
+    max_posts: int = Field(default=10, ge=1, le=100)
+    max_comments: int = Field(default=25, ge=1, le=100)
+    max_followers: int = Field(default=1000, ge=1, le=5000)
+    max_following: int = Field(default=1000, ge=1, le=5000)
 
     @field_validator("platform", mode="before")
     def platform_to_lowercase(cls, value: Optional[str]) -> Optional[str]:
@@ -70,9 +75,13 @@ class SocialPostsRequest(BaseModel):
     username: str = Field(..., min_length=1)
     max_posts: int = Field(default=10, ge=1, le=100)
     max_comments: int = Field(default=10, ge=1, le=100)
+    post_offset: int = Field(default=0, ge=0, le=1000)
+    existing_posts_count: int = Field(default=0, ge=0, le=1000)
+    existing_post_urls: List[str] = Field(default_factory=list)
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
+    use_extension: bool = False
 
     @field_validator("platform", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
@@ -95,6 +104,7 @@ class SocialVideosRequest(BaseModel):
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
+    use_extension: bool = False
 
     @field_validator("platform", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
@@ -117,6 +127,7 @@ class SocialShortsRequest(BaseModel):
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
+    use_extension: bool = False
 
     @field_validator("platform", mode="before")
     def sanitize_platform(cls, value: Optional[str]) -> Optional[str]:
@@ -140,6 +151,7 @@ class DuckDuckGoImagesRequest(BaseModel):
     platform: Optional[str] = Field(default=None)
     max_images: int = Field(default=10, ge=1, le=100)
     hash_id: Optional[str] = None
+    use_extension: bool = False
 
 
 class DuckDuckGoMetadataRequest(BaseModel):

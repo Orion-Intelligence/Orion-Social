@@ -14,6 +14,9 @@ services:
       - .env
     environment:
       LLM_URL: "http://host.docker.internal:11434/api/chat"
+      ORION_EXTENSION_AUTH_REFRESH_URL: "${ORION_EXTENSION_AUTH_REFRESH_URL:-http://trusted-web-main:8070/api/token/refresh}"
+      ORION_REQUIRE_EXTENSION_AUTH: "${ORION_REQUIRE_EXTENSION_AUTH:-1}"
+      ORION_EXTENSION_AUTH_VERIFY_TLS: "${ORION_EXTENSION_AUTH_VERIFY_TLS:-0}"
     extra_hosts:
       - "host.docker.internal:172.25.0.1"
     ports:
@@ -22,6 +25,8 @@ services:
       - ./app/api:/app/api:cached
       - ./crawler:/app/crawler:cached
       - ./app/raw:/app/raw:cached
+      - ./Orion-Extension:/app/Orion-Extension:cached
+      - ./Orion-Extension-Firefox:/app/Orion-Extension-Firefox:cached
     deploy:
       resources:
         limits:
