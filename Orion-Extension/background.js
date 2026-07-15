@@ -5,6 +5,7 @@ const DEFAULT_SETTINGS = {
   sessionToken: "",
   refreshToken: "",
   authPageOrigin: "",
+  authSyncBlocked: false,
   autoConnect: true,
   closeTabsAfterScrape: true
 };
@@ -126,6 +127,7 @@ async function handleRuntimeMessage(message) {
       refreshToken: String(loginResult.refresh_token || ""),
       authApiBaseUrl: loginResult.authApiBaseUrl || authApiBaseUrl,
       authPageOrigin: "extension_popup",
+      authSyncBlocked: false,
       autoConnect: true
     });
     await setStatus({ authState: "authenticated", lastError: "" });
@@ -137,16 +139,32 @@ async function handleRuntimeMessage(message) {
     const token = typeof message.token === "string" ? message.token.trim() : "";
     const authApiBaseUrl = typeof message.authApiBaseUrl === "string" ? normalizeApiBaseUrl(message.authApiBaseUrl) : "";
     const authPageOrigin = typeof message.pageOrigin === "string" ? message.pageOrigin.trim() : "";
+    const settings = await getSettings();
     if (!token) {
       return { ok: false, error: "missing_token" };
     }
+    if (settings.authSyncBlocked && authPageOrigin !== "extension_popup") {
+      await setStatus({ authState: "unauthenticated", lastError: "Extension auth sync is disabled after logout. Log in from the extension popup." });
+      return { ok: false, error: "auth_sync_blocked", status: await getStatus() };
+    }
+    const storedSessionToken = String(settings.sessionToken || "").trim();
+    const storedAuthToken = String(settings.authToken || "").trim();
+    const tokenUnchanged = token === storedSessionToken || token === storedAuthToken;
     await storageSet({
       sessionToken: token,
       ...(authApiBaseUrl ? { authApiBaseUrl } : {}),
       ...(authPageOrigin ? { authPageOrigin } : {}),
+      authSyncBlocked: false,
       autoConnect: true
     });
     await setStatus({ authState: "authenticated", lastError: "" });
+    if (activeJobId) {
+      await setStatus({ lastError: "" });
+      return { ok: true, status: await getStatus(), skippedReconnect: "active_job" };
+    }
+    if (tokenUnchanged && socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+      return { ok: true, status: await getStatus(), skippedReconnect: "token_unchanged" };
+    }
     await reconnectNow(true);
     return { ok: true, status: await getStatus() };
   }
@@ -155,8 +173,10 @@ async function handleRuntimeMessage(message) {
     const authApiBaseUrl = typeof message.authApiBaseUrl === "string" ? normalizeApiBaseUrl(message.authApiBaseUrl) : "";
     const authPageOrigin = typeof message.pageOrigin === "string" ? message.pageOrigin.trim() : "";
     await storageSet({
+      authToken: "",
       sessionToken: "",
       refreshToken: "",
+      authSyncBlocked: true,
       ...(authApiBaseUrl ? { authApiBaseUrl } : {}),
       ...(authPageOrigin ? { authPageOrigin } : {})
     });
@@ -305,14 +325,12 @@ async function logoutExpiredSession(reason = "auth_session_expired") {
     await setStatus({ lastError: error.message || String(error) });
   }
   intentionalDisconnect = true;
-  const settings = await getSettings();
   const updates = {
+    authToken: "",
     sessionToken: "",
-    refreshToken: ""
+    refreshToken: "",
+    authSyncBlocked: true
   };
-  if (looksLikeJwt(settings.authToken)) {
-    updates.authToken = "";
-  }
   await storageSet(updates);
   if (socket) {
     try {
@@ -437,9 +455,23 @@ async function runJob(job) {
     if (authExpiredJobIds.has(normalizedJob.job_id)) {
       throw createAuthExpiredError();
     }
+    await setStatus({
+      state: "result_ready",
+      activeJobId,
+      lastResultSummary: summarizeResultData(result),
+      lastResultAt: new Date().toISOString(),
+      lastError: ""
+    });
     sendProgress(normalizedJob, scraperStep(normalizedJob), 85);
     sendProgress(normalizedJob, "complete", 100);
-    await sendJobResult(normalizedJob, { success: true, data: result });
+    const ack = await sendJobResult(normalizedJob, { success: true, data: result });
+    await setStatus({
+      state: "result_delivered",
+      activeJobId,
+      lastResultAck: ack?.accepted === false ? "rejected" : "accepted",
+      lastResultAt: new Date().toISOString(),
+      lastError: ack?.accepted === false ? String(ack.error || "job_result_not_accepted") : ""
+    });
   } catch (error) {
     const normalizedError = normalizeJobError(error, normalizedJob);
     if (normalizedError.error_code === "AUTH_REQUIRED") {
@@ -447,7 +479,11 @@ async function runJob(job) {
     }
     await setStatus({ lastError: normalizedError.message || normalizedError.error });
     if (!authExpiredJobIds.has(normalizedJob.job_id)) {
-      await sendJobResult(normalizedJob, { success: false, ...normalizedError });
+      try {
+        await sendJobResult(normalizedJob, { success: false, ...normalizedError });
+      } catch (sendError) {
+        await setStatus({ lastError: `job_result_send_failed: ${sendError.message || String(sendError)}` });
+      }
     }
   } finally {
     if (tabId !== null) {
@@ -667,8 +703,8 @@ async function sendJobResult(job, outcome) {
     platform: normalizedError.platform || job.platform || null,
     login_url: normalizedError.login_url || null
   };
-  await sendSocketMessageWithResultAck(payload);
-  return payload;
+  const ack = await sendSocketMessageWithResultAck(payload);
+  return ack || payload;
 }
 
 async function sendSocketMessageWithResultAck(payload) {
@@ -731,6 +767,20 @@ function rejectAllPendingResultAcks(error) {
 
 function createAckId(jobId) {
   return `${jobId || "job"}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+}
+
+function summarizeResultData(data) {
+  const source = data && typeof data === "object" ? data : {};
+  return {
+    platform: source.platform || "",
+    username: source.username || "",
+    posts: Array.isArray(source.posts) ? source.posts.length : 0,
+    images: Array.isArray(source.images) ? source.images.length : 0,
+    followers: Array.isArray(source.followers) ? source.followers.length : 0,
+    following: Array.isArray(source.following) ? source.following.length : 0,
+    partial: Boolean(source.partial),
+    errors: Array.isArray(source.errors) ? source.errors.length : 0
+  };
 }
 
 function normalizeJobError(error, job) {
@@ -1112,7 +1162,8 @@ async function getStatus() {
     closeTabsAfterScrape: settings.closeTabsAfterScrape,
     hasAuthToken: Boolean(settings.authToken),
     hasSessionToken: Boolean(settings.sessionToken),
-    hasRefreshToken: Boolean(settings.refreshToken)
+    hasRefreshToken: Boolean(settings.refreshToken),
+    authSyncBlocked: Boolean(settings.authSyncBlocked)
   };
 }
 

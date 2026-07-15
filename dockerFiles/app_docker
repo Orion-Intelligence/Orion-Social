@@ -73,6 +73,7 @@ COPY crawler /app/crawler
 COPY config /app
 COPY Orion-Extension /app/Orion-Extension
 COPY Orion-Extension-Firefox /app/Orion-Extension-Firefox
+COPY dist /app/dist
 
 WORKDIR /app
 

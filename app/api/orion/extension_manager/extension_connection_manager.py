@@ -119,6 +119,22 @@ class extension_connection_manager:
 
     async def download_extension(self, browser: str = "chrome") -> Response:
         is_firefox = browser.strip().lower() in {"firefox", "mozilla"}
+        if is_firefox:
+            xpi_path = self._signed_firefox_xpi_path()
+            if not xpi_path:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Signed Firefox XPI was not found in dist/extensions/firefox or ORION_FIREFOX_EXTENSION_XPI",
+                )
+            return Response(
+                content=xpi_path.read_bytes(),
+                media_type="application/x-xpinstall",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{xpi_path.name}"',
+                    "Cache-Control": "no-store",
+                },
+            )
+
         extension_dir_name = "Orion-Extension-Firefox" if is_firefox else "Orion-Extension"
         extension_dir = self._extension_dir(extension_dir_name)
         filename = "Orion-Extension-Firefox.zip" if is_firefox else "Orion-Extension.zip"
@@ -414,6 +430,30 @@ class extension_connection_manager:
             if candidate.is_dir():
                 return candidate
         return None
+
+    @staticmethod
+    def _signed_firefox_xpi_path() -> Path | None:
+        env_path = os.getenv("ORION_FIREFOX_EXTENSION_XPI", "").strip()
+        if env_path:
+            candidate = Path(env_path).expanduser()
+            if not candidate.is_absolute():
+                candidate = Path.cwd() / candidate
+            if candidate.is_file() and candidate.suffix.lower() == ".xpi":
+                return candidate
+
+        current_file = Path(__file__).resolve()
+        roots = [
+            current_file.parents[3],  # /app in Docker
+            current_file.parents[4],  # repo root in local development
+            Path.cwd(),
+            Path.cwd().parent,
+        ]
+        candidates: list[Path] = []
+        for root in roots:
+            candidates.extend(path for path in (root / "dist/extensions/firefox").glob("*.xpi") if path.is_file())
+        if not candidates:
+            return None
+        return max(candidates, key=lambda path: path.stat().st_mtime)
 
     async def find_available(self, platform: str, command: str, owner_username: str = "", owner_session_id: str = "") -> str | None:
         platform = normalize_platform(platform)

@@ -11,6 +11,7 @@ const stateValue = document.getElementById("stateValue");
 const authValue = document.getElementById("authValue");
 const jobValue = document.getElementById("jobValue");
 const errorValue = document.getElementById("errorValue");
+const resultValue = document.getElementById("resultValue");
 const connectButton = document.getElementById("connectButton");
 const clearAuthButton = document.getElementById("clearAuthButton");
 const MESSAGE_TIMEOUT_MS = 2500;
@@ -105,6 +106,7 @@ function renderStatus(status) {
   authValue.textContent = currentStatus.authState || "authenticated";
   jobValue.textContent = currentStatus.activeJobId || "none";
   errorValue.textContent = currentStatus.lastError || "none";
+  resultValue.textContent = formatLastResult(currentStatus);
 }
 
 function authRequiredLabel(status) {
@@ -131,6 +133,36 @@ function connectionLabel(status) {
     return "Connecting";
   }
   return "Not connected";
+}
+
+function formatLastResult(status) {
+  const summary = status.lastResultSummary || {};
+  if (!status.lastResultAt && !Object.keys(summary).length) {
+    return "none";
+  }
+  const parts = [];
+  if (status.lastResultAck) {
+    parts.push(status.lastResultAck);
+  }
+  if (summary.posts !== undefined) {
+    parts.push(`${summary.posts || 0} posts`);
+  }
+  if (summary.images) {
+    parts.push(`${summary.images} images`);
+  }
+  if (summary.followers) {
+    parts.push(`${summary.followers} followers`);
+  }
+  if (summary.following) {
+    parts.push(`${summary.following} following`);
+  }
+  if (summary.partial) {
+    parts.push("partial");
+  }
+  if (summary.errors) {
+    parts.push(`${summary.errors} scrape errors`);
+  }
+  return parts.length ? parts.join(" · ") : "ready";
 }
 
 function setLoginBusy(isBusy) {
