@@ -45,16 +45,7 @@ class orion_controller:
                 return {"job_id": job_id, "status": "pending", "progress": state.get("progress", 5), "step": state.get("step", "")}
 
             if state["status"] == "error":
-                response = {"job_id": job_id, "status": "error", "message": state.get("error", "error")}
-                result = state.get("result")
-                if isinstance(result, dict):
-                    response["result"] = result
-                    for key in ("error_code", "login_url", "error_platform"):
-                        if result.get(key):
-                            response[key] = result.get(key)
-                    if result.get("message"):
-                        response["message"] = result.get("message")
-                return response
+                return {"job_id": job_id, "status": "error", "message": state.get("error", "error")}
 
             self.progress.init(job_id)
             self.progress.update(job_id, 0, "queued")

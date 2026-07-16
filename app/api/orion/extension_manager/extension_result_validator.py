@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import re
 from typing import Any
 from urllib.parse import urlparse
@@ -15,11 +14,11 @@ class ExtensionResultValidationError(ValueError):
 
 
 class extension_result_validator:
-    MAX_RESULT_BYTES = int(os.getenv("ORION_EXTENSION_MAX_RESULT_BYTES", str(2 * 1024 * 1024)))
-    MAX_STRING_LENGTH = int(os.getenv("ORION_EXTENSION_MAX_STRING_LENGTH", "5000"))
-    MAX_URL_LENGTH = int(os.getenv("ORION_EXTENSION_MAX_URL_LENGTH", "2048"))
-    MAX_NESTING_DEPTH = int(os.getenv("ORION_EXTENSION_MAX_NESTING_DEPTH", "8"))
-    MAX_OBJECT_KEYS = int(os.getenv("ORION_EXTENSION_MAX_OBJECT_KEYS", "80"))
+    MAX_RESULT_BYTES = 2 * 1024 * 1024
+    MAX_STRING_LENGTH = 5000
+    MAX_URL_LENGTH = 2048
+    MAX_NESTING_DEPTH = 8
+    MAX_OBJECT_KEYS = 80
     MAX_ERRORS = 20
     MAX_COMMENTS = 100
     MAX_POSTS = 100

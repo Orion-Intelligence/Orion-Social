@@ -56,7 +56,7 @@ class progress_controller:
             st["result"] = result
             st["expires_at"] = time.time() + 300
 
-    def error(self, job_id: str, message: str, result: Any = None):
+    def error(self, job_id: str, message: str):
         with self._lock:
             st = self._store.get(job_id)
             if not st:
@@ -64,8 +64,6 @@ class progress_controller:
             st["status"] = "error"
             st["step"] = "error"
             st["error"] = message
-            if result is not None:
-                st["result"] = result
             st["expires_at"] = time.time() + 300
 
     def get(self, job_id: str) -> Dict[str, Any]:

@@ -1,7 +1,6 @@
 import asyncio
 import concurrent.futures
 from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
 
 from api.orion.extension_manager.extension_connection_manager import extension_connection_manager
 from api.orion.orion_controller import orion_controller
@@ -18,12 +17,6 @@ class APIService:
         loop.set_default_executor(executor)
 
         self.app = FastAPI()
-        self.app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type"],
-        )
 
         self.qmonitor = queue_monitor(self.MAX_CONCURRENT_REQUESTS)
         self.orion = orion_controller(self.qmonitor)

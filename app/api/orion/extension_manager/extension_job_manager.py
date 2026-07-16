@@ -70,7 +70,7 @@ class extension_job_manager:
         if result.success:
             self._progress.done(result.job_id, payload)
         else:
-            self._progress.error(result.job_id, result.message or result.error or "extension_job_failed", payload)
+            self._progress.error(result.job_id, result.message or result.error or "extension_job_failed")
 
         async with self._lock:
             state = self._jobs.get(result.job_id)
