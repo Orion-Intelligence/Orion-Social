@@ -25,9 +25,7 @@ services:
       - ./app/api:/app/api:cached
       - ./crawler:/app/crawler:cached
       - ./app/raw:/app/raw:cached
-      - ./Orion-Extension:/app/Orion-Extension:cached
-      - ./Orion-Extension-Firefox:/app/Orion-Extension-Firefox:cached
-      - ./dist/extensions/firefox:/app/dist/extensions/firefox:cached
+      - ./dist/extensions:/app/dist/extensions:cached
     deploy:
       resources:
         limits:

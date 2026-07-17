@@ -2,15 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import io
 import json
 import logging
-import os
 import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
-import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -33,6 +30,7 @@ from api.orion.extension_manager.extension_result_validator import (
     ExtensionResultValidationError,
     extension_result_validator,
 )
+from api.orion.services.shared.env_handler import env_handler
 
 
 class extension_connection_manager:
@@ -58,7 +56,7 @@ class extension_connection_manager:
         self._lock = asyncio.Lock()
         self._connections: dict[str, dict[str, Any]] = {}
         self._jobs = extension_job_manager.get_instance()
-        self._max_message_bytes = int(os.getenv("ORION_EXTENSION_MAX_MESSAGE_BYTES", str(5 * 1024 * 1024)))
+        self._max_message_bytes = int(self._env("ORION_EXTENSION_MAX_MESSAGE_BYTES", str(5 * 1024 * 1024)))
         extension_connection_manager.__instance = self
 
     async def websocket_endpoint(self, websocket: WebSocket):
@@ -120,42 +118,35 @@ class extension_connection_manager:
     async def download_extension(self, browser: str = "chrome") -> Response:
         is_firefox = browser.strip().lower() in {"firefox", "mozilla"}
         if is_firefox:
-            xpi_path = self._signed_firefox_xpi_path()
-            if not xpi_path:
+            artifact_path = self._extension_artifact_path("firefox", (".xpi",))
+            if not artifact_path:
                 raise HTTPException(
                     status_code=404,
                     detail="Signed Firefox XPI was not found in dist/extensions/firefox or ORION_FIREFOX_EXTENSION_XPI",
                 )
             return Response(
-                content=xpi_path.read_bytes(),
+                content=artifact_path.read_bytes(),
                 media_type="application/x-xpinstall",
                 headers={
-                    "Content-Disposition": f'attachment; filename="{xpi_path.name}"',
+                    "Content-Disposition": f'attachment; filename="{artifact_path.name}"',
                     "Cache-Control": "no-store",
                 },
             )
 
-        extension_dir_name = "Orion-Extension-Firefox" if is_firefox else "Orion-Extension"
-        extension_dir = self._extension_dir(extension_dir_name)
-        filename = "Orion-Extension-Firefox.zip" if is_firefox else "Orion-Extension.zip"
-        if not extension_dir:
-            raise HTTPException(status_code=404, detail=f"{extension_dir_name} directory was not found")
-
-        archive = io.BytesIO()
-        file_count = 0
-        with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zip_file:
-            for path in extension_dir.rglob("*"):
-                if path.is_file():
-                    archive_path = Path("Orion-Extension") / path.relative_to(extension_dir)
-                    zip_file.write(path, archive_path)
-                    file_count += 1
-        if file_count == 0:
-            raise HTTPException(status_code=404, detail=f"{extension_dir_name} directory has no files to download")
+        artifact_path = self._extension_artifact_path("chrome", (".zip",))
+        if not artifact_path:
+            raise HTTPException(
+                status_code=404,
+                detail="Chrome extension ZIP was not found in dist/extensions/chrome or ORION_CHROME_EXTENSION_ZIP",
+            )
 
         return Response(
-            content=archive.getvalue(),
+            content=artifact_path.read_bytes(),
             media_type="application/zip",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            headers={
+                "Content-Disposition": f'attachment; filename="{artifact_path.name}"',
+                "Cache-Control": "no-store",
+            },
         )
 
     async def download_chrome_extension(self) -> Response:
@@ -187,12 +178,12 @@ class extension_connection_manager:
         )
 
     async def _validate_registration(self, registration: ExtensionRegistration) -> tuple[bool, str, dict[str, str]]:
-        allow_static_token = os.getenv("ORION_ALLOW_STATIC_EXTENSION_TOKEN", "0").strip().lower() in {"1", "true", "yes"}
-        static_token = os.getenv("ORION_EXTENSION_TOKEN", "")
+        allow_static_token = self._env("ORION_ALLOW_STATIC_EXTENSION_TOKEN", "0").strip().lower() in {"1", "true", "yes"}
+        static_token = self._env("ORION_EXTENSION_TOKEN", "")
         if allow_static_token and static_token:
             return (registration.auth_token == static_token, "invalid_extension_token", {})
 
-        require_auth = os.getenv("ORION_REQUIRE_EXTENSION_AUTH", "1").strip().lower() in {"1", "true", "yes"}
+        require_auth = self._env("ORION_REQUIRE_EXTENSION_AUTH", "1").strip().lower() in {"1", "true", "yes"}
         if not registration.auth_token:
             return (False, "missing_extension_auth", {}) if require_auth else (True, "", {})
 
@@ -206,7 +197,7 @@ class extension_connection_manager:
 
     def _validate_orion_token_sync(self, token: str, refresh_urls: list[str]) -> dict[str, str] | None:
         payload = json.dumps({"token": token}).encode("utf-8")
-        verify_tls = os.getenv("ORION_EXTENSION_AUTH_VERIFY_TLS", "0").strip().lower() in {"1", "true", "yes"}
+        verify_tls = self._env("ORION_EXTENSION_AUTH_VERIFY_TLS", "0").strip().lower() in {"1", "true", "yes"}
         context = None if verify_tls else ssl._create_unverified_context()
         for refresh_url in refresh_urls:
             request = urllib.request.Request(
@@ -236,7 +227,7 @@ class extension_connection_manager:
             try:
                 return self._post_orion_form_sync(url, form)
             except HTTPException as exc:
-                if exc.status_code != 502:
+                if not self._should_try_next_auth_url(exc.status_code):
                     raise
                 last_error = exc
         raise last_error or HTTPException(status_code=502, detail="orion_auth_unreachable")
@@ -247,7 +238,7 @@ class extension_connection_manager:
             try:
                 return self._post_orion_json_sync(url, payload, bearer_token)
             except HTTPException as exc:
-                if exc.status_code != 502:
+                if not self._should_try_next_auth_url(exc.status_code):
                     raise
                 last_error = exc
         raise last_error or HTTPException(status_code=502, detail="orion_auth_unreachable")
@@ -360,11 +351,15 @@ class extension_connection_manager:
             return None
         return url[:1000]
 
+    @staticmethod
+    def _env(key: str, default: str | None = None) -> str:
+        return str(env_handler.get_instance().env(key, default) or "")
+
     def _orion_auth_login_urls(self) -> list[str]:
         return [f"{base_url}/token" for base_url in self._orion_auth_base_urls()]
 
     def _orion_auth_refresh_urls(self) -> list[str]:
-        refresh_url = os.getenv("ORION_EXTENSION_AUTH_REFRESH_URL", "").strip()
+        refresh_url = self._env("ORION_EXTENSION_AUTH_REFRESH_URL", "").strip()
         candidates = [refresh_url] if refresh_url else []
         candidates.extend(f"{base_url}/token/refresh" for base_url in self._orion_auth_base_urls())
         return self._unique_urls(candidates)
@@ -373,10 +368,10 @@ class extension_connection_manager:
         return self._orion_auth_base_urls()[0]
 
     def _orion_auth_base_urls(self) -> list[str]:
-        base_url = os.getenv("ORION_EXTENSION_AUTH_BASE_URL", "").strip()
+        base_url = self._env("ORION_EXTENSION_AUTH_BASE_URL", "").strip()
         candidates = [base_url] if base_url else []
 
-        refresh_url = os.getenv("ORION_EXTENSION_AUTH_REFRESH_URL", "").strip()
+        refresh_url = self._env("ORION_EXTENSION_AUTH_REFRESH_URL", "").strip()
         marker = "/token/refresh"
         if refresh_url.endswith(marker):
             candidates.append(refresh_url[: -len(marker)].rstrip("/"))
@@ -405,8 +400,12 @@ class extension_connection_manager:
         return unique_urls
 
     def _orion_ssl_context(self):
-        verify_tls = os.getenv("ORION_EXTENSION_AUTH_VERIFY_TLS", "0").strip().lower() in {"1", "true", "yes"}
+        verify_tls = self._env("ORION_EXTENSION_AUTH_VERIFY_TLS", "0").strip().lower() in {"1", "true", "yes"}
         return None if verify_tls else ssl._create_unverified_context()
+
+    @staticmethod
+    def _should_try_next_auth_url(status_code: int) -> bool:
+        return int(status_code) in {404, 405, 502}
 
     @staticmethod
     def _orion_error_detail(exc: urllib.error.HTTPError) -> Any:
@@ -417,28 +416,14 @@ class extension_connection_manager:
         except Exception:
             return exc.reason or str(exc)
 
-    @staticmethod
-    def _extension_dir(extension_dir_name: str) -> Path | None:
-        current_file = Path(__file__).resolve()
-        candidates = [
-            current_file.parents[3] / extension_dir_name,  # /app in Docker
-            current_file.parents[4] / extension_dir_name,  # repo root in local development
-            Path.cwd() / extension_dir_name,
-            Path.cwd().parent / extension_dir_name,
-        ]
-        for candidate in candidates:
-            if candidate.is_dir():
-                return candidate
-        return None
-
-    @staticmethod
-    def _signed_firefox_xpi_path() -> Path | None:
-        env_path = os.getenv("ORION_FIREFOX_EXTENSION_XPI", "").strip()
+    @classmethod
+    def _extension_artifact_path(cls, browser: str, suffixes: tuple[str, ...]) -> Path | None:
+        env_path = cls._env(cls._extension_artifact_env_key(browser), "").strip()
         if env_path:
             candidate = Path(env_path).expanduser()
             if not candidate.is_absolute():
                 candidate = Path.cwd() / candidate
-            if candidate.is_file() and candidate.suffix.lower() == ".xpi":
+            if candidate.is_file() and candidate.suffix.lower() in suffixes:
                 return candidate
 
         current_file = Path(__file__).resolve()
@@ -450,17 +435,26 @@ class extension_connection_manager:
         ]
         candidates: list[Path] = []
         for root in roots:
-            candidates.extend(path for path in (root / "dist/extensions/firefox").glob("*.xpi") if path.is_file())
+            artifact_dir = root / "dist/extensions" / browser
+            if artifact_dir.is_dir():
+                candidates.extend(
+                    path for path in artifact_dir.iterdir()
+                    if path.is_file() and path.suffix.lower() in suffixes
+                )
         if not candidates:
             return None
         return max(candidates, key=lambda path: path.stat().st_mtime)
+
+    @staticmethod
+    def _extension_artifact_env_key(browser: str) -> str:
+        return "ORION_FIREFOX_EXTENSION_XPI" if browser == "firefox" else "ORION_CHROME_EXTENSION_ZIP"
 
     async def find_available(self, platform: str, command: str, owner_username: str = "", owner_session_id: str = "") -> str | None:
         platform = normalize_platform(platform)
         command = str(command or "").strip().lower()
         owner_username = str(owner_username or "").strip().lower()
         owner_session_id = str(owner_session_id or "").strip()
-        require_same_session = os.getenv("ORION_EXTENSION_REQUIRE_SAME_SESSION", "0").strip().lower() in {"1", "true", "yes"}
+        require_same_session = self._env("ORION_EXTENSION_REQUIRE_SAME_SESSION", "0").strip().lower() in {"1", "true", "yes"}
         async with self._lock:
             for extension_id, state in self._connections.items():
                 extension: ConnectedExtension = state["extension"]
