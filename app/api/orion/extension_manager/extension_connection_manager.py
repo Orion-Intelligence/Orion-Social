@@ -18,7 +18,6 @@ from fastapi.responses import Response
 from api.orion.extension_manager.extension_job_manager import extension_job_manager
 from api.orion.extension_manager.extension_models import (
     ConnectedExtension,
-    ExtensionCapabilities,
     ExtensionProgress,
     ExtensionLoginRequest,
     ExtensionRefreshRequest,
