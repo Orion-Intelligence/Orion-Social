@@ -3,7 +3,7 @@ import hmac
 import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
-
+from api.orion.services.shared.env_handler import env_handler
 from api.orion.model.social_request_model import SocialReconRequest, SocialPhoneReconRequest, SocialProfileRequest, SocialFollowersRequest, SocialFollowingRequest, SocialPostsRequest, SocialVideosRequest, SocialShortsRequest, DuckDuckGoUsernamesRequest, DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
@@ -26,15 +26,11 @@ class SocialRoutes:
         self.router.add_api_route("/social/metadata", self.metadata, methods=["POST"])
 
     async def require_internal_request(self, request: Request):
-        expected = self._internal_token()
+        expected = env_handler.get_instance().env("ORION_SOCIAL_INTERNAL_TOKEN", "").strip()
         provided = request.headers.get("x-orion-internal-token", "")
         if not expected or not hmac.compare_digest(provided, expected):
             raise HTTPException(status_code=403, detail="forbidden")
-
-    @staticmethod
-    def _internal_token() -> str:
-        return os.getenv("ORION_SOCIAL_INTERNAL_TOKEN", "").strip() or os.getenv("S_SUPER_PASSWORD_V1", "").strip()
-
+        
     @staticmethod
     def _header(request: Request, name: str) -> str:
         return str(request.headers.get(name, "") or "").strip()
@@ -79,8 +75,9 @@ class SocialRoutes:
         social_data_type = p.social_data_type or "profile_info"
         executor = "extension" if p.use_extension else "legacy"
         max_posts = 20 if p.use_extension and not self._field_was_sent(p, "max_posts") else p.max_posts
-        job_id = str(hash(f"profile:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{social_data_type}:{max_posts}:{p.max_comments}:{p.max_followers}:{p.max_following}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "social_data_type": social_data_type, "use_extension": p.use_extension, "max_posts": max_posts, "max_comments": p.max_comments, "max_followers": p.max_followers, "max_following": p.max_following}, request))
+        max_shorts = 20 if p.use_extension and not self._field_was_sent(p, "max_shorts") else p.max_shorts
+        job_id = str(hash(f"profile:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{social_data_type}:{max_posts}:{max_shorts}:{p.max_comments}:{p.max_followers}:{p.max_following}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "social_data_type": social_data_type, "use_extension": p.use_extension, "max_posts": max_posts, "max_shorts": max_shorts, "max_comments": p.max_comments, "max_followers": p.max_followers, "max_following": p.max_following}, request))
 
     async def social_followers(self, request: Request, p: SocialFollowersRequest):
         social_data_type = p.social_data_type or "followers"
@@ -113,8 +110,9 @@ class SocialRoutes:
         social_data_type = p.social_data_type or "shorts"
         hash_id = p.hash_id or ""
         executor = "extension" if p.use_extension else "legacy"
-        job_id = str(hash(f"shorts:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{p.max_shorts}:{p.max_comments}:{p.comment_offset}:{social_data_type}:{hash_id}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_SHORTS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_shorts": p.max_shorts, "max_comments": p.max_comments, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "use_extension": p.use_extension}, request))
+        existing_url_hash = hash(tuple(p.existing_post_urls))
+        job_id = str(hash(f"shorts:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{p.max_shorts}:{p.max_comments}:{p.post_offset}:{p.existing_posts_count}:{existing_url_hash}:{p.comment_offset}:{social_data_type}:{hash_id}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_SHORTS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_shorts": p.max_shorts, "max_comments": p.max_comments, "post_offset": p.post_offset, "existing_posts_count": p.existing_posts_count, "existing_post_urls": p.existing_post_urls, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "use_extension": p.use_extension}, request))
 
     async def online_usernames(self, request: Request, p: DuckDuckGoUsernamesRequest):
         job_id = str(hash(f"ddg_usernames:{self._context_key(request)}:{p.platform}:{p.username}"))

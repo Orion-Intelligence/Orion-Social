@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
-
 from pydantic import BaseModel, Field
+from api.orion.services.shared.helper_method import helper_method
 
 
 class ExtensionCapabilities(BaseModel):
@@ -12,7 +12,7 @@ class ExtensionCapabilities(BaseModel):
     commands: list[str] = Field(default_factory=list)
 
     def normalized_platforms(self) -> set[str]:
-        return {normalize_platform(platform) for platform in self.platforms if platform}
+        return {helper_method.normalize_platform(platform) for platform in self.platforms if platform}
 
     def normalized_commands(self) -> set[str]:
         return {str(command or "").strip().lower() for command in self.commands if command}
@@ -83,8 +83,4 @@ class ConnectedExtension(BaseModel):
     active_job_id: str | None = None
 
 
-def normalize_platform(platform: str) -> str:
-    value = str(platform or "").strip().lower()
-    if value == "twitter":
-        return "x"
-    return value
+

@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import HTTPException
 
-from api.orion.extension_manager.extension_executor import extension_executor
+from api.orion.services.extension_manager.extension_executor import extension_executor
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.social_controller import social_controller
 

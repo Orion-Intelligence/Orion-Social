@@ -298,3 +298,10 @@ class helper_method:
         text = re.sub(r'\s+', ' ', text)
         text = text.strip()
         return text
+
+    @staticmethod
+    def normalize_platform(platform: str) -> str:
+        value = str(platform or "").strip().lower()
+        if value == "twitter":
+            return "x"
+        return value

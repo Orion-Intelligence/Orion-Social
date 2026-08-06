@@ -5,9 +5,8 @@ import math
 import re
 from typing import Any
 from urllib.parse import urlparse
-
-from api.orion.extension_manager.extension_models import ExtensionJob, normalize_platform
-
+from api.orion.model.extension_models import ExtensionJob
+from api.orion.services.shared.helper_method import helper_method
 
 class ExtensionResultValidationError(ValueError):
     pass
@@ -61,6 +60,8 @@ class extension_result_validator:
         "total_posts",
         "total_followers",
         "total_following",
+        "likes_count",
+        "total_likes",
         "website",
         "location",
         "company",
@@ -84,6 +85,7 @@ class extension_result_validator:
         "likes_count",
         "comments",
         "comments_count",
+        "collected_comments_count",
         "views",
         "views_count",
         "shares",
@@ -105,12 +107,12 @@ class extension_result_validator:
             raise ExtensionResultValidationError("extension_result_data_must_be_object")
 
         cls._ensure_json_size(data)
-        platform = normalize_platform(str(data.get("platform") or job.platform))
-        if platform and platform != normalize_platform(job.platform):
+        platform = helper_method.normalize_platform(str(data.get("platform") or job.platform))
+        if platform and platform != helper_method.normalize_platform(job.platform):
             raise ExtensionResultValidationError("extension_result_platform_mismatch")
 
         sanitized: dict[str, Any] = {
-            "platform": normalize_platform(job.platform),
+            "platform": helper_method.normalize_platform(job.platform),
             "requested_username": cls._sanitize_username(job.username),
             "_orion_trust": {
                 "trusted": False,

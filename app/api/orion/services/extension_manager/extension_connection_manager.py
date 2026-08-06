@@ -15,17 +15,17 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 
-from api.orion.extension_manager.extension_job_manager import extension_job_manager
-from api.orion.extension_manager.extension_models import (
+from api.orion.services.extension_manager.extension_job_manager import extension_job_manager
+from api.orion.model.extension_models import (
     ConnectedExtension,
     ExtensionProgress,
     ExtensionLoginRequest,
     ExtensionRefreshRequest,
     ExtensionRegistration,
     ExtensionResult,
-    normalize_platform,
 )
-from api.orion.extension_manager.extension_result_validator import (
+from api.orion.services.shared.helper_method import helper_method
+from api.orion.services.extension_manager.extension_result_validator import (
     ExtensionResultValidationError,
     extension_result_validator,
 )
@@ -342,7 +342,9 @@ class extension_connection_manager:
             "linkedin": ("linkedin.com",),
             "reddit": ("reddit.com",),
             "github": ("github.com",),
-        }.get(normalize_platform(platform or ""), ())
+            "youtube": ("youtube.com", "youtu.be"),
+            "tiktok": ("tiktok.com",),
+        }.get(helper_method.normalize_platform(platform or ""), ())
         if not allowed_hosts:
             return None
         hostname = (parsed.hostname or "").lower()
@@ -449,7 +451,7 @@ class extension_connection_manager:
         return "ORION_FIREFOX_EXTENSION_XPI" if browser == "firefox" else "ORION_CHROME_EXTENSION_ZIP"
 
     async def find_available(self, platform: str, command: str, owner_username: str = "", owner_session_id: str = "") -> str | None:
-        platform = normalize_platform(platform)
+        platform = helper_method.normalize_platform(platform)
         command = str(command or "").strip().lower()
         owner_username = str(owner_username or "").strip().lower()
         owner_session_id = str(owner_session_id or "").strip()
@@ -595,7 +597,7 @@ class extension_connection_manager:
                 result.error = self._safe_error_text(result.error or result.message or "extension_job_failed")
                 result.message = self._safe_error_text(result.message or result.error)
                 result.error_code = self._safe_error_code(result.error_code)
-                result.platform = normalize_platform(result.platform or job.platform)
+                result.platform = helper_method.normalize_platform(result.platform or job.platform)
                 result.login_url = self._safe_error_url(result.login_url, result.platform)
                 self._audit(
                     "extension_result_error",

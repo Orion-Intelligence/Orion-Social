@@ -4,7 +4,7 @@ import asyncio
 import time
 from typing import Any
 
-from api.orion.extension_manager.extension_models import ExtensionJob, ExtensionProgress, ExtensionResult
+from api.orion.model.extension_models import ExtensionJob, ExtensionProgress, ExtensionResult
 from api.orion.request_manager.progress_controller import progress_controller
 
 

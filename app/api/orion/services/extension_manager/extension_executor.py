@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 from typing import Any
+from urllib.parse import quote, unquote, urlparse
 from uuid import uuid4
 
-from api.orion.extension_manager.extension_connection_manager import extension_connection_manager
-from api.orion.extension_manager.extension_job_manager import extension_job_manager
-from api.orion.extension_manager.extension_models import ExtensionJob, normalize_platform
+from api.orion.services.extension_manager.extension_connection_manager import extension_connection_manager
+from api.orion.services.extension_manager.extension_job_manager import extension_job_manager
+from api.orion.model.extension_models import ExtensionJob
+from api.orion.services.shared.helper_method import helper_method
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
 
@@ -24,7 +27,7 @@ class extension_executor:
         SOCIAL_REQUEST_COMMANDS.S_DDG_IMAGES: "images",
     }
 
-    DEFAULT_PLATFORMS = {"reddit", "github", "linkedin", "x", "instagram", "facebook"}
+    DEFAULT_PLATFORMS = {"reddit", "github", "linkedin", "x", "instagram", "facebook", "youtube", "tiktok"}
 
     @staticmethod
     def get_instance():
@@ -44,7 +47,7 @@ class extension_executor:
             return False
         if command not in self.SUPPORTED_COMMANDS:
             return False
-        platform = normalize_platform(str(data.get("platform") or ""))
+        platform = helper_method.normalize_platform(str(data.get("platform") or ""))
         if not platform:
             return False
         return platform in self._configured_platforms()
@@ -111,7 +114,7 @@ class extension_executor:
             await self._jobs.remove(job.job_id)
 
     def _build_job(self, command: int, data: dict[str, Any]) -> ExtensionJob:
-        platform = normalize_platform(str(data.get("platform") or ""))
+        platform = helper_method.normalize_platform(str(data.get("platform") or ""))
         username = str(data.get("username") or "").strip().lstrip("@")
         command_name = self.SUPPORTED_COMMANDS[command]
         return ExtensionJob(
@@ -131,6 +134,7 @@ class extension_executor:
                 "post_offset": self._int_value(data.get("post_offset"), 0),
                 "existing_posts_count": self._int_value(data.get("existing_posts_count"), 0),
                 "max_comments": self._int_value(data.get("max_comments"), 25),
+                "comment_offset": self._int_value(data.get("comment_offset"), 0),
                 "max_images": self._int_value(data.get("max_images"), 25),
                 "max_followers": self._int_value(data.get("max_followers"), 1000),
                 "max_following": self._int_value(data.get("max_following"), 1000),
@@ -147,7 +151,7 @@ class extension_executor:
         raw_value = os.getenv("ORION_EXTENSION_PLATFORMS", "")
         if not raw_value.strip():
             return set(self.DEFAULT_PLATFORMS)
-        return {normalize_platform(item) for item in raw_value.split(",") if item.strip()}
+        return {helper_method.normalize_platform(item) for item in raw_value.split(",") if item.strip()}
 
     @staticmethod
     def _fallback_enabled() -> bool:
@@ -155,13 +159,27 @@ class extension_executor:
 
     @staticmethod
     def _profile_url(platform: str, username: str) -> str:
+        if platform == "linkedin":
+            value = str(username or "").strip()
+            if value.startswith(("http://", "https://")):
+                parsed = urlparse(value)
+                if parsed.hostname and (parsed.hostname == "linkedin.com" or parsed.hostname.endswith(".linkedin.com")):
+                    match = re.match(r"^/(in|company|showcase)/([^/?#]+)", parsed.path, re.IGNORECASE)
+                    if match:
+                        return f"https://www.linkedin.com/{match.group(1).lower()}/{quote(unquote(match.group(2)))}/"
+            match = re.match(r"^(in|profile|company|showcase)[:/]([^/?#]+)", value, re.IGNORECASE)
+            kind = "in" if not match or match.group(1).lower() == "profile" else match.group(1).lower()
+            slug = match.group(2) if match else value.lstrip("@")
+            return f"https://www.linkedin.com/{kind}/{quote(slug)}/"
+
         urls = {
             "reddit": f"https://www.reddit.com/user/{username}/",
-            "linkedin": f"https://www.linkedin.com/in/{username}/",
             "x": f"https://x.com/{username}",
             "instagram": f"https://www.instagram.com/{username}/",
             "facebook": f"https://www.facebook.com/{username}",
             "github": f"https://github.com/{username}",
+            "youtube": f"https://www.youtube.com/@{username}",
+            "tiktok": f"https://www.tiktok.com/@{username}",
         }
         return urls.get(platform, username)
 
