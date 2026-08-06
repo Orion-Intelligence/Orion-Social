@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import time
 import uuid
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.helper_methods.custom_recon import custom_recon
@@ -16,6 +16,8 @@ from api.social_manager.social_enums import SITE_DATA
 
 class social_recon:
     _instance = None
+    SHERLOCK_PROCESS_TIMEOUT = 60
+    MAIGRET_PROCESS_TIMEOUT = 45
     TARGETED_MAIGRET_SITES = [
         "Instagram",
         "Facebook",
@@ -23,6 +25,7 @@ class social_recon:
         "Twitter",
         "Behance",
     ]
+    CLAIMED_MAIGRET_STATUS = "claimed"
 
     def __new__(cls):
         if cls._instance is None:
@@ -36,15 +39,53 @@ class social_recon:
         self._progress = progress_controller.get_instance()
         self._custom_recon = custom_recon()
 
+    @classmethod
+    def _maigret_claimed(cls, data: dict | None) -> bool:
+        status = (data or {}).get("status")
+        if isinstance(status, dict):
+            status = status.get("status")
+        normalized = re.sub(r"[^a-z]+", "", str(status or "").lower())
+        return normalized == cls.CLAIMED_MAIGRET_STATUS or normalized.endswith(
+            cls.CLAIMED_MAIGRET_STATUS
+        )
+
+    @staticmethod
+    def _identity(value: str) -> str:
+        identity = unquote(str(value or "")).strip().strip("/").lstrip("@~").casefold()
+        for prefix in ("user/", "u/"):
+            if identity.startswith(prefix):
+                identity = identity[len(prefix):]
+                break
+        return identity.strip().strip("/")
+
+    @classmethod
+    def _matches_requested_identity(cls, item: dict, requested_username: str) -> bool:
+        metadata = (item or {}).get("metadata") or {}
+        requested = cls._identity(requested_username)
+        candidate = cls._identity(metadata.get("username") or metadata.get("social_handle") or "")
+        return bool(requested and candidate and candidate == requested)
+
+    @classmethod
+    def _url_contains_identity(cls, url: str, username: str) -> bool:
+        requested = cls._identity(username)
+        if not requested:
+            return False
+        decoded = unquote(str(url or "")).casefold()
+        boundary = r"a-z0-9_.-"
+        return re.search(rf"(?<![{boundary}]){re.escape(requested)}(?![{boundary}])", decoded) is not None
+
     def _clean_maigret(self, data: dict) -> dict:
         out = {}
         for site_name, v in (data or {}).items():
-            status = (v or {}).get("status") or {}
+            if not self._maigret_claimed(v):
+                continue
+            raw_status = (v or {}).get("status") or {}
+            status = raw_status if isinstance(raw_status, dict) else {}
             ids = status.get("ids") or {}
             tags = status.get("tags") or (v or {}).get("tags") or []
             item = {
                 "url": status.get("url") or (v or {}).get("url_user"),
-                "status": status.get("status"),
+                "status": status.get("status") or raw_status,
             }
             if ids:
                 item["ids"] = ids
@@ -136,11 +177,20 @@ class social_recon:
         if job_id:
             self._progress.update(job_id, 84, f"maigret:run:{platform}:{username}")
 
-        result = subprocess.run(
-            ["maigret", username, "--site", platform, "--json", "simple", "--folderoutput", report_dir],
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                ["maigret", username, "--site", platform, "--json", "simple", "--folderoutput", report_dir],
+                capture_output=True,
+                text=True,
+                timeout=self.MAIGRET_PROCESS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired as exc:
+            result = subprocess.CompletedProcess(
+                args=exc.cmd,
+                returncode=124,
+                stdout=exc.stdout or "",
+                stderr=exc.stderr or "",
+            )
 
         if job_id:
             self._progress.update(job_id, 86, f"maigret:exit:{platform}:{username}:{result.returncode}")
@@ -194,11 +244,15 @@ class social_recon:
             f"{' '.join(shlex.quote(part) for part in maigret_cmd)} >/dev/null 2>&1; "
             f"cat {shlex.quote(report_file)} 2>/dev/null || true"
         )
-        result = subprocess.run(
-            [docker_bin, "exec", "trusted-social-api", "sh", "-lc", shell_cmd],
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                [docker_bin, "exec", "trusted-social-api", "sh", "-lc", shell_cmd],
+                capture_output=True,
+                text=True,
+                timeout=self.MAIGRET_PROCESS_TIMEOUT + 15,
+            )
+        except subprocess.TimeoutExpired:
+            return None
         payload = (result.stdout or "").strip()
         if not payload:
             return None
@@ -223,7 +277,26 @@ class social_recon:
         if job_id:
             self._progress.update(job_id, 6, f"sherlock:run:{username}")
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=self.SHERLOCK_PROCESS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired as exc:
+            stdout = exc.stdout or ""
+            stderr = exc.stderr or ""
+            if isinstance(stdout, bytes):
+                stdout = stdout.decode("utf-8", errors="ignore")
+            if isinstance(stderr, bytes):
+                stderr = stderr.decode("utf-8", errors="ignore")
+            result = subprocess.CompletedProcess(
+                args=exc.cmd,
+                returncode=124,
+                stdout=stdout,
+                stderr=stderr,
+            )
 
         if job_id:
             self._progress.update(job_id, 7, f"sherlock:exit:{username}:{result.returncode}")
@@ -243,15 +316,15 @@ class social_recon:
                 match = re.search(r"https?://\S+", s)
                 if match:
                     url = match.group(0).rstrip("/")
+                    if not self._url_contains_identity(url, username):
+                        continue
                     parsed = urlparse(url)
                     host = (parsed.netloc or "").split(":")[0]
                     host_no_www = host[4:] if host.startswith("www.") else host
                     parts = host_no_www.split(".")
                     platform_key = parts[-2] if len(parts) >= 2 else (parts[0] if parts else "")
                     platform = platform_key.capitalize() if platform_key else ""
-                    path = (parsed.path or "").strip("/")
-                    user = path.split("/")[-1] if path else username
-                    profiles.append({"platform": platform, "username": user, "url": url})
+                    profiles.append({"platform": platform, "username": self._identity(username), "url": url})
 
         if job_id:
             self._progress.update(job_id, 9, f"sherlock:done:{username}:found={len(profiles)}")
@@ -294,18 +367,17 @@ class social_recon:
         if job_id:
             self._progress.update(job_id, 1, "init:username")
 
+        base_uname = self._identity(username)
+
         if job_id:
             self._progress.update(job_id, 5, "sherlock")
 
-        found_profiles = self.run_sherlock(username, job_id=job_id)
-
-        base_uname = username.strip().lower() + ""
+        found_profiles = self.run_sherlock(base_uname, job_id=job_id)
 
         if job_id:
             self._progress.update(job_id, 10, f"sherlock_done:{len(found_profiles) or 0}")
 
         total = len(found_profiles) or 1
-        seen = set()
         results = []
         done = 0
 
@@ -313,43 +385,13 @@ class social_recon:
 
         for p in found_profiles:
             done += 1
-            uname = (p.get("username") or "").lower()
             plat = p.get("platform")
             plat_lower = (plat or "").lower()
-            key = (uname, plat_lower)
-
-            if plat_lower == "artstation":
-                if job_id:
-                    self._progress.update(job_id, 10 + int((done / total) * 70), f"skip:artstation:{uname}")
-                continue
-
-            if key in seen:
-                if job_id:
-                    self._progress.update(job_id, 10 + int((done / total) * 70), f"skip_dup:{plat}:{uname}")
-                continue
-            seen.add(key)
-
-            scanned_maigret.add(plat_lower)
-
-            timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            if str(uname).__contains__("discord"):
-                pass
-            results.append(
-                {
-                    "metadata": {
-                        "platform": plat,
-                        "username": uname,
-                        "social_handle": uname,
-                        "url": p.get("url"),
-                        "timestamp": timestamp,
-                        "status": "active",
-                    },
-                    "data": {},
-                }
-            )
+            if plat_lower:
+                scanned_maigret.add(plat_lower)
 
             if job_id:
-                self._progress.update(job_id, 10 + int((done / total) * 70), f"accepted:{plat}:{uname}")
+                self._progress.update(job_id, 10 + int((done / total) * 70), f"candidate:{plat}:{base_uname}")
 
         if job_id:
             self._progress.update(job_id, 80, "focused")
@@ -375,7 +417,7 @@ class social_recon:
             else:
                 data = raw
 
-            if not data:
+            if not data or not self._maigret_claimed(data):
                 if job_id:
                     self._progress.update(job_id, 80 + int((focused_done / focused_total) * 10), f"focused_not_verified:{site}:{base_uname}")
                 continue
@@ -388,7 +430,7 @@ class social_recon:
                         "platform": site,
                         "username": base_uname,
                         "social_handle": base_uname,
-                        "url": None,
+                        "url": data.get("url"),
                         "timestamp": timestamp,
                         "status": "active",
                     },
@@ -427,7 +469,7 @@ class social_recon:
                 ddg = live_search_handler()
                 if job_id:
                     self._progress.update(job_id, 91, f"ddg:run:{base_uname}")
-                ddg_payload = ddg.collect_social_handles(base_uname) or {}
+                ddg_payload = ddg.collect_social_handles(base_uname, threshold=1.0) or {}
                 ddg_results = ddg_payload.get("results") or []
                 if job_id:
                     self._progress.update(job_id, 93, f"ddg:parse:{len(ddg_results)}")
@@ -449,6 +491,8 @@ class social_recon:
                     meta = item.get("metadata") or {}
                     meta["status"] = "suggested"
                     item["metadata"] = meta
+                    if not self._matches_requested_identity(item, base_uname):
+                        continue
 
                     plat = (meta.get("platform") or "").lower()
                     uname = (meta.get("username") or "").lower()
@@ -508,7 +552,8 @@ class social_recon:
         if job_id:
             self._progress.update(job_id, 96, "finalizing")
 
-        return self._dedup_results(results)
+        exact_results = [item for item in results if self._matches_requested_identity(item, base_uname)]
+        return self._dedup_results(exact_results)
 
     def parse_email(self, email: str, mode: str = "default", job_id: str | None = None):
         email = (email or "").strip().lower()

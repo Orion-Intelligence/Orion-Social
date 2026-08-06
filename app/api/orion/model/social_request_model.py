@@ -5,6 +5,11 @@ from typing import List, Optional
 class SocialReconRequest(BaseModel):
     query: str = Field(..., min_length=1)
 
+    @field_validator("query", mode="before")
+    @classmethod
+    def strip_query(cls, value: Optional[str]) -> Optional[str]:
+        return value.strip() if isinstance(value, str) else value
+
 
 class SocialPhoneReconRequest(BaseModel):
     query: str = Field(..., min_length=1)
