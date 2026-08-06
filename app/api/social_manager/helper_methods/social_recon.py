@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.helper_methods.custom_recon import custom_recon
-from api.social_manager.scrapers.live_search_handler import live_search_handler
+from api.social_manager.scrapers.live_search.live_search_handler import live_search_handler
 from api.social_manager.social_enums import SITE_DATA
 
 

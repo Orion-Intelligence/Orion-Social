@@ -32,3 +32,4 @@ config/i2p/addressbook/log.txt
 config/i2p/addressbook/last_modified
 config/i2p/addressbook/last_fetched
 config/i2p/addressbook/etags
+*.txt

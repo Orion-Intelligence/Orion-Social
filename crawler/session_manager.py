@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import zipfile
 from pathlib import Path
@@ -20,7 +21,8 @@ class BrowserSessionManager:
     def path(self):
         model_name = self.model.__class__.__name__
         session_name = model_name if model_name == "_facebook" else model_name.lstrip("_")
-        return Path(__file__).resolve().parents[1] / f"{session_name}_session"
+        root = Path(os.getenv("ORION_SESSION_ROOT") or Path(__file__).resolve().parents[1])
+        return root / f"{session_name}_session"
 
     def zip_path(self):
         return Path(str(self.path()) + ".zip")

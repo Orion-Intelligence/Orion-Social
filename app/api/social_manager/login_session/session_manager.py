@@ -13,7 +13,7 @@ class SessionManager:
 
     def __init__(self, scraper_name: str):
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.session_dir = os.path.join(base_dir, "sessions")
+        self.session_dir = os.getenv("ORION_SESSION_ROOT") or os.path.join(base_dir, "sessions")
         os.makedirs(self.session_dir, exist_ok=True)
 
         s = str(scraper_name)

@@ -22,7 +22,7 @@ class social_model(BaseModel):
     m_content_type: List[str] = Field(default_factory=list)
 
     m_channel_url: Optional[str] = None
-    m_platform: str
+    m_platform: List[str] = Field(default_factory=list)
 
     m_post_datetime: Optional[str] = None
     m_post_comments: Optional[str] = None

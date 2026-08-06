@@ -72,48 +72,54 @@ class SocialRoutes:
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_RECON_IMAGE, self._with_request_context({"job_id": job_id, "filename": file.filename or "", "file_bytes": content}, request),)
 
     async def social_profile(self, request: Request, p: SocialProfileRequest):
+        target_type = p.target_type or "profile"
         social_data_type = p.social_data_type or "profile_info"
         executor = "extension" if p.use_extension else "legacy"
         max_posts = 20 if p.use_extension and not self._field_was_sent(p, "max_posts") else p.max_posts
         max_shorts = 20 if p.use_extension and not self._field_was_sent(p, "max_shorts") else p.max_shorts
-        job_id = str(hash(f"profile:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{social_data_type}:{max_posts}:{max_shorts}:{p.max_comments}:{p.max_followers}:{p.max_following}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "social_data_type": social_data_type, "use_extension": p.use_extension, "max_posts": max_posts, "max_shorts": max_shorts, "max_comments": p.max_comments, "max_followers": p.max_followers, "max_following": p.max_following}, request))
-
+        job_id = str(hash(f"profile:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{social_data_type}:{target_type}:{max_posts}:{max_shorts}:{p.max_comments}:{p.max_followers}:{p.max_following}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.PROFILE_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "social_data_type": social_data_type,"target_type": target_type, "use_extension": p.use_extension, "max_posts": max_posts, "max_shorts": max_shorts, "max_comments": p.max_comments, "max_followers": p.max_followers, "max_following": p.max_following}, request))
+        
     async def social_followers(self, request: Request, p: SocialFollowersRequest):
+        target_type = p.target_type or "profile"
         social_data_type = p.social_data_type or "followers"
-        job_id = str(hash(f"followers:{self._context_key(request)}:{p.platform}:{p.username}:{p.max_followers}:{social_data_type}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_followers": p.max_followers, "social_data_type": social_data_type}, request))
-
+        job_id = str(hash(f"followers:{self._context_key(request)}:{p.platform}:{p.username}:{p.max_followers}:{social_data_type}:{target_type}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.FOLLOWERS_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_followers": p.max_followers, "social_data_type": social_data_type,"target_type": target_type}, request))
+        
     async def social_following(self, request: Request, p: SocialFollowingRequest):
+        target_type = p.target_type or "profile"
         social_data_type = p.social_data_type or "following"
-        job_id = str(hash(f"following:{self._context_key(request)}:{p.platform}:{p.username}:{p.max_following}:{social_data_type}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_following": p.max_following, "social_data_type": social_data_type}, request))
-
+        job_id = str(hash(f"following:{self._context_key(request)}:{p.platform}:{p.username}:{p.max_following}:{social_data_type}:{target_type}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.FOLLOWING_ONLY, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_following": p.max_following, "social_data_type": social_data_type,"target_type": target_type}, request))
+        
     async def social_posts(self, request: Request, p: SocialPostsRequest):
+        target_type = p.target_type or "profile"
         social_data_type = p.social_data_type or "posts"
         hash_id = p.hash_id or ""
         executor = "extension" if p.use_extension else "legacy"
         max_posts = 20 if p.use_extension and not self._field_was_sent(p, "max_posts") else p.max_posts
         max_comments = 25 if p.use_extension and not self._field_was_sent(p, "max_comments") else p.max_comments
         existing_url_hash = hash(tuple(p.existing_post_urls))
-        job_id = str(hash(f"posts:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{max_posts}:{max_comments}:{p.post_offset}:{p.existing_posts_count}:{existing_url_hash}:{p.comment_offset}:{social_data_type}:{hash_id}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_POSTS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_posts": max_posts, "max_comments": max_comments, "post_offset": p.post_offset, "existing_posts_count": p.existing_posts_count, "existing_post_urls": p.existing_post_urls, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "use_extension": p.use_extension}, request))
-
+        job_id = str(hash(f"posts:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{max_posts}:{max_comments}:{p.post_offset}:{p.existing_posts_count}:{existing_url_hash}:{p.comment_offset}:{social_data_type}:{hash_id}:{target_type}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_POSTS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_posts": max_posts, "max_comments": max_comments, "post_offset": p.post_offset, "existing_posts_count": p.existing_posts_count, "existing_post_urls": p.existing_post_urls, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "target_type": target_type, "use_extension": p.use_extension}, request))
+        
     async def social_videos(self, request: Request, p: SocialVideosRequest):
+        target_type = p.target_type or "profile"
         social_data_type = p.social_data_type or "videos"
         hash_id = p.hash_id or ""
         executor = "extension" if p.use_extension else "legacy"
-        job_id = str(hash(f"videos:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{p.max_videos}:{p.max_comments}:{p.comment_offset}:{social_data_type}:{hash_id}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_VIDEOS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_videos": p.max_videos, "max_comments": p.max_comments, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "use_extension": p.use_extension}, request))
-
+        job_id = str(hash(f"videos:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{p.max_videos}:{p.max_comments}:{p.comment_offset}:{social_data_type}:{hash_id}:{target_type}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_VIDEOS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_videos": p.max_videos, "max_comments": p.max_comments, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "target_type": target_type, "use_extension": p.use_extension}, request))
+        
     async def social_shorts(self, request: Request, p: SocialShortsRequest):
+        target_type = p.target_type or "profile"
         social_data_type = p.social_data_type or "shorts"
         hash_id = p.hash_id or ""
         executor = "extension" if p.use_extension else "legacy"
         existing_url_hash = hash(tuple(p.existing_post_urls))
-        job_id = str(hash(f"shorts:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{p.max_shorts}:{p.max_comments}:{p.post_offset}:{p.existing_posts_count}:{existing_url_hash}:{p.comment_offset}:{social_data_type}:{hash_id}"))
-        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_SHORTS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_shorts": p.max_shorts, "max_comments": p.max_comments, "post_offset": p.post_offset, "existing_posts_count": p.existing_posts_count, "existing_post_urls": p.existing_post_urls, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "use_extension": p.use_extension}, request))
-
+        job_id = str(hash(f"shorts:{self._context_key(request)}:{executor}:{p.platform}:{p.username}:{p.max_shorts}:{p.max_comments}:{p.post_offset}:{p.existing_posts_count}:{existing_url_hash}:{p.comment_offset}:{social_data_type}:{hash_id}:{target_type}"))
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_SHORTS, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username, "max_shorts": p.max_shorts, "max_comments": p.max_comments, "post_offset": p.post_offset, "existing_posts_count": p.existing_posts_count, "existing_post_urls": p.existing_post_urls, "comment_offset": p.comment_offset, "social_data_type": social_data_type, "hash_id": hash_id, "target_type": target_type, "use_extension": p.use_extension}, request))
+        
     async def online_usernames(self, request: Request, p: DuckDuckGoUsernamesRequest):
         job_id = str(hash(f"ddg_usernames:{self._context_key(request)}:{p.platform}:{p.username}"))
         return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_DDG_USERNAMES, self._with_request_context({"job_id": job_id, "platform": p.platform, "username": p.username}, request))

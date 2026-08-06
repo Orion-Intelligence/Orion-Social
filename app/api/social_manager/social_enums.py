@@ -20,9 +20,22 @@ class SOCIAL_REQUEST_COMMANDS(IntEnum):
 
 
 class SOCIAL_PLATFORMS:
+    BLOGGER = "blogger"
+    BLUESKY = "bluesky"
+    DEVTO = "devto"
     INSTAGRAM = "instagram"
     FACEBOOK = "facebook"
+    HABR = "habr"
+    HACKERNOON = "hackernoon"
+    HASHNODE = "hashnode"
     BEHANCE = "behance"
+    MEDIUM = "medium"
+    MICROBLOG = "microblog"
+    MISSKEY = "misskey"
+    NOSTR = "nostr"
+    PLEROMA = "pleroma"
+    PRIMAL = "primal"
+    QUORA = "quora"
     VIMEO = "vimeo"
     TWITTER = "twitter"
     TIKTOK = "tiktok"
@@ -31,6 +44,9 @@ class SOCIAL_PLATFORMS:
     REDDIT = "reddit"
     MASTODON = "mastodon"
     PASTEBIN = "pastebin"
+    STACKOVERFLOW = "stackoverflow"
+    SUBSTACK = "substack"
+    THREADS = "threads"
     DUCKDUCKGO = "duckduckgo"
 
 
@@ -40,6 +56,10 @@ class SOCIAL_CONTENT_TYPES:
     FRIENDS = "friends"
     MUTUAL = "mutual"
     PROFILE = "profile"
+    POSTS = "posts"
+    VIDEOS = "videos"
+    SHORTS = "shorts"
+    COMMENTS = "comments"
 
 class SITE_DATA:
     ALL_SITES = [

@@ -96,14 +96,14 @@ class RedditHelperMethod:
                         title = title_el.inner_text().strip()
                         post_url = title_el.get_attribute('href')
                         if post_url and post_url.startswith('/'):
-                            post_url = "https://www.reddit.com" + post_url
+                            post_url = "https://old.reddit.com" + post_url
                         id_match = re.search(r'post-title-(t3_[a-zA-Z0-9]+)', title_el.get_attribute('id') or '')
                         if id_match:
                             post_id = id_match.group(1)
                     post_id = post_id or container.get_attribute("thingid") or container.get_attribute("id")
                     post_url = post_url or container.get_attribute("permalink") or ""
                     if post_url and post_url.startswith('/'):
-                        post_url = "https://www.reddit.com" + post_url
+                        post_url = "https://old.reddit.com" + post_url
                 except Exception:
                     pass
 
