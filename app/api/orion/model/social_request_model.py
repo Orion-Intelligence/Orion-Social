@@ -110,7 +110,6 @@ class SocialVideosRequest(BaseModel):
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
-    use_extension: bool = False
     target_type: Optional[str] = None
 
     @field_validator("platform", "target_type", mode="before")
@@ -137,7 +136,6 @@ class SocialShortsRequest(BaseModel):
     comment_offset: int = Field(default=0, ge=0, le=1000)
     social_data_type: Optional[str] = None
     hash_id: Optional[str] = None
-    use_extension: bool = False
     target_type: Optional[str] = None
 
     @field_validator("platform", "target_type", mode="before")
@@ -162,7 +160,6 @@ class DuckDuckGoImagesRequest(BaseModel):
     platform: Optional[str] = Field(default=None)
     max_images: int = Field(default=10, ge=1, le=100)
     hash_id: Optional[str] = None
-    use_extension: bool = False
 
 
 class DuckDuckGoMetadataRequest(BaseModel):
