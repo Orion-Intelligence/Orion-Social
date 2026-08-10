@@ -65,6 +65,7 @@ class social_model(base_model):
     m_img_src: Optional[str] = None
     m_coverpage: Optional[str] = None
     m_code_snippet: List[str] = Field(default_factory=list)
+    m_hate_speech: Optional[dict] = None
 
     @staticmethod
     def unique_identifier(*values) -> str:

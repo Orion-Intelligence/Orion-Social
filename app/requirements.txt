@@ -17,3 +17,4 @@ tranco
 PicImageSearch
 TikTokApi
 tldextract
+transformers

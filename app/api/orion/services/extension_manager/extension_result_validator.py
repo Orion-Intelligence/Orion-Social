@@ -7,6 +7,7 @@ from typing import Any
 from urllib.parse import urlparse
 from api.orion.model.extension_models import ExtensionJob
 from api.orion.services.shared.helper_method import helper_method
+from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
 
 class ExtensionResultValidationError(ValueError):
     pass
@@ -96,6 +97,7 @@ class extension_result_validator:
         "thumbnail",
         "comment_items",
         "comment_details",
+        "hate_speech",
     }
     IMAGE_KEYS = {"image_url", "thumbnail", "source_url", "title", "source"}
     COMMENT_KEYS = {"sender_name", "username", "text", "date", "likes"}
@@ -182,6 +184,13 @@ class extension_result_validator:
                 continue
             post["comment_items"] = cls._sanitize_comment_items(raw_comment_items, job)
             post["comment_details"] = cls._sanitize_comment_details(raw_comment_details, job)
+            
+            # Hate speech classification
+            text_to_classify = post.get("title") or post.get("caption") or ""
+            if text_to_classify:
+                hs_result = hate_speech_classifier.classify(text_to_classify)
+                post["hate_speech"] = hs_result.model_dump()
+            
             identity = str(post.get("post_url") or post.get("url") or post.get("id") or post.get("hash_id") or json.dumps(post, sort_keys=True))
             if identity in seen:
                 continue

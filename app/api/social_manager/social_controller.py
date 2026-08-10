@@ -436,8 +436,25 @@ class social_controller:
     def _parse_scraper(scraper: Any, page: Any) -> Any:
         result = scraper.parse_leak_data(page)
         if result is None or isinstance(result, bool):
-            return getattr(scraper, "card_data", [])
-        return result
+            data = getattr(scraper, "card_data", [])
+        else:
+            data = result
+
+        try:
+            from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
+            from crawler.crawler_instance.local_shared_model.data_model.social_model import social_model
+            
+            if isinstance(data, list):
+                for item in data:
+                    if isinstance(item, social_model):
+                        text_to_classify = str(item.m_title or item.m_content or "").strip()
+                        if text_to_classify:
+                            hs_result = hate_speech_classifier.classify(text_to_classify)
+                            item.m_hate_speech = hs_result.model_dump()
+        except Exception:
+            pass
+
+        return data
 
     @staticmethod
     def _goto_seed(page: Any, url: str) -> None:
@@ -702,10 +719,20 @@ class social_controller:
                     self._progress.done(self.job_id, result)
                     return result
                 ddg_result = self._ddg.scrape_posts_search(username, platform, max_posts)
+                posts = ddg_result.get("posts", [])
+                try:
+                    from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
+                    for post in posts:
+                        text_to_classify = str(post.get("caption") or "").strip()
+                        if text_to_classify:
+                            hs_result = hate_speech_classifier.classify(text_to_classify)
+                            post["hate_speech"] = hs_result.model_dump()
+                except Exception:
+                    pass
                 result = {
                     "status": "suggested",
                     "platform": platform,
-                    "data": ddg_result.get("posts", []),
+                    "data": posts,
                 }
                 self._progress.done(self.job_id, result)
                 return result

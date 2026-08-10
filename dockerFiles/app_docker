@@ -66,7 +66,12 @@ RUN python3 -m ensurepip \
  && playwright install chromium
 
 COPY app/requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+RUN pip install torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install -r /tmp/requirements.txt
+
+# Preload transformers model during build to cache weights deterministically
+ENV HF_HOME=/app/.cache/huggingface
+RUN python3 -c "from transformers import pipeline; pipeline('text-classification', model='unitary/toxic-bert')"
 
 COPY app /app
 COPY crawler /app/crawler

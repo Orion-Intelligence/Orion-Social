@@ -30,6 +30,33 @@ class APIService:
         routes = SocialRoutes(self.orion)
         self.app.include_router(routes.router)
         self.app.include_router(extension_connection_manager.get_instance().router)
+        
+        @self.app.on_event("startup")
+        async def startup_event():
+            import asyncio
+            from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
+            # Load the model in a background thread so it doesn't block FastAPI startup
+            loop = asyncio.get_event_loop()
+            loop.run_in_executor(None, hate_speech_classifier.load)
+            
+        @self.app.get("/health")
+        async def health_check():
+            try:
+                from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
+                hate_speech_status = {
+                    "initialized": getattr(hate_speech_classifier, "_initialized", False),
+                    "model": getattr(hate_speech_classifier, "model_name", "unknown"),
+                    "classifier_loaded": getattr(hate_speech_classifier, "classifier", None) is not None,
+                    "hate_threshold": getattr(hate_speech_classifier, "hate_threshold", 0.5),
+                    "offensive_threshold": getattr(hate_speech_classifier, "offensive_threshold", 0.5)
+                }
+            except Exception as e:
+                hate_speech_status = {"status": "error", "message": str(e)}
+                
+            return {
+                "status": "healthy",
+                "hate_speech_classifier": hate_speech_status
+            }
 
         loop.create_task(self.qmonitor.run())
 
