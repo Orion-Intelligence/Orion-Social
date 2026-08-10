@@ -1,7 +1,9 @@
 import ast
+import difflib
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from html import unescape
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qsl, quote, unquote, urlparse
@@ -13,6 +15,8 @@ class custom_recon:
     MAX_RESPONSE_BYTES = 32_000
     MAX_WORKERS = 16
     USER_AGENT = "Mozilla/5.0 (compatible; Orion-Social-Recon/1.0)"
+    NEGATIVE_CONTROL_USERNAME = "orion_probe_missing_7c4e91a2"
+    NEGATIVE_CONTROL_SIMILARITY = 0.90
 
     CONFIG_CACHE: dict[str, dict] | None = None
 
@@ -108,8 +112,26 @@ class custom_recon:
 
     BLOCK_MARKERS = (
         "<title>just a moment",
+        "<title>client challenge",
+        "<title>attention required",
+        "<title>access denied",
+        "captcha challenge",
         "please wait for verification",
         "enable javascript and cookies to continue",
+    )
+
+    AUTH_REDIRECT_PATHS = (
+        "/auth",
+        "/login",
+        "/signin",
+        "/sign-in",
+    )
+    NON_PROFILE_REDIRECT_PATHS = (
+        "/explore",
+        "/hashtag",
+        "/search",
+        "/tag",
+        "/tags",
     )
 
     MASTODON_HOSTS = (
@@ -680,6 +702,150 @@ class custom_recon:
         body_lower = (body or "").lower()
         return any(marker in body_lower for marker in (*cls.MISSING_MARKERS, *cls.BLOCK_MARKERS))
 
+    @staticmethod
+    def _identity_marker(value: str) -> str:
+        return unquote(str(value or "")).strip().strip("/").lstrip("@~").casefold()
+
+    @classmethod
+    def _profile_evidence_text(cls, body: str) -> str:
+        body = body or ""
+        evidence = []
+
+        for match in re.findall(
+            r"<title\b[^>]*>(.*?)</title>",
+            body,
+            flags=re.IGNORECASE | re.DOTALL,
+        ):
+            evidence.append(match)
+
+        for tag in re.findall(r"<meta\b[^>]*>", body, flags=re.IGNORECASE | re.DOTALL):
+            name_match = re.search(
+                r"\b(?:name|property)\s*=\s*([\"'])(.*?)\1",
+                tag,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+            content_match = re.search(
+                r"\bcontent\s*=\s*([\"'])(.*?)\1",
+                tag,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+            if not name_match or not content_match:
+                continue
+            name = name_match.group(2).strip().lower()
+            if name in {
+                "description",
+                "og:description",
+                "og:title",
+                "profile:username",
+                "twitter:description",
+                "twitter:title",
+            }:
+                evidence.append(content_match.group(2))
+
+        visible = re.sub(
+            r"<(?:script|style|template|noscript|svg)\b[^>]*>.*?</(?:script|style|template|noscript|svg)>",
+            " ",
+            body,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        visible = re.sub(r"<[^>]+>", " ", visible)
+        evidence.append(visible)
+
+        return re.sub(r"\s+", " ", unescape(" ".join(evidence))).strip().casefold()
+
+    @classmethod
+    def _body_has_identity_evidence(cls, body: str, username: str) -> bool:
+        marker = cls._identity_marker(username)
+        if not marker:
+            return False
+        evidence = cls._profile_evidence_text(body)
+        boundary = r"a-z0-9_.-"
+        return re.search(rf"(?<![{boundary}]){re.escape(marker)}(?![{boundary}])", evidence) is not None
+
+    @classmethod
+    def _control_url(cls, candidate: dict) -> str:
+        url = str(candidate.get("url") or "")
+        username = str(candidate.get("username") or "")
+        if not url or not username:
+            return ""
+        replacements = {
+            username: cls.NEGATIVE_CONTROL_USERNAME,
+            quote(username, safe=""): quote(cls.NEGATIVE_CONTROL_USERNAME, safe=""),
+            quote(username, safe="@~"): quote(cls.NEGATIVE_CONTROL_USERNAME, safe="@~"),
+        }
+        for old, new in sorted(replacements.items(), key=lambda item: len(item[0]), reverse=True):
+            if old:
+                url = re.sub(re.escape(old), new, url, flags=re.IGNORECASE)
+        return url
+
+    @classmethod
+    def _normalized_profile_evidence(cls, body: str, username: str) -> str:
+        evidence = cls._profile_evidence_text(body)
+        marker = cls._identity_marker(username)
+        if marker:
+            evidence = re.sub(re.escape(marker), "<identity>", evidence, flags=re.IGNORECASE)
+        evidence = re.sub(r"\b[0-9a-f]{16,}\b", "<token>", evidence, flags=re.IGNORECASE)
+        evidence = re.sub(r"\b\d{10,}\b", "<number>", evidence)
+        return re.sub(r"\s+", " ", evidence).strip()
+
+    @classmethod
+    def _matches_soft_404_control(cls, candidate: dict, body: str) -> bool:
+        control_url = cls._control_url(candidate)
+        if not control_url or control_url == candidate.get("url"):
+            return False
+
+        status, _headers, control_body, final_url = cls._fetch(control_url)
+        if status != 200:
+            return False
+        final_host = cls._host_without_www(urlparse(final_url or control_url).netloc)
+        domains = cls._candidate_domains(candidate)
+        if domains and not any(cls._host_matches_domain(final_host, domain) for domain in domains):
+            return False
+        if cls._redirected_to_auth(control_url, final_url or control_url):
+            return False
+        if cls._body_has_bad_marker(control_body):
+            return False
+        if not cls._body_has_identity_evidence(control_body, cls.NEGATIVE_CONTROL_USERNAME):
+            return False
+
+        candidate_evidence = cls._normalized_profile_evidence(body, candidate.get("username") or "")
+        control_evidence = cls._normalized_profile_evidence(
+            control_body, cls.NEGATIVE_CONTROL_USERNAME
+        )
+        if not candidate_evidence or not control_evidence:
+            return False
+        similarity = difflib.SequenceMatcher(
+            None,
+            candidate_evidence[:12_000],
+            control_evidence[:12_000],
+            autojunk=True,
+        ).ratio()
+        return similarity >= cls.NEGATIVE_CONTROL_SIMILARITY
+
+    @classmethod
+    def _redirected_to_auth(cls, requested_url: str, final_url: str) -> bool:
+        requested = urlparse(requested_url or "")
+        final = urlparse(final_url or "")
+        if not final.netloc:
+            return False
+        requested_path = (requested.path or "/").lower()
+        final_path = (final.path or "/").lower()
+        return requested_path != final_path and any(
+            final_path == path or final_path.startswith(f"{path}/")
+            for path in cls.AUTH_REDIRECT_PATHS
+        )
+
+    @classmethod
+    def _redirected_to_non_profile(cls, requested_url: str, final_url: str, target_type: str) -> bool:
+        if target_type not in {"channel", "group", "page", "profile", "user"}:
+            return False
+        requested_path = (urlparse(requested_url or "").path or "/").lower()
+        final_path = (urlparse(final_url or "").path or "/").lower()
+        return requested_path != final_path and any(
+            final_path == path or final_path.startswith(f"{path}/")
+            for path in cls.NON_PROFILE_REDIRECT_PATHS
+        )
+
     @classmethod
     def _candidate_domains(cls, candidate: dict) -> tuple[str, ...]:
         config = cls._public_platform_configs().get(candidate.get("platform") or "") or {}
@@ -688,20 +854,27 @@ class custom_recon:
     @classmethod
     def _validate_candidate(cls, candidate: dict) -> dict | None:
         status, _headers, body, final_url = cls._fetch(candidate["url"])
-        if status < 200 or status >= 400:
+        if status != 200:
             return None
         final_host = cls._host_without_www(urlparse(final_url or candidate["url"]).netloc)
         domains = cls._candidate_domains(candidate)
         if domains and not any(cls._host_matches_domain(final_host, domain) for domain in domains):
             return None
+        if cls._redirected_to_auth(candidate["url"], final_url or candidate["url"]):
+            return None
+        if cls._redirected_to_non_profile(
+            candidate["url"],
+            final_url or candidate["url"],
+            candidate.get("target_type") or "profile",
+        ):
+            return None
         if cls._body_has_bad_marker(body):
             return None
 
         username = candidate["username"]
-        final_lower = (final_url or "").lower()
-        body_lower = (body or "").lower()
-        markers = {username.lower(), quote(username, safe="").lower()}
-        if not any(marker and (marker in final_lower or marker in body_lower) for marker in markers):
+        if not cls._body_has_identity_evidence(body, username):
+            return None
+        if cls._matches_soft_404_control(candidate, body):
             return None
 
         validated = dict(candidate)
