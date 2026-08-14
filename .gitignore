@@ -1,7 +1,6 @@
 *idea
 data
 *.pyc
-app/raw/translation/*
 app/venv/*
 node_modules/*
 tor_proxy
@@ -17,7 +16,6 @@ venv/*
 app/data/*
 app/logs/*
 mongo-data/*
-app/raw/model/*
 static/trustly/.well-known/model/toxic-model.zip
 app/api/raw/model/*
 config/i2p/*

@@ -1,7 +1,6 @@
 import asyncio
 from fastapi import HTTPException
 
-from api.orion.services.extension_manager.extension_executor import extension_executor
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.social_controller import social_controller
 
@@ -10,7 +9,6 @@ class orion_controller:
     def __init__(self, qmonitor):
         self.progress = progress_controller.get_instance()
         self.qmonitor = qmonitor
-        self.extension_executor = extension_executor.get_instance()
 
     async def _run_with_timeout(self, job_id, fn, *args, timeout=600):
         try:
@@ -22,12 +20,6 @@ class orion_controller:
 
     async def _run_job(self, job_id, command, data, timeout):
         async with self.qmonitor.track_job():
-            if data.get("use_extension"):
-                extension_result = await self.extension_executor.dispatch_and_wait(command, data, timeout=timeout)
-                if extension_result is not None:
-                    return
-                self.progress.error(job_id, "extension_unavailable")
-                return
             controller = social_controller()
             await self._run_with_timeout(job_id, controller.invoke_trigger, command, data, timeout=timeout)
 

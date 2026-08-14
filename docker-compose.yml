@@ -14,57 +14,22 @@ services:
       - .env
     environment:
       LLM_URL: "http://host.docker.internal:11434/api/chat"
-      ORION_EXTENSION_AUTH_REFRESH_URL: "${ORION_EXTENSION_AUTH_REFRESH_URL:-http://trusted-web-main:8070/api/token/refresh}"
-      ORION_REQUIRE_EXTENSION_AUTH: "${ORION_REQUIRE_EXTENSION_AUTH:-1}"
-      ORION_EXTENSION_AUTH_VERIFY_TLS: "${ORION_EXTENSION_AUTH_VERIFY_TLS:-0}"
     extra_hosts:
       - "host.docker.internal:172.25.0.1"
     ports:
       - "8020:8020"
     volumes:
       - ./app/api:/app/api:cached
-      - ./crawler:/app/crawler:cached
-      - ./app/raw:/app/raw:cached
-      - ./dist/extensions:/app/dist/extensions:cached
       - ./sessions:/app/sessions:cached
 
     deploy:
       resources:
         limits:
           memory: 36G
-    depends_on:
-      redis_server:
-        condition: service_started
     healthcheck:
       test: [ "CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8020' || exit 1" ]
       interval: 30s
       timeout: 10s
-      retries: 3
-
-  redis_server:
-    container_name: trusted-social-redis
-    image: redis:7.4.0
-    command:
-      - redis-server
-      - --requirepass
-      - ${REDIS_PASSWORD}
-      - --appendonly
-      - "yes"
-    restart: always
-    volumes:
-      - redis:/data
-    networks:
-      - backend
-    env_file:
-      - .env
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-    healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
-      interval: 10s
-      timeout: 5s
       retries: 3
 
   tor-extend-1:
@@ -101,9 +66,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
-
-volumes:
-  redis:
 
 networks:
   shared_bridge:

@@ -44,7 +44,6 @@ class HateSpeechClassifier:
             if self._initialized:
                 return
             
-            # Load model lazily
             from transformers import pipeline
             import os
             
@@ -53,14 +52,11 @@ class HateSpeechClassifier:
             import json
             start_time = time.time()
             
-            # Using unitary/toxic-bert as it's a highly robust and production-ready model for toxicity/hate-speech.
-            # It maps well to our required labels.
             self.model_name = os.getenv("HATE_SPEECH_MODEL", "unitary/toxic-bert")
             
             import concurrent.futures
             
             try:
-                # We use device=-1 to force CPU inference by default, as requested.
                 self.classifier = pipeline(
                     "text-classification", 
                     model=self.model_name, 
@@ -95,7 +91,6 @@ class HateSpeechClassifier:
         if not text or not str(text).strip():
             return HateSpeechResult(is_hate_speech=False, label="safe", confidence=1.0, explanation="Empty text", model=self.model_name)
         
-        # In case the text is extremely long, truncation=True handles it, but let's ensure it's a string
         text = str(text).strip()
         
         try:
@@ -105,7 +100,6 @@ class HateSpeechClassifier:
             import concurrent.futures
             start_time = time.time()
             
-            # Predict with timeout
             if self.executor is None:
                 raise RuntimeError("Executor is not initialized")
                 
@@ -128,13 +122,11 @@ class HateSpeechClassifier:
             
             inference_time_ms = (time.time() - start_time) * 1000
             
-            # toxic-bert returns probabilities for: toxic, severe_toxic, obscene, threat, insult, identity_hate
             scores = {res['label']: res['score'] for res in results}
             
             hate_score = max(scores.get('identity_hate', 0.0), scores.get('threat', 0.0), scores.get('severe_toxic', 0.0))
             offensive_score = max(scores.get('toxic', 0.0), scores.get('obscene', 0.0), scores.get('insult', 0.0))
             
-            # Define thresholds
             hate_threshold = self.hate_threshold
             offensive_threshold = self.offensive_threshold
             
@@ -148,7 +140,7 @@ class HateSpeechClassifier:
                 )
             elif offensive_score >= offensive_threshold:
                 result = HateSpeechResult(
-                    is_hate_speech=False, # It's offensive, but might not qualify as severe hate speech
+                    is_hate_speech=False,
                     label="offensive",
                     confidence=offensive_score,
                     explanation="Detected toxicity, obscenity, or insults.",
@@ -174,7 +166,6 @@ class HateSpeechClassifier:
             return result
                 
         except Exception as e:
-            # Graceful failure
             import logging
             import json
             logging.error(json.dumps({
@@ -190,5 +181,4 @@ class HateSpeechClassifier:
                 model=getattr(self, "model_name", "unknown")
             )
 
-# Global instance to easily import and use
 hate_speech_classifier = HateSpeechClassifier()
