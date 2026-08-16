@@ -18,3 +18,8 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if PinterestConstants.PROFILE_MARKER not in heading.casefold():
         return VerdictConstants.UNKNOWN, {}
     return VerdictConstants.EXISTS, parse.social_info(body, PinterestConstants.AVATAR_KEYS, PinterestConstants.COVER_KEYS)
+
+ROUTES = (
+    (r"pin/(?P<id>[^/]+)", "post"),
+    (r"(?P<id>[^/]+)(?:/.*)?", "profile"),
+)

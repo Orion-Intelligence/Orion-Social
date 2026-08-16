@@ -36,3 +36,8 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         "created_at": parse.text(payload.get("createdAt")),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+ROUTES = (
+    (r"profile/(?P<id>[^/]+)/post/[^/]+", "post"),
+    (r"profile/(?P<id>[^/]+)", "profile"),
+)

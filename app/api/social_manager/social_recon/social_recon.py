@@ -142,6 +142,18 @@ class social_recon:
                 except OSError:
                     pass
 
+    def parse_url(self, url: str, job_id: str | None = None) -> list[dict]:
+        self._step(job_id, 5, "custom:url:run")
+        results = custom_recon.extract_url(url)
+        if results is None:
+            self._step(job_id, 10, "maigret:url:run")
+            results = username_extractor.extract_url(
+                url,
+                progress=self._platform_progress(job_id, "maigret", 10, 95),
+            )
+        self._step(job_id, 96, "finalizing")
+        return helper._dedup_results(results)
+
     def parse(self, value: str, _mode: str = "default", job_id: str | None = None) -> list[dict]:
         value = (value or "").strip()
         if not value:
@@ -151,8 +163,7 @@ class social_recon:
         self._step(job_id, 1, "init")
 
         if re.match(r"^https?://", value, flags=re.IGNORECASE) or re.match(r"^[A-Za-z0-9.-]+\.[A-Za-z]{2,}(/.*)?$", value):
-            self._step(job_id, 100, "direct:not_supported")
-            return []
+            return self.parse_url(value, job_id=job_id)
 
         if "@" in value and re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value):
             return self.parse_email(value, job_id=job_id)

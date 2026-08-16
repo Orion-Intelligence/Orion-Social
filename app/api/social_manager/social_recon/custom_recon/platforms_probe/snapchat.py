@@ -10,8 +10,21 @@ def probe_url(username: str) -> str:
 
 
 def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
-    if status == 404:
-        return VerdictConstants.ABSENT, {}
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, SnapchatConstants.AVATAR_KEYS, SnapchatConstants.COVER_KEYS)
+    payload = parse.as_json(body)
+    matches = payload.get("matches") if isinstance(payload, dict) else None
+    if not matches:
+        return VerdictConstants.UNKNOWN, {}
+    first = matches[0] if isinstance(matches[0], dict) else {}
+    info = {
+        "display_name": parse.text(first.get("title")),
+        "description": parse.text(first.get("body")),
+        "url": parse.text(first.get("href")),
+        "indexed_by": "search",
+    }
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+ROUTES = (
+    ("(?:add/|@)(?P<id>[^/]+)", "profile"),
+)

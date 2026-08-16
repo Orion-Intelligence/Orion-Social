@@ -20,3 +20,9 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     info = parse.social_info(body, ThreadsConstants.AVATAR_KEYS, ThreadsConstants.COVER_KEYS)
     info.update(parse.counts(info.get("description", "")))
     return VerdictConstants.EXISTS, info
+
+HOSTS = ("threads.com",)
+ROUTES = (
+    (r"@?(?P<id>[^/@]+)/post/[^/]+", "post"),
+    (r"@?(?P<id>[^/@]+)", "profile"),
+)

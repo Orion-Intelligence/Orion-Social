@@ -20,3 +20,8 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     info = parse.social_info(body, InstagramConstants.AVATAR_KEYS, InstagramConstants.COVER_KEYS)
     info.update(parse.counts(info.get("description", "")))
     return VerdictConstants.EXISTS, info
+
+ROUTES = (
+    (r"(?:p|reel|reels)/(?P<id>[^/]+)", "post"),
+    (r"(?P<id>[^/]+)(?:/.*)?", "profile"),
+)

@@ -18,3 +18,10 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if not heading or heading.casefold() in FacebookConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}
     return VerdictConstants.EXISTS, parse.social_info(body, FacebookConstants.AVATAR_KEYS, FacebookConstants.COVER_KEYS)
+
+ROUTES = (
+    (r"groups/(?P<id>[^/]+)(?:/.*)?", "group"),
+    (r"(?P<id>[^/]+)/posts/[^/]+", "post"),
+    (r"profile\.php\?id=(?P<id>\d+)", "profile"),
+    (r"(?P<id>[^/]+)", "profile"),
+)

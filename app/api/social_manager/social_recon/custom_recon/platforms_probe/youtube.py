@@ -15,3 +15,11 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
     return VerdictConstants.EXISTS, parse.social_info(body, YouTubeConstants.AVATAR_KEYS, YouTubeConstants.COVER_KEYS, cover_pattern=YouTubeConstants.COVER_PATTERN)
+
+HOSTS = ("youtu.be",)
+ROUTES = (
+    (r"@(?P<id>[^/]+)(?:/.*)?", "profile"),
+    (r"channel/(?P<id>UC[\w-]+)(?:/.*)?", "channel"),
+    (r"(?:shorts/)?(?P<id>[\w-]{11})", "video"),
+    (r"watch\?(?:.*&)?v=(?P<id>[\w-]+)(?:&.*)?", "video"),
+)
