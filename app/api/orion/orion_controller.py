@@ -10,7 +10,7 @@ class orion_controller:
         self.progress = progress_controller.get_instance()
         self.qmonitor = qmonitor
 
-    async def _run_with_timeout(self, job_id, fn, *args, timeout=600):
+    async def _run_with_timeout(self, job_id, fn, *args, timeout=2400):
         try:
             await asyncio.wait_for(asyncio.to_thread(fn, *args), timeout=timeout)
         except asyncio.TimeoutError:
@@ -23,7 +23,7 @@ class orion_controller:
             controller = social_controller()
             await self._run_with_timeout(job_id, controller.invoke_trigger, command, data, timeout=timeout)
 
-    async def social_trigger(self, job_id, command, data, timeout=600):
+    async def social_trigger(self, job_id, command, data, timeout=2400):
         try:
             state = self.progress.get(job_id)
 

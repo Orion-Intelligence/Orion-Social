@@ -121,6 +121,8 @@ class social_recon:
                     continue
                 if platform in known_sites and identity:
                     metadata["status"] = "active"
+                    metadata.setdefault("target_type", "profile")
+                    metadata.setdefault("entity_type", "user")
                     item["metadata"] = metadata
                     active.append(item)
                 else:
@@ -131,7 +133,7 @@ class social_recon:
                     informational.append(item)
 
             self._step(job_id, 95, "finalizing")
-            return helper._dedup_results(active) + informational
+            return helper._flatten_results(helper._dedup_results(active) + informational)
         except Exception:
             self._step(job_id, 95, "image:error")
             return []
@@ -155,6 +157,9 @@ class social_recon:
         return helper._dedup_results(results)
 
     def parse(self, value: str, _mode: str = "default", job_id: str | None = None) -> list[dict]:
+        return helper._flatten_results(self._parse(value, job_id=job_id))
+
+    def _parse(self, value: str, job_id: str | None = None) -> list[dict]:
         value = (value or "").strip()
         if not value:
             self._step(job_id, 100, "empty")

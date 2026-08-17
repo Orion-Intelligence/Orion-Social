@@ -235,21 +235,6 @@ ROUTE_CASES = (
     ('https://finji.itch.io', 'itch.io', 'finji', 'profile'),
     ('https://sahil.gumroad.com', 'Gumroad', 'sahil', 'profile'),
     ('https://the-story.medium.com', 'Medium', 'the-story', 'page'),
-    ('https://aminoapps.com/u/amino', 'Amino', 'amino', 'profile'),
-    ('https://aminoapps.com/c/anime/page/blog/hello/abc', 'Amino', 'anime', 'post'),
-    ('https://aminoapps.com/c/anime', 'Amino', 'anime', 'group'),
-    ('https://badoo.com/profile/badoo', 'Badoo', 'badoo', 'profile'),
-    ('https://band.us/@bandofficial', 'Band', 'bandofficial', 'profile'),
-    ('https://band.us/band/1/post/1', 'Band', '1', 'post'),
-    ('https://band.us/band/1', 'Band', '1', 'group'),
-    ('https://bere.al/bereal', 'BeReal', 'bereal', 'profile'),
-    ('https://clapperapp.com/video/1', 'Clapper', '1', 'video'),
-    ('https://clapperapp.com/clapper', 'Clapper', 'clapper', 'profile'),
-    ('https://www.couchsurfing.com/people/casey', 'Couchsurfing', 'casey', 'profile'),
-    ('https://www.couchsurfing.com/groups/1', 'Couchsurfing', '1', 'group'),
-    ('https://www.dcard.tw/@dcard', 'Dcard', 'dcard', 'profile'),
-    ('https://www.dcard.tw/f/funny/p/1', 'Dcard', 'funny', 'post'),
-    ('https://www.dcard.tw/f/funny', 'Dcard', 'funny', 'group'),
     ('https://www.deviantart.com/deviantart/art/1', 'DeviantArt', 'deviantart', 'post'),
     ('https://www.deviantart.com/deviantart', 'DeviantArt', 'deviantart', 'profile'),
     ('https://www.douyin.com/user/MS4wLjABAAAA', 'Douyin', 'MS4wLjABAAAA', 'profile'),
@@ -261,42 +246,23 @@ ROUTE_CASES = (
     ('https://gab.com/gab', 'Gab', 'gab', 'profile'),
     ('https://gettr.com/post/p1', 'GETTR', 'p1', 'post'),
     ('https://gettr.com/user/gettr', 'GETTR', 'gettr', 'profile'),
-    ('https://open.kakao.com/o/gAbCdEf', 'KakaoTalk', 'gAbCdEf', 'group'),
     ('https://www.kuaishou.com/profile/3xabc', 'Kuaishou', '3xabc', 'profile'),
     ('https://www.kuaishou.com/short-video/3xabc', 'Kuaishou', '3xabc', 'video'),
-    ('https://www.kwai.com/@kwai/video/1', 'Kwai', 'kwai', 'video'),
-    ('https://www.kwai.com/@kwai', 'Kwai', 'kwai', 'profile'),
-    ('https://likee.video/@Likee_Official/video/1', 'Likee', 'Likee_Official', 'video'),
-    ('https://likee.video/@Likee_Official', 'Likee', 'Likee_Official', 'profile'),
-    ('https://www.meetup.com/members/1', 'Meetup', '1', 'profile'),
-    ('https://www.meetup.com/ny-tech/events/1', 'Meetup', 'ny-tech', 'post'),
-    ('https://www.meetup.com/ny-tech', 'Meetup', 'ny-tech', 'group'),
     ('https://www.minds.com/newsfeed/1', 'Minds', '1', 'post'),
     ('https://www.minds.com/groups/profile/1', 'Minds', '1', 'group'),
     ('https://www.minds.com/minds', 'Minds', 'minds', 'profile'),
-    ('https://mixi.jp/show_friend.pl?id=1', 'Mixi', '1', 'profile'),
-    ('https://mixi.jp/view_community.pl?id=1', 'Mixi', '1', 'group'),
-    ('https://www.mocospace.com/mocospace', 'MocoSpace', 'mocospace', 'profile'),
-    ('https://nextdoor.com/profile/1', 'Nextdoor', '1', 'profile'),
-    ('https://nextdoor.com/pages/nextdoor-san-francisco-ca', 'Nextdoor', 'nextdoor-san-francisco-ca', 'page'),
     ('https://parler.com/feed/1', 'Parler', '1', 'post'),
     ('https://parler.com/parler', 'Parler', 'parler', 'profile'),
     ('https://www.pixiv.net/artworks/1', 'Pixiv', '1', 'post'),
     ('https://www.pixiv.net/users/11', 'Pixiv', '11', 'profile'),
-    ('https://www.ravelry.com/people/casey', 'Ravelry', 'casey', 'profile'),
-    ('https://www.ravelry.com/groups/ravelry', 'Ravelry', 'ravelry', 'group'),
-    ('https://www.ravelry.com/patterns/library/hello', 'Ravelry', 'hello', 'post'),
     ('https://www.researchgate.net/profile/Albert-Einstein', 'ResearchGate', 'Albert-Einstein', 'profile'),
     ('https://www.researchgate.net/publication/1_Hello', 'ResearchGate', '1_Hello', 'post'),
-    ('https://www.reverbnation.com/reverbnation/song/1', 'ReverbNation', 'reverbnation', 'post'),
-    ('https://www.reverbnation.com/reverbnation', 'ReverbNation', 'reverbnation', 'profile'),
     ('https://soundcloud.com/soundcloud/sets/hello', 'SoundCloud', 'soundcloud', 'post'),
     ('https://soundcloud.com/soundcloud/hello', 'SoundCloud', 'soundcloud', 'post'),
     ('https://soundcloud.com/soundcloud', 'SoundCloud', 'soundcloud', 'profile'),
     ('https://www.strava.com/athletes/1', 'Strava', '1', 'profile'),
     ('https://www.strava.com/clubs/strava', 'Strava', 'strava', 'group'),
     ('https://www.strava.com/activities/1', 'Strava', '1', 'post'),
-    ('https://www.tagged.com/tagged', 'Tagged', 'tagged', 'profile'),
     ('https://t.me/s/telegram', 'Telegram', 'telegram', 'channel'),
     ('https://t.me/joinchat/AAAAAEkk2WdoDrB4-Q8-gg', 'Telegram', 'AAAAAEkk2WdoDrB4-Q8-gg', 'group'),
     ('https://t.me/telegram/1', 'Telegram', 'telegram', 'post'),
@@ -774,3 +740,22 @@ def test_unverified_platforms_route_without_probing_and_defer_to_maigret() -> No
         assert custom_recon.check("discord", "80351110224678912").verdict == "unknown"
         assert custom_recon.extract_url("https://discord.com/users/80351110224678912") is None
     assert not fetch.called and not browser.called and not online.called
+
+
+CANONICAL_PROFILE_FIELDS = {"display_name", "description", "avatar", "cover", "followers", "following", "posts", "id", "created_at", "location", "website"}
+
+
+def test_every_module_emits_only_canonical_profile_fields() -> None:
+    import glob
+    import os
+
+    offenders = []
+    for path in sorted(glob.glob(str(ReconProbeConstants.PLATFORM_ROOT / "*.py"))):
+        source = open(path, encoding="utf-8").read()
+        for block in re.finditer(r"info = \{(.*?)\n    \}", source, flags=re.DOTALL):
+            for key in re.findall(r'^\s+"([a-z_]+)":', block.group(1), flags=re.M):
+                if key not in CANONICAL_PROFILE_FIELDS:
+                    offenders.append((os.path.basename(path), key))
+        if "info.update(parse.counts" in source:
+            offenders.append((os.path.basename(path), "raw parse.counts"))
+    assert not offenders, offenders

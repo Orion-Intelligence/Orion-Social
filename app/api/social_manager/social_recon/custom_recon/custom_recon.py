@@ -6,6 +6,7 @@ from typing import Any, cast
 from urllib.parse import urlparse
 
 import api.social_manager.social_recon.custom_recon.core.http_client as http_client
+import api.social_manager.social_recon.custom_recon.core.parse as parse
 import api.social_manager.social_recon.custom_recon.core.registry as registry
 from api.social_manager.social_recon.constants.custom_recon_constants import CrawlConstants, HttpClientConstants, VerdictConstants
 from api.social_manager.social_recon.custom_recon.core.verdict import ProfileCheck
@@ -93,6 +94,7 @@ class custom_recon:
             verdict, info = evaluate(status, body, final_url)
         except Exception:
             verdict, info = VerdictConstants.UNKNOWN, {}
+        target_type = info.pop("target_type", "profile") if isinstance(info, dict) else "profile"
 
         return cls._store(
             key,
@@ -105,6 +107,7 @@ class custom_recon:
                 reason="" if verdict == VerdictConstants.EXISTS else f"http {status}",
                 status_code=status,
                 final_url=final_url,
+                target_type=target_type,
             ),
         )
 
@@ -137,9 +140,21 @@ class custom_recon:
         module, identity, target, value = route
         if target == "profile" or cls._crawl_type(module) == CrawlConstants.UNVERIFIED:
             return cls.check(module.constants.NAME, identity)
-        status, _body, final_url = cls._fetch(module, value)
-        verdict = VerdictConstants.EXISTS if status == 200 else VerdictConstants.ABSENT if status in (404, 410) else VerdictConstants.UNKNOWN
-        return ProfileCheck(module.constants.NAME, identity, verdict, value, reason="" if status == 200 else f"http {status}", status_code=status, final_url=final_url, target_type=target)
+        status, body, final_url = cls._fetch(module, value)
+        resource_member = getattr(module, "evaluate_resource", None)
+        info: dict[str, Any] = {}
+        if callable(resource_member):
+            try:
+                verdict, info = resource_member(status, body, final_url)
+            except Exception:
+                verdict, info = VerdictConstants.UNKNOWN, {}
+        else:
+            verdict = VerdictConstants.EXISTS if status == 200 else VerdictConstants.ABSENT if status in (404, 410) else VerdictConstants.UNKNOWN
+            info = parse.social_info(body) if verdict == VerdictConstants.EXISTS else {}
+        if not isinstance(info, dict):
+            info = {}
+        info = {key: value for key, value in info.items() if value}
+        return ProfileCheck(module.constants.NAME, identity, verdict, value, info=info, reason="" if status == 200 else f"http {status}", status_code=status, final_url=final_url, target_type=target)
 
     @classmethod
     def _store(cls, key: tuple[str, str], result: ProfileCheck) -> ProfileCheck:

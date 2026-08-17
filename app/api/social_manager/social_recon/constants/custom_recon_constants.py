@@ -20,6 +20,13 @@ class ParseConstants:
         "placeholder",
         "missing.png",
         "/static/img/default",
+        "avatar_default",
+        "avatars/defaults",
+        "/assets/",
+        "/static/",
+        "logo",
+        "sprite",
+        ".svg",
     )
 
 
@@ -65,4 +72,4 @@ class BrowserPoolConstants:
 class OnlineSearchConstants:
     QUERY = "site:{target}"
     MAX_RESULTS = 10
-    BACKENDS = ("auto", "bing", "yahoo")
+    BACKENDS = ("auto", "yahoo", "brave")

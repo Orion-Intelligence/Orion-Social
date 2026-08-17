@@ -17,9 +17,7 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     heading = parse.title(body)
     if not heading or heading.casefold() in SpotifyConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}
-    info = clean(parse.social_info(body))
-    info.setdefault("avatar", parse.first_image(body))
-    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+    return VerdictConstants.EXISTS, clean(parse.social_info(body))
 
 
 evaluate_resource = evaluate

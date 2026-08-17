@@ -13,6 +13,7 @@ class FacebookConstants:
     GRAMMAR = r"^[A-Za-z0-9.]{4,50}$"
     PROFILE_URL = "https://www.facebook.com/{username}"
     GENERIC = {"facebook", "facebook - log in or sign up"}
+    PAGE_PATTERN = r"\b[\d.,]+[KMB]?\s+likes\s*·\s*[\d.,]+[KMB]?\s+(?:talking about this|were here|followers)"
     AVATAR_KEYS = ("profilePicLarge", "profilePicMedium", "profile_pic_url")
     COVER_KEYS = ("coverPhoto", "cover_photo")
 
@@ -54,6 +55,9 @@ class RedditConstants:
     PROFILE_URL = "https://www.reddit.com/user/{username}"
     ABOUT_URL = "https://www.reddit.com/user/{username}/about.json"
     GENERIC = {"reddit", "reddit - the heart of the internet", "reddit - dive into anything"}
+    RESOURCE_DESCRIPTION = r'<shreddit-(?:subreddit|post|profile)-[a-z-]*header[^>]*\sdescription="([^"]+)"'
+    RESOURCE_MARKERS = ("<shreddit-subreddit-header", "<shreddit-post")
+    MISSING_USER = "nobody on Reddit goes by that name"
 
 
 class ThreadsConstants:
@@ -154,6 +158,7 @@ class MeWeConstants:
     PROFILE_URL = "https://mewe.com/i/{username}"
     NOT_FOUND_PATH = "/404"
     GENERIC = {"mewe", "mewe - the next-gen social network"}
+    GENERIC_DESCRIPTIONS = ("brilliant features with no bs",)
 
 
 class RumbleConstants:
@@ -466,8 +471,7 @@ class NostrConstants:
     CRAWL_TYPE = "playwright"
     GRAMMAR = "^[A-Za-z0-9._@-]{1,128}$"
     PROFILE_URL = "https://njump.me/{username}"
-    AVATAR_KEYS = ("picture",)
-    COVER_KEYS = ("banner",)
+    GENERIC_DESCRIPTIONS = ("njump is",)
 
 
 class MicroBlogConstants:
@@ -916,9 +920,8 @@ class SpotifyConstants:
     CRAWL_TYPE = "playwright"
     GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
     PROFILE_URL = "https://open.spotify.com/user/{username}"
-    GENERIC = {"spotify - web player", "spotify - web player: music for everyone", "spotify – web player", "spotify – web player: music for everyone"}
-    AVATAR_KEYS = ()
-    COVER_KEYS = ()
+    GENERIC = {"spotify – web player", "spotify - web player", "spotify – web player: music for everyone", "spotify - web player: music for everyone"}
+    GENERIC_DESCRIPTIONS = ("spotify is a digital music service", "listen to")
 
 
 class TraktConstants:
@@ -926,9 +929,9 @@ class TraktConstants:
     CRAWL_TYPE = "playwright"
     GRAMMAR = "^[A-Za-z0-9_-]{1,64}$"
     PROFILE_URL = "https://trakt.tv/users/{username}"
-    GENERIC = {"404: nothingness. the void.", "trakt", "trakt web: profile"}
-    AVATAR_KEYS = ()
-    COVER_KEYS = ()
+    GENERIC = {"trakt", "trakt web: profile"}
+    NOT_FOUND_TITLE = "404: nothingness. the void."
+    GENERIC_DESCRIPTIONS = ("trakt web:", "trakt:")
 
 
 class OnlyFansConstants:
@@ -937,8 +940,7 @@ class OnlyFansConstants:
     GRAMMAR = "^[A-Za-z0-9_.-]{1,64}$"
     PROFILE_URL = "https://onlyfans.com/{username}"
     GENERIC = {"onlyfans"}
-    AVATAR_KEYS = ()
-    COVER_KEYS = ()
+    GENERIC_DESCRIPTIONS = ("onlyfans is the social platform",)
 
 
 class FigmaConstants:
@@ -946,6 +948,7 @@ class FigmaConstants:
     CRAWL_TYPE = "playwright"
     GRAMMAR = "^[A-Za-z0-9_-]{1,64}$"
     PROFILE_URL = "https://www.figma.com/@{username}"
+    GENERIC_DESCRIPTIONS = ("figma is the",)
 
 
 class BitChuteConstants:
@@ -953,55 +956,7 @@ class BitChuteConstants:
     CRAWL_TYPE = "playwright"
     GRAMMAR = "^[A-Za-z0-9_-]{1,64}$"
     PROFILE_URL = "https://www.bitchute.com/channel/{username}/"
-
-
-class AminoConstants:
-    NAME = "Amino"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://aminoapps.com/u/{username}"
-
-
-class BadooConstants:
-    NAME = "Badoo"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://badoo.com/profile/{username}"
-
-
-class BandConstants:
-    NAME = "Band"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://band.us/@{username}"
-
-
-class BeRealConstants:
-    NAME = "BeReal"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://bere.al/{username}"
-
-
-class ClapperConstants:
-    NAME = "Clapper"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._]{1,30}$"
-    PROFILE_URL = "https://clapperapp.com/{username}"
-
-
-class CouchsurfingConstants:
-    NAME = "Couchsurfing"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://www.couchsurfing.com/people/{username}"
-
-
-class DcardConstants:
-    NAME = "Dcard"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,32}$"
-    PROFILE_URL = "https://www.dcard.tw/@{username}"
+    GENERIC_DESCRIPTIONS = ("bitchute is",)
 
 
 class DeviantArtConstants:
@@ -1039,13 +994,6 @@ class GettrConstants:
     PROFILE_URL = "https://gettr.com/user/{username}"
 
 
-class KakaoTalkConstants:
-    NAME = "KakaoTalk"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://open.kakao.com/o/{username}"
-
-
 class KuaishouConstants:
     NAME = "Kuaishou"
     CRAWL_TYPE = "online"
@@ -1053,53 +1001,11 @@ class KuaishouConstants:
     PROFILE_URL = "https://www.kuaishou.com/profile/{username}"
 
 
-class KwaiConstants:
-    NAME = "Kwai"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://www.kwai.com/@{username}"
-
-
-class LikeeConstants:
-    NAME = "Likee"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://likee.video/@{username}"
-
-
-class MeetupConstants:
-    NAME = "Meetup"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://www.meetup.com/members/{username}"
-
-
 class MindsConstants:
     NAME = "Minds"
     CRAWL_TYPE = "online"
     GRAMMAR = "^[A-Za-z0-9_]{1,50}$"
     PROFILE_URL = "https://www.minds.com/{username}"
-
-
-class MixiConstants:
-    NAME = "Mixi"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://mixi.jp/show_friend.pl?id={username}"
-
-
-class MocoSpaceConstants:
-    NAME = "MocoSpace"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://www.mocospace.com/{username}"
-
-
-class NextdoorConstants:
-    NAME = "Nextdoor"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://nextdoor.com/profile/{username}"
 
 
 class ParlerConstants:
@@ -1116,25 +1022,11 @@ class PixivConstants:
     PROFILE_URL = "https://www.pixiv.net/users/{username}"
 
 
-class RavelryConstants:
-    NAME = "Ravelry"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://www.ravelry.com/people/{username}"
-
-
 class ResearchGateConstants:
     NAME = "ResearchGate"
     CRAWL_TYPE = "online"
     GRAMMAR = "^[A-Za-z0-9_-]{1,64}$"
     PROFILE_URL = "https://www.researchgate.net/profile/{username}"
-
-
-class ReverbNationConstants:
-    NAME = "ReverbNation"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9_-]{1,64}$"
-    PROFILE_URL = "https://www.reverbnation.com/{username}"
 
 
 class SoundCloudConstants:
@@ -1149,13 +1041,6 @@ class StravaConstants:
     CRAWL_TYPE = "online"
     GRAMMAR = "^[A-Za-z0-9._-]{1,32}$"
     PROFILE_URL = "https://www.strava.com/athletes/{username}"
-
-
-class TaggedConstants:
-    NAME = "Tagged"
-    CRAWL_TYPE = "online"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://www.tagged.com/{username}"
 
 
 class TelegramConstants:

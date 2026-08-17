@@ -27,7 +27,7 @@ def test_social_recon_routes_urls_to_url_only_extraction() -> None:
     with patch.object(username_extractor, "extract_url", return_value=expected) as extract_url:
         result = social_recon().parse("https://www.kickstarter.com/profile/msmannan00")
 
-    assert result == expected
+    assert result == [{"platform": "Kickstarter", "username": "msmannan00"}]
     extract_url.assert_called_once_with("https://www.kickstarter.com/profile/msmannan00", progress=None)
 
 
@@ -62,5 +62,5 @@ def test_social_recon_prefers_custom_recon_and_skips_maigret_for_known_platforms
     with patch.object(custom_recon, "extract_url", return_value=expected), patch.object(
         username_extractor, "extract_url"
     ) as maigret:
-        assert social_recon().parse("https://x.com/elonmusk") == expected
+        assert social_recon().parse("https://x.com/elonmusk") == [{"platform": "X", "username": "elonmusk", "target_type": "profile"}]
     maigret.assert_not_called()

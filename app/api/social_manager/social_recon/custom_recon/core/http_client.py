@@ -63,5 +63,15 @@ def online_fetch(url: str, max_bytes: int = HttpClientConstants.MAX_BYTES) -> tu
         if found == wanted or (wanted and found.startswith(f"{wanted}/")):
             matches.append({"href": item.get("href"), "title": item.get("title"), "body": item.get("body"), "exact": found == wanted})
     matches.sort(key=lambda match: not match["exact"])
+    if matches:
+        try:
+            images = live_search_handler()._ddgs_search("images", query, max_results=OnlineSearchConstants.MAX_RESULTS) or []
+        except Exception:
+            images = []
+        for image in images:
+            parts = normalizer.url(str(image.get("url") or ""))
+            if parts and (parts[1] == host or parts[1].endswith(f".{host}")) and parts[2].casefold() == path.casefold():
+                matches[0]["image"] = image.get("image")
+                break
     payload = {"query": query, "matches": matches, "results": len(results)}
     return 200, json.dumps(payload)[:max_bytes], str(matches[0]["href"]) if matches else url

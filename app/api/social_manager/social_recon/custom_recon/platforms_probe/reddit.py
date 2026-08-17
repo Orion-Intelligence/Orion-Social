@@ -26,9 +26,7 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         heading = parse.title(body)
         if not heading or heading.casefold() in RedditConstants.GENERIC:
             return VerdictConstants.UNKNOWN, {}
-        info = parse.social_info(body)
-        info.setdefault("avatar", parse.first_image(body))
-        return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+        return VerdictConstants.EXISTS, parse.social_info(body)
     data = payload.get("data")
     if not isinstance(data, dict) or not data.get("name"):
         return VerdictConstants.UNKNOWN, {}

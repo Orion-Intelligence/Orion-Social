@@ -22,6 +22,9 @@ COPY app/requirements.txt /tmp/requirements.txt
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install -r /tmp/requirements.txt
 
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN playwright install --with-deps chromium
+
 ENV HF_HOME=/app/.cache/huggingface
 RUN python3 -c "from transformers import pipeline; pipeline('text-classification', model='unitary/toxic-bert')"
 
