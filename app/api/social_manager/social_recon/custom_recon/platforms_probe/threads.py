@@ -18,7 +18,10 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if not heading or ThreadsConstants.LOGIN_MARKER in heading:
         return VerdictConstants.UNKNOWN, {}
     info = parse.social_info(body, ThreadsConstants.AVATAR_KEYS, ThreadsConstants.COVER_KEYS)
-    info.update(parse.counts(info.get("description", "")))
+    counts = parse.counts(info.get("description", ""))
+    info.update({key: counts[key] for key in ("followers", "following", "posts") if key in counts})
+    if "threads" in counts:
+        info.setdefault("posts", counts["threads"])
     return VerdictConstants.EXISTS, info
 
 HOSTS = ("threads.com",)

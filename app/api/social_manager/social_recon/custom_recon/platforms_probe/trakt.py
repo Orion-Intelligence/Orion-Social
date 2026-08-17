@@ -14,10 +14,21 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         return VerdictConstants.ABSENT, {}
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
-    heading = parse.title(body)
-    if not heading or heading.casefold() in TraktConstants.GENERIC:
+    heading = parse.title(body).casefold()
+    if heading == TraktConstants.NOT_FOUND_TITLE:
+        return VerdictConstants.ABSENT, {}
+    if not heading or heading in TraktConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, TraktConstants.AVATAR_KEYS, TraktConstants.COVER_KEYS)
+    return VerdictConstants.EXISTS, clean(parse.social_info(body))
+
+
+evaluate_resource = evaluate
+
+def clean(info: dict) -> dict:
+    description = (info.get("description") or "").strip()
+    if len(description) < 3 or any(description.casefold().startswith(prefix) for prefix in TraktConstants.GENERIC_DESCRIPTIONS):
+        info.pop("description", None)
+    return {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("users/(?P<id>[^/]+)(?:/.*)?", "profile"),

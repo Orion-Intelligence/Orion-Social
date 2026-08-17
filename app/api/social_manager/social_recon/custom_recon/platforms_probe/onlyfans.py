@@ -17,7 +17,13 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     heading = parse.title(body)
     if not heading or heading.casefold() in OnlyFansConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, OnlyFansConstants.AVATAR_KEYS, OnlyFansConstants.COVER_KEYS)
+    return VerdictConstants.EXISTS, clean(parse.social_info(body))
+
+def clean(info: dict) -> dict:
+    description = (info.get("description") or "").strip()
+    if len(description) < 3 or any(description.casefold().startswith(prefix) for prefix in OnlyFansConstants.GENERIC_DESCRIPTIONS):
+        info.pop("description", None)
+    return {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("(?P<id>[^/]+)", "profile"),

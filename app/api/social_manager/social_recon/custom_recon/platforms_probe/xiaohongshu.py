@@ -20,8 +20,7 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     info = {
         "display_name": parse.text(first.get("title")),
         "description": parse.text(first.get("body")),
-        "url": parse.text(first.get("href")),
-        "indexed_by": "search",
+        "avatar": parse.text(first.get("image")),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 

@@ -17,7 +17,18 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     heading = parse.title(body)
     if not heading or heading.casefold() in SpotifyConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, SpotifyConstants.AVATAR_KEYS, SpotifyConstants.COVER_KEYS)
+    info = clean(parse.social_info(body))
+    info.setdefault("avatar", parse.first_image(body))
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+
+evaluate_resource = evaluate
+
+def clean(info: dict) -> dict:
+    description = (info.get("description") or "").strip()
+    if len(description) < 3 or any(description.casefold().startswith(prefix) for prefix in SpotifyConstants.GENERIC_DESCRIPTIONS):
+        info.pop("description", None)
+    return {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("user/(?P<id>[^/]+)(?:/.*)?", "profile"),

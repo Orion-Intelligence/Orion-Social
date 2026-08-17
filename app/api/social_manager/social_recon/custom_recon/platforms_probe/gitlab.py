@@ -24,7 +24,6 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         "display_name": parse.text(user.get("name")),
         "avatar": parse.text(user.get("avatar_url")),
         "id": parse.text(user.get("id")),
-        "web_url": parse.text(user.get("web_url")),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 

@@ -22,8 +22,6 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     info = {
         "display_name": parse.text(" ".join(filter(None, (payload["result"][0].get("firstName"), payload["result"][0].get("lastName"))))),
         "avatar": parse.text(payload["result"][0].get("titlePhoto")),
-        "rating": parse.text(payload["result"][0].get("rating")),
-        "rank": parse.text(payload["result"][0].get("rank")),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 

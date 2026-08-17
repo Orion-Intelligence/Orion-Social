@@ -14,7 +14,19 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         return VerdictConstants.ABSENT, {}
     if status not in (200, 202):
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body)
+    info = clean(parse.social_info(body))
+    if not info.get("description") and not info.get("avatar"):
+        return VerdictConstants.UNKNOWN, {}
+    return VerdictConstants.EXISTS, info
+
+
+evaluate_resource = evaluate
+
+def clean(info: dict) -> dict:
+    description = (info.get("description") or "").strip()
+    if len(description) < 3 or any(description.casefold().startswith(prefix) for prefix in FigmaConstants.GENERIC_DESCRIPTIONS):
+        info.pop("description", None)
+    return {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("@(?P<id>[^/]+)(?:/.*)?", "profile"),

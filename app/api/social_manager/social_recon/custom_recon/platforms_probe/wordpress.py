@@ -22,7 +22,6 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         "description": parse.text(payload.get("description")),
         "avatar": parse.text((payload.get("icon") or {}).get("img") if isinstance(payload.get("icon"), dict) else None),
         "id": parse.text(payload.get("ID")),
-        "url": parse.text(payload.get("URL")),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 

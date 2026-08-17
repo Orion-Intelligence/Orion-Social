@@ -16,7 +16,16 @@ def evaluate(status: int, body: str, final_url: str) -> tuple[str, dict]:
         return VerdictConstants.ABSENT, {}
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body)
+    return VerdictConstants.EXISTS, clean(parse.social_info(body))
+
+
+evaluate_resource = evaluate
+
+def clean(info: dict) -> dict:
+    description = (info.get("description") or "").strip()
+    if len(description) < 3 or any(description.casefold().startswith(prefix) for prefix in BitChuteConstants.GENERIC_DESCRIPTIONS):
+        info.pop("description", None)
+    return {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("channel/(?P<id>[^/]+)(?:/.*)?", "profile"),
