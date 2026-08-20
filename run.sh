@@ -44,12 +44,12 @@ if [ "$ACTION" = "stop" ]; then
     echo "social service stopped"
 elif [ "$ACTION" = "build" ]; then
     docker compose -p "$PROJECT_NAME" build
-    docker compose -p "$PROJECT_NAME" up -d
+    docker compose -p "$PROJECT_NAME" up
     echo "social service started"
     if [ "$PROBE_FLAG" -eq 1 ]; then
         .venv/bin/python -m app.probe.recon_probe.test_recon_probe
     fi
 else
-    docker compose -p "$PROJECT_NAME" up -d
+    docker compose -p "$PROJECT_NAME" up
     echo "social service started"
 fi

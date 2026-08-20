@@ -31,3 +31,8 @@ config/i2p/addressbook/last_modified
 config/i2p/addressbook/last_fetched
 config/i2p/addressbook/etags
 *.txt
+
+# Social automation – browser profiles contain sensitive auth material
+social-automation/profiles/
+social-automation/dist/
+social-automation/node_modules/
