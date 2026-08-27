@@ -10,58 +10,29 @@ async function extractAdDetails(context: BrowserContext, tweetUrl: string) {
     date: 'Unknown',
     likes: '0',
     shares: '0',
-    comments: '0',
-    views: '0',
-    extractedComments: [] as string[]
+    views: '0'
   };
 
   try {
     await page.goto(tweetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForTimeout(4000); // Wait for the post and replies to render
+    await page.waitForTimeout(4000); 
 
-    // In a tweet detail view, the main post is usually the first article or has specific styling.
-    // Time/Date is inside a <time> tag.
     const timeElements = await page.locator('time').all();
     if (timeElements.length > 0) {
       details.date = await timeElements[0].getAttribute('datetime') || await timeElements[0].innerText();
     }
 
-    // Extract metrics. On X, metrics are usually aria-labels on the action bar buttons or specific spans.
-    // Or we can look for the group role which contains the buttons.
     const groupElement = page.locator('article[data-testid="tweet"]').first().locator('[role="group"]').first();
     if (await groupElement.isVisible()) {
       const ariaLabel = await groupElement.getAttribute('aria-label') || '';
-      // ariaLabel usually looks like "3 Replies, 10 Reposts, 50 Likes, 1000 Views"
-      const repliesMatch = ariaLabel.match(/([\d,]+)\s+repl/i);
+      
       const repostsMatch = ariaLabel.match(/([\d,]+)\s+repost/i);
       const likesMatch = ariaLabel.match(/([\d,]+)\s+like/i);
       const viewsMatch = ariaLabel.match(/([\d,]+)\s+view/i);
 
-      if (repliesMatch) details.comments = repliesMatch[1];
       if (repostsMatch) details.shares = repostsMatch[1];
       if (likesMatch) details.likes = likesMatch[1];
       if (viewsMatch) details.views = viewsMatch[1];
-    }
-
-    // Scroll down to load comments
-    await page.evaluate(() => window.scrollBy(0, 1000));
-    await page.waitForTimeout(3000);
-
-    // Get comment articles (skipping the first one which is the main post)
-    const articles = page.locator('article[data-testid="tweet"]');
-    const count = await articles.count();
-    
-    // Start from index 1 (0 is the main ad post)
-    for (let i = 1; i < count && i <= 5; i++) { // Extract up to 5 comments
-      try {
-        const commentText = await articles.nth(i).innerText();
-        const cleanComment = commentText.split('\n').map(l => l.trim()).filter(l => l.length > 0).join(' | ');
-        if (cleanComment) {
-          details.extractedComments.push(cleanComment);
-        }
-      } catch (e) {
-        // Ignore errors reading individual comments
-      }
     }
 
   } catch (err) {
@@ -77,17 +48,25 @@ async function detectAds() {
   const platform = 'x';
   console.log(`[AdDetector] Starting X (Twitter) Ad Detection...`);
 
-  // 1. Launch browser with session
-  const context = await getSocialContext(platform);
+  const args = process.argv.slice(2);
+  let sessionFile: string | undefined;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--session-file' && args[i + 1]) {
+      sessionFile = args[i + 1];
+      break;
+    }
+  }
+
+  const context = await getSocialContext(platform, 'default', sessionFile);
   trackContext(context);
   
   try {
     const page = context.pages()[0] ?? await context.newPage();
     console.log(`[AdDetector] Navigating to Home page...`);
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(5000); // Wait for initial tweets to load
+    await page.waitForTimeout(5000); 
 
-    const maxScrolls = 120; // Scroll 100 to 150 page heights
+    const maxScrolls = 2; 
     const detectedAds = new Set<string>();
 
     console.log(`[AdDetector] Starting scroll process (${maxScrolls} scrolls max)...`);
@@ -118,7 +97,7 @@ async function detectAds() {
             if (links.length > 0) {
                 const href = await links[0].getAttribute('href') || '';
                 tweetUrl = 'https://x.com' + href;
-                // Clean the URL (drop /analytics or /photo etc)
+                
                 tweetUrl = tweetUrl.split('/analytics')[0].split('/photo')[0].split('/video')[0];
             }
 
@@ -131,20 +110,15 @@ async function detectAds() {
               console.log(`Author: ${author}`);
               console.log(`Content Snippet: ${lines.slice(1, 4).join(' | ')}`);
               
-              // Extract metadata and comments using a new tab
               const details = await extractAdDetails(context, tweetUrl);
               console.log(`[Metadata] Date: ${details.date}`);
-              console.log(`[Metadata] Likes: ${details.likes}, Shares/Reposts: ${details.shares}, Comments: ${details.comments}, Views: ${details.views}`);
-              console.log(`[Comments Extracted]: ${details.extractedComments.length}`);
-              details.extractedComments.forEach((c, idx) => {
-                console.log(`  -> Comment ${idx + 1}: ${c.substring(0, 100)}...`);
-              });
+              console.log(`[Metadata] Likes: ${details.likes}, Shares/Reposts: ${details.shares}, Views: ${details.views}`);
               
               console.log(`======================================\n`);
             }
           }
         } catch (err) {
-          // Ignore transient errors
+          
         }
       }
 

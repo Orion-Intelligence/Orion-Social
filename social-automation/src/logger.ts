@@ -1,10 +1,4 @@
-/**
- * Minimal structured logger for the social-automation module.
- *
- * Security: This logger intentionally NEVER logs cookies, tokens, passwords,
- * or any credential material.  All methods accept only plain descriptive
- * strings and safe metadata objects.
- */
+
 export const logger = {
   info(message: string, meta?: Record<string, unknown>): void {
     const ts = new Date().toISOString();

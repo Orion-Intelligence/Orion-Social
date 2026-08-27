@@ -2,27 +2,12 @@ import type { Page } from 'playwright';
 import type { SocialPlatformAdapter, PublishPost } from '../types.js';
 import { ComposerError, MediaUploadError, PublishError } from '../errors.js';
 
-/**
- * Instagram publishing adapter.
- *
- * Instagram's web interface has limited posting capabilities compared to the
- * mobile app. The web composer supports image posts with captions.
- *
- * Workflow:
- *   1. Navigate to instagram.com
- *   2. Click the "New post" / create icon
- *   3. Upload image(s)
- *   4. Proceed through crop/filter steps
- *   5. Add caption text
- *   6. Click "Share"
- *   7. Verify publication
- */
 export class InstagramAdapter implements SocialPlatformAdapter {
   readonly platform = 'instagram' as const;
   readonly displayName = 'Instagram';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
   readonly supportedVideoExtensions = ['.mp4', '.mov'];
-  readonly maxImages = 10; // Instagram carousel supports up to 10.
+  readonly maxImages = 10; 
 
   async isAuthenticated(page: Page): Promise<boolean> {
     try {
@@ -53,10 +38,8 @@ export class InstagramAdapter implements SocialPlatformAdapter {
         timeout: 20_000,
       });
 
-      // Click the "New post" / create button in the sidebar navigation.
-      // Instagram's DOM overlays can intercept Playwright clicks, so we use evaluate to click directly.
       const clicked = await page.evaluate(() => {
-        // 1. Try finding by SVG label
+        
         const svg = document.querySelector('svg[aria-label="New post"], svg[aria-label="New Post"]');
         if (svg) {
           const clickable = svg.closest('a') || svg.closest('[role="link"]') || svg.closest('[role="button"]') || svg;
@@ -69,7 +52,6 @@ export class InstagramAdapter implements SocialPlatformAdapter {
           }
         }
         
-        // 2. Try finding by text "Create"
         const spans = Array.from(document.querySelectorAll('span, div'));
         const createEl = spans.find(el => el.textContent?.trim() === 'Create');
         if (createEl && createEl instanceof HTMLElement) {
@@ -84,14 +66,11 @@ export class InstagramAdapter implements SocialPlatformAdapter {
         throw new Error('Could not find the Create button in the Instagram DOM');
       }
 
-      // Briefly wait for any animations
       await page.waitForTimeout(1_000);
 
-      // In some Instagram web layouts, clicking Create opens a dropdown instead of the modal.
-      // We look for a visible "Post" option and click it.
       const clickedSubmenu = await page.evaluate(() => {
         const els = Array.from(document.querySelectorAll('span, div, a'));
-        // Find visible elements with exact text "Post"
+        
         const postEl = els.find(el => {
           if (el.textContent?.trim() !== 'Post') return false;
           const rect = el.getBoundingClientRect();
@@ -99,7 +78,7 @@ export class InstagramAdapter implements SocialPlatformAdapter {
         });
         
         if (postEl && postEl instanceof HTMLElement) {
-          // Find the closest clickable wrapper
+          
           const clickable = postEl.closest('a') || postEl.closest('[role="link"]') || postEl.closest('[role="button"]') || postEl;
           if (clickable instanceof HTMLElement) {
             clickable.click();
@@ -110,11 +89,10 @@ export class InstagramAdapter implements SocialPlatformAdapter {
       });
 
       if (clickedSubmenu) {
-        // Wait briefly for the modal animation
+        
         await page.waitForTimeout(1_000);
       }
 
-      // Wait for the "Create new post" dialog to appear.
       await page.waitForSelector(
         '[role="dialog"], div[aria-label="Create new post"], div[aria-label="Create new post"] >> visible=true',
         { state: 'visible', timeout: 10_000 },
@@ -127,8 +105,7 @@ export class InstagramAdapter implements SocialPlatformAdapter {
 
   async createPost(page: Page, post: PublishPost): Promise<void> {
     try {
-      // Instagram requires at least one image for standard posts.
-      // Upload images via the file input in the dialog.
+      
       const images = post.images ?? [];
 
       if (images.length > 0) {
@@ -136,11 +113,9 @@ export class InstagramAdapter implements SocialPlatformAdapter {
         await fileInput.waitFor({ state: 'attached', timeout: 5_000 });
         await fileInput.setInputFiles([...images]);
 
-        // Wait for image processing.
         await page.waitForTimeout(3_000);
       }
 
-      // Advance through crop/filter screens by clicking "Next".
       for (let step = 0; step < 2; step++) {
         const nextButton = page.locator(
           '[role="dialog"] button:has-text("Next"), ' +
@@ -154,7 +129,6 @@ export class InstagramAdapter implements SocialPlatformAdapter {
         }
       }
 
-      // Type the caption.
       const captionBox = page.locator(
         '[role="dialog"] [aria-label*="caption" i], ' +
         '[role="dialog"] [aria-label*="Write a caption" i], ' +
@@ -185,7 +159,6 @@ export class InstagramAdapter implements SocialPlatformAdapter {
       await shareButton.waitFor({ state: 'visible', timeout: 5_000 });
       await shareButton.click();
 
-      // Wait for the sharing process to complete.
       await page.waitForTimeout(5_000);
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
@@ -195,7 +168,7 @@ export class InstagramAdapter implements SocialPlatformAdapter {
 
   async verifyPublished(page: Page): Promise<{ success: boolean; postUrl?: string }> {
     try {
-      // Instagram shows "Post shared" or the dialog closes on success.
+      
       await page.waitForTimeout(2_000);
 
       const sharedText = await page.locator('text="Post shared"').isVisible().catch(() => false);
@@ -203,7 +176,6 @@ export class InstagramAdapter implements SocialPlatformAdapter {
 
       const success = sharedText || dialogGone;
 
-      // Try to get the post URL from a notification or the feed.
       const postUrl = await page.evaluate(() => {
         const links = document.querySelectorAll('a[href*="/p/"]');
         if (links.length > 0) {

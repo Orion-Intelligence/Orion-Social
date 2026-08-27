@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { MediaValidationError } from './errors.js';
 
-/** Upper file size limit (100 MB). Most platforms cap below this. */
 const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']);
@@ -15,12 +14,6 @@ export interface MediaFile {
   readonly type: 'image' | 'video';
 }
 
-/**
- * Validate that a media file exists, is readable, has a supported extension,
- * and is within a reasonable size limit.
- *
- * @throws {MediaValidationError} with an actionable message on failure.
- */
 export function validateMediaFile(
   filePath: string,
   supportedExtensions?: readonly string[],
@@ -28,19 +21,16 @@ export function validateMediaFile(
   const absolutePath = path.resolve(filePath);
   const ext = path.extname(absolutePath).toLowerCase();
 
-  // Existence check.
   if (!fs.existsSync(absolutePath)) {
     throw new MediaValidationError(`File does not exist: ${absolutePath}`);
   }
 
-  // Readable check.
   try {
     fs.accessSync(absolutePath, fs.constants.R_OK);
   } catch {
     throw new MediaValidationError(`File is not readable: ${absolutePath}`);
   }
 
-  // Extension check.
   const isImage = IMAGE_EXTENSIONS.has(ext);
   const isVideo = VIDEO_EXTENSIONS.has(ext);
   if (!isImage && !isVideo) {
@@ -50,7 +40,6 @@ export function validateMediaFile(
     );
   }
 
-  // Platform-specific extension check.
   if (supportedExtensions && !supportedExtensions.includes(ext)) {
     throw new MediaValidationError(
       `Extension "${ext}" is not supported by this platform. ` +
@@ -58,7 +47,6 @@ export function validateMediaFile(
     );
   }
 
-  // Size check.
   const stat = fs.statSync(absolutePath);
   if (stat.size === 0) {
     throw new MediaValidationError(`File is empty: ${absolutePath}`);
@@ -78,10 +66,6 @@ export function validateMediaFile(
   };
 }
 
-/**
- * Validate a batch of image file paths.
- * @throws {MediaValidationError} on the first invalid file.
- */
 export function validateImages(
   images: readonly string[],
   supportedExtensions: readonly string[],
@@ -95,10 +79,6 @@ export function validateImages(
   return images.map((img) => validateMediaFile(img, supportedExtensions));
 }
 
-/**
- * Validate a batch of video file paths.
- * @throws {MediaValidationError} on the first invalid file.
- */
 export function validateVideos(
   videos: readonly string[],
   supportedExtensions: readonly string[],

@@ -2,17 +2,6 @@ import type { Page } from 'playwright';
 import type { SocialPlatformAdapter, PublishPost } from '../types.js';
 import { ComposerError, MediaUploadError, PublishError } from '../errors.js';
 
-/**
- * LinkedIn publishing adapter.
- *
- * Workflow:
- *   1. Navigate to linkedin.com/feed
- *   2. Click "Start a post" button
- *   3. Type post text
- *   4. Upload images via file input
- *   5. Click "Post"
- *   6. Verify publication
- */
 export class LinkedInAdapter implements SocialPlatformAdapter {
   readonly platform = 'linkedin' as const;
   readonly displayName = 'LinkedIn';
@@ -29,11 +18,11 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
 
       return page.evaluate(() => {
         const url = window.location.href;
-        // LinkedIn redirects unauthenticated users to /login, /authwall, /signup, or /checkpoint for security checks.
+        
         if (url.includes('/login') || url.includes('/authwall') || url.includes('/signup') || url.includes('/checkpoint')) {
           return false;
         }
-        // Authenticated users see the global navigation bar, messaging tab, profile link, or the feed layout.
+        
         const globalNav = document.querySelector('#global-nav, .global-nav, .global-nav__me');
         const feedIdentity = document.querySelector('.feed-identity-module, .scaffold-layout');
         const messaging = document.querySelector('a[href*="/messaging/"]');
@@ -52,7 +41,6 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
         timeout: 20_000,
       });
 
-      // Click "Start a post" button to open the share modal.
       const startPostButton = page.locator(
         'button:has-text("Start a post"), ' +
         'button.share-box-feed-entry__trigger, ' +
@@ -62,7 +50,6 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
       await startPostButton.waitFor({ state: 'visible', timeout: 10_000 });
       await startPostButton.click();
 
-      // Wait for the share modal to open.
       await page.waitForSelector(
         '[role="dialog"] .ql-editor, ' +
         '.share-creation-state__text-editor .ql-editor, ' +
@@ -77,7 +64,7 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
 
   async createPost(page: Page, post: PublishPost): Promise<void> {
     try {
-      // Type into the Quill-based editor or contenteditable textbox.
+      
       const editor = page.locator(
         '[role="dialog"] .ql-editor, ' +
         '[role="dialog"] [role="textbox"]',
@@ -110,10 +97,9 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
       await postButton.waitFor({ state: 'visible', timeout: 5_000 });
       await postButton.click();
 
-      // Wait for the modal to close.
       await page.waitForSelector('[role="dialog"]', { state: 'detached', timeout: 30_000 })
         .catch(() => {
-          // Modal may have closed quickly.
+          
         });
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
@@ -130,7 +116,6 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
         return { success: false };
       }
 
-      // Attempt to find the latest post URL.
       const postUrl = await page.evaluate(() => {
         const links = document.querySelectorAll(
           'a[href*="/feed/update/"], a[href*="/posts/"]',
@@ -149,15 +134,15 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
 
   private async uploadMedia(page: Page, files: readonly string[]): Promise<void> {
     try {
-      // Click the image/media button in the share dialog.
+      
       const mediaButton = page.locator(
         '[role="dialog"] button[aria-label*="image" i], ' +
         '[role="dialog"] button[aria-label*="photo" i], ' +
         '[role="dialog"] button[aria-label*="media" i]',
       ).first();
 
-      await mediaButton.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => { /* continue */ });
-      await mediaButton.click().catch(() => { /* file input may already be available */ });
+      await mediaButton.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {  });
+      await mediaButton.click().catch(() => {  });
 
       const fileInput = page.locator('[role="dialog"] input[type="file"]').first();
       await fileInput.waitFor({ state: 'attached', timeout: 5_000 });

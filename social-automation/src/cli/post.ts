@@ -1,13 +1,4 @@
 #!/usr/bin/env node
-/**
- * CLI: publish a post to one or more social platforms.
- *
- * Usage:
- *   npm run social:post -- --platform facebook,x --text "Hello from Orion"
- *   npm run social:post -- --platform facebook --text-file post.txt
- *   npm run social:post -- --platform facebook --text "Update" --image ./photo.jpg
- *   npm run social:post -- --platform facebook,x --text "Test" --dry-run
- */
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,16 +13,18 @@ interface PostArgs {
   text: string;
   images: string[];
   dryRun: boolean;
+  sessionFile?: string;
 }
 
 function parseArgs(argv: string[]): PostArgs {
-  const args = argv.slice(2); // Drop node + script path.
+  const args = argv.slice(2); 
 
   let rawPlatform = '';
   let text = '';
   let textFile = '';
   const images: string[] = [];
   let dryRun = false;
+  let sessionFile: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i] ?? '';
@@ -74,13 +67,20 @@ function parseArgs(argv: string[]): PostArgs {
         dryRun = true;
         break;
 
+      case '--session-file':
+        if (!next) {
+          exitUsage('Missing value for --session-file');
+        }
+        sessionFile = next;
+        i++;
+        break;
+
       default:
-        // Skip unknown args gracefully (tsx may inject some).
+        
         break;
     }
   }
 
-  // Resolve text.
   if (textFile) {
     const filePath = path.resolve(textFile);
     if (!fs.existsSync(filePath)) {
@@ -98,7 +98,6 @@ function parseArgs(argv: string[]): PostArgs {
     exitUsage('At least one platform is required (--platform)');
   }
 
-  // Parse and validate platforms.
   const platformNames = rawPlatform.split(',').map((p) => p.trim().toLowerCase());
   const platforms: SocialPlatformName[] = [];
   for (const name of platformNames) {
@@ -111,7 +110,7 @@ function parseArgs(argv: string[]): PostArgs {
     platforms.push(name);
   }
 
-  return { platforms, text, images, dryRun };
+  return { platforms, text, images, dryRun, sessionFile };
 }
 
 function exitUsage(error: string): never {
@@ -128,7 +127,7 @@ function exitUsage(error: string): never {
 }
 
 async function main(): Promise<void> {
-  const { platforms, text, images, dryRun } = parseArgs(process.argv);
+  const { platforms, text, images, dryRun, sessionFile } = parseArgs(process.argv);
 
   if (dryRun) {
     logger.info('DRY RUN mode – posts will NOT be published');
@@ -143,9 +142,8 @@ async function main(): Promise<void> {
   const publisher = new SocialPublisher();
 
   try {
-    const results = await publisher.publish(post, { dryRun });
+    const results = await publisher.publish(post, { dryRun, sessionFile });
 
-    // Print results.
     console.log('\n═══════════════════════════════════');
     console.log(dryRun ? ' DRY RUN RESULTS' : ' PUBLISH RESULTS');
     console.log('═══════════════════════════════════\n');
@@ -163,7 +161,7 @@ async function main(): Promise<void> {
       }
       if (result.error) {
         console.log(`   Reason: ${result.error}`);
-        // Extract actionable hint from the error.
+        
         if (result.error.includes('AUTHENTICATION')) {
           console.log(`   Action: Provide a new session file for ${result.platform} from Orion Intelligence.`);
         }

@@ -15,8 +15,6 @@ export class FacebookPlatform implements SocialPlatform {
         });
       }
 
-      // The most reliable way to check Facebook authentication is the presence of the c_user cookie.
-      // If the session was invalidated, Facebook clears this cookie.
       const cookies = await page.context().cookies();
       const hasCUser = cookies.some(c => c.name === 'c_user');
       
@@ -24,7 +22,6 @@ export class FacebookPlatform implements SocialPlatform {
         return true;
       }
 
-      // Fallback to DOM evaluation just in case
       const authenticated = await page.evaluate(() => {
         const url = window.location.href;
         if (url.includes('/login') || url.includes('/reg') || url.includes('/r.php')) {

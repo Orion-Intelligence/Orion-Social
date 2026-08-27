@@ -5,7 +5,6 @@ import { InstagramAdapter } from './instagram.js';
 import { LinkedInAdapter } from './linkedin.js';
 import { InvalidPlatformError } from '../../errors.js';
 
-/** Immutable map of platform name → publishing adapter. */
 const entries: [SocialPlatformName, SocialPlatformAdapter][] = [
   ['facebook', new FacebookAdapter()],
   ['x', new XAdapter()],
@@ -14,10 +13,6 @@ const entries: [SocialPlatformName, SocialPlatformAdapter][] = [
 ];
 const adapters: ReadonlyMap<SocialPlatformName, SocialPlatformAdapter> = new Map(entries);
 
-/**
- * Retrieve the publishing adapter for a platform.
- * @throws {InvalidPlatformError} if the platform is not registered.
- */
 export function getAdapter(platform: string): SocialPlatformAdapter {
   const adapter = adapters.get(platform.toLowerCase() as SocialPlatformName);
   if (!adapter) {
@@ -26,7 +21,6 @@ export function getAdapter(platform: string): SocialPlatformAdapter {
   return adapter;
 }
 
-/** Return all registered adapter instances. */
 export function getAllAdapters(): readonly SocialPlatformAdapter[] {
   return [...adapters.values()];
 }

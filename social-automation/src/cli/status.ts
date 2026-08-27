@@ -1,13 +1,4 @@
 #!/usr/bin/env node
-/**
- * CLI: check social-platform session status.
- *
- * Usage:
- *   npm run social:status                          # Show all platforms
- *   npm run social:status -- --platform facebook   # Show single platform
- *
- * Output contains ONLY safe information (no cookies, tokens, or credentials).
- */
 
 import { getSessionStatus } from '../session/manager.js';
 import { listPlatforms } from '../platforms/registry.js';
@@ -49,7 +40,6 @@ async function showAllPlatforms(userId: string): Promise<void> {
 
   console.log(`\n— Session Status (All Platforms, User: ${userId}) —\n`);
 
-  // Table header.
   const header = 'Platform'.padEnd(16) + 'Authenticated';
   console.log(header);
   console.log('─'.repeat(header.length));

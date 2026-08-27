@@ -2,16 +2,6 @@ import type { Page } from 'playwright';
 import type { SocialPlatformAdapter, PublishPost } from '../types.js';
 import { ComposerError, MediaUploadError, PublishError } from '../errors.js';
 
-/**
- * X (Twitter) publishing adapter.
- *
- * Workflow:
- *   1. Navigate to x.com/compose/post (or click compose button)
- *   2. Type tweet text
- *   3. Upload images via file input
- *   4. Click "Post"
- *   5. Verify publication
- */
 export class XAdapter implements SocialPlatformAdapter {
   readonly platform = 'x' as const;
   readonly displayName = 'X (Twitter)';
@@ -25,7 +15,7 @@ export class XAdapter implements SocialPlatformAdapter {
         waitUntil: 'domcontentloaded',
         timeout: 15_000,
       });
-      // Wait for React to mount the SPA
+      
       await page.waitForTimeout(3_000);
 
       return page.evaluate(() => {
@@ -44,13 +34,12 @@ export class XAdapter implements SocialPlatformAdapter {
 
   async openComposer(page: Page): Promise<void> {
     try {
-      // Navigate to the compose URL directly — most reliable.
+      
       await page.goto('https://x.com/compose/post', {
         waitUntil: 'domcontentloaded',
         timeout: 15_000,
       });
 
-      // Wait for the compose textbox to appear.
       await page.waitForSelector(
         '[data-testid="tweetTextarea_0"], [role="textbox"][data-testid="tweetTextarea_0"]',
         { state: 'visible', timeout: 10_000 },
@@ -67,7 +56,6 @@ export class XAdapter implements SocialPlatformAdapter {
       await textbox.waitFor({ state: 'visible', timeout: 5_000 });
       await textbox.click();
 
-      // X's textbox is a contenteditable div; type character-by-character for reliability.
       await page.keyboard.type(post.text, { delay: 10 });
 
       if (post.images && post.images.length > 0) {
@@ -88,7 +76,6 @@ export class XAdapter implements SocialPlatformAdapter {
       await postButton.waitFor({ state: 'visible', timeout: 5_000 });
       await postButton.click();
 
-      // Wait for the composer to close / navigation to happen.
       await page.waitForTimeout(3_000);
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
@@ -98,16 +85,15 @@ export class XAdapter implements SocialPlatformAdapter {
 
   async verifyPublished(page: Page): Promise<{ success: boolean; postUrl?: string }> {
     try {
-      // After posting, X typically navigates away from the compose URL or shows a toast.
+      
       await page.waitForTimeout(2_000);
 
       const url = page.url();
-      // If we're no longer on the compose page, the post likely went through.
+      
       const composerDismissed = !url.includes('/compose/');
 
-      // Try to find the post URL from a success toast or the timeline.
       const postUrl = await page.evaluate(() => {
-        // X sometimes shows a "Your post was sent" toast with a "View" link.
+        
         const toast = document.querySelector('[data-testid="toast"] a[href*="/status/"]');
         if (toast) {
           return (toast as HTMLAnchorElement).href;
@@ -127,7 +113,6 @@ export class XAdapter implements SocialPlatformAdapter {
       await fileInput.waitFor({ state: 'attached', timeout: 5_000 });
       await fileInput.setInputFiles([...files]);
 
-      // Wait for upload thumbnails to appear.
       await page.waitForTimeout(2_000);
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);

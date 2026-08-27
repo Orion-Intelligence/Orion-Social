@@ -1,7 +1,4 @@
-/**
- * Base class for all social-automation errors.
- * Provides a machine-readable `code` property for programmatic handling.
- */
+
 export class SocialAutomationError extends Error {
   public readonly code: string;
 
@@ -12,7 +9,6 @@ export class SocialAutomationError extends Error {
   }
 }
 
-/** The requested platform identifier is not registered. */
 export class InvalidPlatformError extends SocialAutomationError {
   constructor(platform: string) {
     super(
@@ -23,7 +19,6 @@ export class InvalidPlatformError extends SocialAutomationError {
   }
 }
 
-/** The profile directory for a platform does not exist or cannot be accessed. */
 export class ProfileNotFoundError extends SocialAutomationError {
   constructor(platform: string, profilePath: string) {
     super(
@@ -34,7 +29,6 @@ export class ProfileNotFoundError extends SocialAutomationError {
   }
 }
 
-/** The persisted session is no longer valid (cookies expired, logged out, etc.). */
 export class SessionExpiredError extends SocialAutomationError {
   constructor(platform: string) {
     super(
@@ -46,7 +40,6 @@ export class SessionExpiredError extends SocialAutomationError {
   }
 }
 
-/** Authentication was not completed within the allowed timeout. */
 export class LoginTimeoutError extends SocialAutomationError {
   constructor(platform: string) {
     super(
@@ -58,7 +51,6 @@ export class LoginTimeoutError extends SocialAutomationError {
   }
 }
 
-/** The Playwright browser binary could not be found or launched. */
 export class BrowserLaunchError extends SocialAutomationError {
   constructor(reason: string) {
     super(
@@ -70,7 +62,6 @@ export class BrowserLaunchError extends SocialAutomationError {
   }
 }
 
-/** A page navigation timed out. */
 export class NavigationTimeoutError extends SocialAutomationError {
   constructor(url: string, reason: string) {
     super(

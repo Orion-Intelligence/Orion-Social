@@ -1,6 +1,5 @@
 import { SocialAutomationError } from '../errors.js';
 
-/** The session is not authenticated for the target platform. */
 export class AuthenticationError extends SocialAutomationError {
   constructor(platform: string) {
     super(
@@ -12,7 +11,6 @@ export class AuthenticationError extends SocialAutomationError {
   }
 }
 
-/** The post composer could not be opened or is in an unexpected state. */
 export class ComposerError extends SocialAutomationError {
   constructor(platform: string, detail: string) {
     super(
@@ -23,7 +21,6 @@ export class ComposerError extends SocialAutomationError {
   }
 }
 
-/** A media file failed validation (missing, unsupported, too large, etc.). */
 export class MediaValidationError extends SocialAutomationError {
   constructor(detail: string) {
     super('MEDIA_VALIDATION_ERROR', detail);
@@ -31,7 +28,6 @@ export class MediaValidationError extends SocialAutomationError {
   }
 }
 
-/** Media upload failed during the publish workflow. */
 export class MediaUploadError extends SocialAutomationError {
   constructor(platform: string, detail: string) {
     super(
@@ -42,7 +38,6 @@ export class MediaUploadError extends SocialAutomationError {
   }
 }
 
-/** The publish button click or submission failed. */
 export class PublishError extends SocialAutomationError {
   constructor(platform: string, detail: string) {
     super(
@@ -53,7 +48,6 @@ export class PublishError extends SocialAutomationError {
   }
 }
 
-/** Post-publish verification could not confirm the post was created. */
 export class VerificationError extends SocialAutomationError {
   constructor(platform: string, detail: string) {
     super(

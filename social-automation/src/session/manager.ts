@@ -13,16 +13,6 @@ import {
 import { getPlatform } from '../platforms/registry.js';
 import type { SessionStatus } from '../platforms/types.js';
 
-// ---------------------------------------------------------------------------
-// Browser lifecycle
-// ---------------------------------------------------------------------------
-
-/**
- * Launch Chromium with optional persistent profile.
- *
- * When `userDataDir` is provided Playwright uses `launchPersistentContext`
- * which persists cookies, localStorage, and IndexedDB across sessions.
- */
 async function launchBrowser(
   platformName: string,
   options: { headless: boolean }
@@ -42,14 +32,6 @@ async function launchBrowser(
   }
 }
 
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
-/**
- * Helper to find the latest session file for a platform
- */
 function findSessionFile(platformName: string): string | null {
   const sessionsDir = Config.sessionsBaseDir;
   if (!fs.existsSync(sessionsDir)) return null;
@@ -66,18 +48,13 @@ function findSessionFile(platformName: string): string | null {
   return null;
 }
 
-/**
- * Launch an ephemeral browser context loaded with the session cookies.
- *
- * @throws {ProfileNotFoundError} if no session file exists.
- * @throws {SessionExpiredError} if the stored session is no longer valid.
- */
 export async function getSocialContext(
   platformName: string,
-  userId: string = 'default'
+  userId: string = 'default',
+  sessionFile?: string
 ): Promise<BrowserContext> {
   const platform = getPlatform(platformName);
-  const sessionPath = findSessionFile(platform.name);
+  const sessionPath = sessionFile || findSessionFile(platform.name);
 
   if (!sessionPath) {
     throw new ProfileNotFoundError(platform.name, 'sessions folder');
@@ -85,7 +62,6 @@ export async function getSocialContext(
 
   logger.info(`Loading session for ${platform.displayName} (User: ${userId})`);
 
-  // Load and sanitize cookies
   const content = fs.readFileSync(sessionPath, 'utf-8');
   let cookies = JSON.parse(content);
   if (!Array.isArray(cookies)) {
@@ -114,14 +90,12 @@ export async function getSocialContext(
   const context = await browser.newContext({ viewport: null });
   await context.addCookies(sanitizedCookies);
 
-  // Monkey-patch context.close to also close the browser
   const originalClose = context.close.bind(context);
   context.close = async () => {
     await originalClose();
     await browser.close();
   };
 
-  // Verify the session is still valid.
   try {
     const page = context.pages()[0] ?? await context.newPage();
     const valid = await platform.isAuthenticated(page);
@@ -135,47 +109,38 @@ export async function getSocialContext(
   }
 }
 
-/**
- * Convenience wrapper: open context and return its first page.
- * Caller is responsible for closing the context via `page.context().close()`.
- */
 export async function getSocialPage(
   platformName: string,
+  userId: string = 'default',
+  sessionFile?: string
 ): Promise<Page> {
-  const context = await getSocialContext(platformName);
+  const context = await getSocialContext(platformName, userId, sessionFile);
   return context.pages()[0] ?? await context.newPage();
 }
 
-/**
- * Convenience wrapper: launch a full browser bound to the platform profile.
- * Returns the browser instance. Caller manages its lifecycle.
- */
 export async function getSocialBrowser(
   platformName: string,
 ): Promise<Browser> {
-  // Validate platform first.
+  
   getPlatform(platformName);
   return launchBrowser(platformName, { headless: Config.headless });
 }
 
-/**
- * Retrieve safe session-status information for a platform.
- * Never exposes cookies, tokens, or credentials.
- */
 export async function getSessionStatus(
   platformName: string,
-  userId: string = 'default'
+  userId: string = 'default',
+  sessionFile?: string
 ): Promise<SessionStatus> {
   const platform = getPlatform(platformName);
-  const sessionPath = findSessionFile(platform.name);
+  const sessionPath = sessionFile || findSessionFile(platform.name);
   const configured = sessionPath !== null;
 
   let authenticated = false;
   if (configured) {
     let context: BrowserContext | null = null;
     try {
-      context = await getSocialContext(platformName, userId);
-      // If getSocialContext succeeds, it means it's authenticated.
+      context = await getSocialContext(platformName, userId, sessionFile);
+      
       authenticated = true;
     } catch {
       authenticated = false;
@@ -194,13 +159,6 @@ export async function getSessionStatus(
   };
 }
 
-// ---------------------------------------------------------------------------
-// External Session Injection (Extension Integration)
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/** Close a browser context, swallowing errors during shutdown. */
 async function safeClose(context: BrowserContext): Promise<void> {
   try {
     await context.close();

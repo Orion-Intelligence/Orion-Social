@@ -16,21 +16,8 @@ import type {
   SocialPlatformName,
 } from './types.js';
 
-/**
- * Orchestrate publishing a single post across one or more social platforms.
- *
- * The publisher:
- *   - Validates the post and media upfront.
- *   - Iterates over requested platforms independently (one failure does not abort others).
- *   - Tracks each operation for idempotency.
- *   - Never exposes credentials in results.
- *   - Supports dry-run mode.
- */
 export class SocialPublisher {
-  /**
-   * Publish a post to all requested platforms.
-   * Returns one result per platform; failures do not abort remaining platforms.
-   */
+  
   async publish(
     post: PublishPost,
     options: PublishOptions = {},
@@ -61,10 +48,9 @@ export class SocialPublisher {
     let context: BrowserContext | null = null;
 
     try {
-      // 1. Get the adapter.
+      
       const adapter = getAdapter(platformName);
 
-      // 2. Validate media upfront if provided.
       if (post.images && post.images.length > 0) {
         validateImages(
           post.images,
@@ -75,13 +61,11 @@ export class SocialPublisher {
 
       logger.info(`[${platformName}] Opening persistent profile (User: ${userId})`);
 
-      // 3. Launch ephemeral context using session JSON.
-      context = await getSocialContext(platformName, userId);
+      context = await getSocialContext(platformName, userId, options.sessionFile);
       trackContext(context);
 
       const page = context.pages()[0] ?? await context.newPage();
 
-      // 4. Verify authentication.
       logger.info(`[${platformName}] Verifying authentication`);
       const authenticated = await adapter.isAuthenticated(page);
       if (!authenticated) {
@@ -89,16 +73,13 @@ export class SocialPublisher {
       }
       logger.info(`[${platformName}] Authenticated ✔`);
 
-      // 5. Open the composer.
       logger.info(`[${platformName}] Opening composer`);
       operation.status = 'publishing';
       await adapter.openComposer(page);
 
-      // 6. Create the post content.
       logger.info(`[${platformName}] Creating post content`);
       await adapter.createPost(page, post);
 
-      // 7. Dry-run check: stop before actually publishing.
       if (options.dryRun) {
         logger.info(`[${platformName}] DRY RUN – skipping publish`);
         operation.status = 'success';
@@ -110,11 +91,9 @@ export class SocialPublisher {
         };
       }
 
-      // 8. Publish.
       logger.info(`[${platformName}] Publishing…`);
       await adapter.publishPost(page);
 
-      // 9. Verify publication.
       logger.info(`[${platformName}] Verifying publication`);
       const verification = await adapter.verifyPublished(page);
 
@@ -125,7 +104,7 @@ export class SocialPublisher {
           postUrl: verification.postUrl ?? '(URL not available)',
         });
       } else {
-        // Uncertain state – do NOT retry to avoid duplicates.
+        
         operation.status = 'verification_failed';
         throw new VerificationError(
           platformName,

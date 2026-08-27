@@ -17,14 +17,14 @@ export class InstagramPlatform implements SocialPlatform {
 
       const authenticated = await page.evaluate(() => {
         const url = window.location.href;
-        // Unauthenticated users are redirected to the login page.
+        
         if (url.includes('/accounts/login')) {
           return false;
         }
-        // Authenticated users see navigation with profile, search, and create icons.
+        
         const navProfile = document.querySelector('a[href*="/direct/"] , svg[aria-label="Home"]');
         const createIcon = document.querySelector('svg[aria-label="New post"]');
-        // Fallback: check for the navigation bar that only appears when logged in.
+        
         const navBar = document.querySelector('nav[role="navigation"]');
         return navProfile !== null || createIcon !== null || navBar !== null;
       });
