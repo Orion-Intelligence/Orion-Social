@@ -87,7 +87,10 @@ export async function getSocialContext(
   });
 
   const browser = await launchBrowser(platform.name, { headless: Config.headless });
-  const context = await browser.newContext({ viewport: null });
+  const context = await browser.newContext({ 
+    viewport: null,
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+  });
   await context.addCookies(sanitizedCookies);
 
   const originalClose = context.close.bind(context);

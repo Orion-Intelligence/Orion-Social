@@ -75,8 +75,6 @@ export class XAdapter implements SocialPlatformAdapter {
       const postButton = page.locator('[data-testid="tweetButton"], [data-testid="tweetButtonInline"]').first();
       await postButton.waitFor({ state: 'visible', timeout: 5_000 });
       await postButton.click();
-
-      await page.waitForTimeout(3_000);
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
       throw new PublishError(this.platform, detail);
@@ -85,15 +83,14 @@ export class XAdapter implements SocialPlatformAdapter {
 
   async verifyPublished(page: Page): Promise<{ success: boolean; postUrl?: string }> {
     try {
-      
-      await page.waitForTimeout(2_000);
+      await page.waitForFunction(() => {
+        return !window.location.href.includes('/compose/') || document.querySelector('[data-testid="toast"]') !== null;
+      }, { timeout: 20_000 }).catch(() => {});
 
       const url = page.url();
-      
       const composerDismissed = !url.includes('/compose/');
 
       const postUrl = await page.evaluate(() => {
-        
         const toast = document.querySelector('[data-testid="toast"] a[href*="/status/"]');
         if (toast) {
           return (toast as HTMLAnchorElement).href;
