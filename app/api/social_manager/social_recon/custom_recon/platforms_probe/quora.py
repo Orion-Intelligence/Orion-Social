@@ -17,3 +17,9 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if not parse.title(body):
         return VerdictConstants.UNKNOWN, {}
     return VerdictConstants.EXISTS, parse.social_info(body, QuoraConstants.AVATAR_KEYS, QuoraConstants.COVER_KEYS)
+
+ROUTES = (
+    (r"profile/(?P<id>[^/]+)(?:/.*)?", "profile"),
+    (r"q/(?P<id>[^/]+)(?:/.*)?", "space"),
+    (r"(?P<id>[^/]+)", "question"),
+)

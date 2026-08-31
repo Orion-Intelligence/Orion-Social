@@ -20,7 +20,10 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     info = {
         "display_name": parse.text(payload.get("author_name")),
         "avatar": parse.text(payload.get("thumbnail_url")),
-        "title": parse.text(payload.get("title")),
-        "image_note": "" if payload.get("thumbnail_url") else TikTokConstants.IMAGE_NOTE,
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+ROUTES = (
+    (r"@(?P<id>[^/]+)/video/\d+", "post"),
+    (r"@(?P<id>[^/]+)", "profile"),
+)

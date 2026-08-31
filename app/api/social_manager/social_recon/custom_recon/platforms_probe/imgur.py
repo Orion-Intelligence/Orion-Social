@@ -1,0 +1,33 @@
+import api.social_manager.social_recon.custom_recon.core.parse as parse
+from api.social_manager.social_recon.constants.custom_recon_constants import VerdictConstants
+from api.social_manager.social_recon.constants.platform_constants import ImgurConstants
+
+constants = ImgurConstants
+
+
+def probe_url(username: str) -> str:
+    return ImgurConstants.API_URL.format(username=username)
+
+
+def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
+    if status == 404:
+        return VerdictConstants.ABSENT, {}
+    if status != 200:
+        return VerdictConstants.UNKNOWN, {}
+    payload = parse.as_json(body)
+    if not isinstance(payload, dict) or not payload.get("username"):
+        return VerdictConstants.UNKNOWN, {}
+    info = {
+        "display_name": parse.text(payload.get("username")),
+        "description": parse.text(payload.get("bio")),
+        "avatar": parse.text(payload.get("avatar_url")),
+        "cover": parse.text(payload.get("cover_url")),
+        "id": parse.text(payload.get("id")),
+        "created_at": parse.text(payload.get("created_at")),
+    }
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+ROUTES = (
+    ("(?:gallery|a)/(?P<id>[^/]+)", "post"),
+    ("user/(?P<id>[^/]+)(?:/.*)?", "profile"),
+)

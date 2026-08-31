@@ -10,11 +10,23 @@ def probe_url(username: str) -> str:
 
 
 def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
-    if status == 404:
-        return VerdictConstants.ABSENT, {}
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
-    heading = parse.title(body)
-    if not heading or heading.casefold() in LinkedInConstants.GENERIC:
+    payload = parse.as_json(body)
+    matches = payload.get("matches") if isinstance(payload, dict) else None
+    if not matches:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, LinkedInConstants.AVATAR_KEYS, LinkedInConstants.COVER_KEYS)
+    first = matches[0] if isinstance(matches[0], dict) else {}
+    info = {
+        "display_name": parse.text(first.get("title")),
+        "description": parse.text(first.get("body")),
+        "avatar": parse.text(first.get("image")),
+    }
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+ROUTES = (
+    ("in/(?P<id>[^/]+)(?:/.*)?", "profile"),
+    ("company/(?P<id>[^/]+)(?:/.*)?", "page"),
+    (r"groups/(?P<id>\d+)(?:/.*)?", "group"),
+    ("posts/(?P<id>[^/]+)", "post"),
+)

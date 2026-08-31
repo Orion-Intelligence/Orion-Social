@@ -39,3 +39,8 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         "followers": parse.text(followers.get("totalCount") if isinstance(followers, dict) else None),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+ROUTES = (
+    (r"videos/(?P<id>\d+)", "video"),
+    (r"(?P<id>[^/]+)(?:/.*)?", "profile"),
+)

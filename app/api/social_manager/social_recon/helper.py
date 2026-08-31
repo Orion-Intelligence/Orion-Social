@@ -59,3 +59,16 @@ class helper:
                 seen_urls.add(url)
             out.append(item)
         return out
+
+    FLAT_FIELDS = ("platform", "username", "url", "target_type", "entity_type", "status", "timestamp", "description", "avatar")
+
+    @classmethod
+    def _flatten(cls, item: dict) -> dict:
+        metadata = (item or {}).get("metadata") or {}
+        ids = (((item or {}).get("data") or {}).get("platform_profile") or {}).get("ids") or {}
+        merged = {**ids, **metadata}
+        return {key: merged[key] for key in cls.FLAT_FIELDS if merged.get(key) not in (None, "", [], {})}
+
+    @classmethod
+    def _flatten_results(cls, results: list) -> list:
+        return [cls._flatten(item) for item in results or []]

@@ -103,9 +103,13 @@ class PlatformProbe(_ProbeBase):
             profile_url = profile_template.format(username=ReconProbeConstants.SAMPLE_USERNAME)
             self._require_https_url(profile_url, "PROFILE_URL")
             supported = getattr(constant_class, "SUPPORTED", True)
-            details = {"module": module_name, "name": name, "supported": bool(supported), "profile_url": profile_url}
+            crawl_type = getattr(constant_class, "CRAWL_TYPE", "normal")
+            details = {"module": module_name, "name": name, "supported": bool(supported), "crawl_type": crawl_type, "profile_url": profile_url}
 
-            if not supported:
+            if crawl_type == "unverified":
+                if not getattr(module, "ROUTES", ()) and not getattr(module, "SUBDOMAIN", None):
+                    raise ValueError("unverified modules must define ROUTES or SUBDOMAIN")
+            elif not supported:
                 reason = getattr(constant_class, "REASON", "")
                 if not isinstance(reason, str) or not reason.strip():
                     raise ValueError("unsupported modules must define REASON")

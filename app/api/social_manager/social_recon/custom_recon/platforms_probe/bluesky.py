@@ -29,10 +29,14 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         "avatar": parse.text(payload.get("avatar")),
         "cover": parse.text(payload.get("banner")),
         "id": parse.text(payload.get("did")),
-        "handle": parse.text(payload.get("handle")),
         "followers": parse.text(payload.get("followersCount")),
         "following": parse.text(payload.get("followsCount")),
         "posts": parse.text(payload.get("postsCount")),
         "created_at": parse.text(payload.get("createdAt")),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+ROUTES = (
+    (r"profile/(?P<id>[^/]+)/post/[^/]+", "post"),
+    (r"profile/(?P<id>[^/]+)", "profile"),
+)

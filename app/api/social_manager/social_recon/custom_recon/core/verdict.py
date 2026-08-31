@@ -12,3 +12,4 @@ class ProfileCheck:
     reason: str = ""
     status_code: int | None = None
     final_url: str = ""
+    target_type: str = "profile"
