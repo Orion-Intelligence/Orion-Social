@@ -20,7 +20,9 @@ services:
       - "8020:8020"
     volumes:
       - ./app/api:/app/api:cached
+      - ./app/raw:/app/raw:cached
       - ./sessions:/app/sessions:cached
+      - ./social-automation:/app/social-automation:cached
 
     deploy:
       resources:

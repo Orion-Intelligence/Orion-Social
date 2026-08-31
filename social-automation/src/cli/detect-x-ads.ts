@@ -66,7 +66,7 @@ async function detectAds() {
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(5000); 
 
-    const maxScrolls = 2; 
+    const maxScrolls = 50;
     const detectedAds = new Set<string>();
 
     console.log(`[AdDetector] Starting scroll process (${maxScrolls} scrolls max)...`);

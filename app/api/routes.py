@@ -3,7 +3,7 @@ import hashlib
 import hmac
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, BackgroundTasks
 
 from api.orion.model.social_request_model import DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest, DuckDuckGoUsernamesRequest, HateSpeechRequest, SocialReconRequest
 from api.orion.services.shared.hate_speech_classifier import HateSpeechResult, hate_speech_classifier
@@ -22,6 +22,35 @@ class SocialRoutes:
         self.router.add_api_route("/social/online/images", self.online_images, methods=["POST"])
         self.router.add_api_route("/social/metadata", self.metadata, methods=["POST"])
         self.router.add_api_route("/social/hate-speech", self.classify_hate_speech, methods=["POST"], response_model=HateSpeechResult)
+        self.router.add_api_route("/social/automation/post", self.trigger_post, methods=["POST"])
+        self.router.add_api_route("/social/automation/ad-monitor", self.trigger_ad_monitor, methods=["POST"])
+
+    async def run_background_automation(self, cmd_args: list, callback_url: str, token: str):
+        import asyncio
+        import httpx
+        try:
+            process = await asyncio.create_subprocess_exec(
+                "npm", *cmd_args,
+                cwd="/app/social-automation",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await process.communicate()
+            output = stdout.decode('utf-8', errors='replace') if stdout else ""
+            error = stderr.decode('utf-8', errors='replace') if stderr else ""
+            
+            if callback_url:
+                headers = {"x-orion-internal-token": token} if token else {}
+                async with httpx.AsyncClient() as client:
+                    await client.post(callback_url, json={"status": "complete", "output": output, "error": error}, headers=headers, timeout=10.0)
+        except Exception as e:
+            if callback_url:
+                headers = {"x-orion-internal-token": token} if token else {}
+                try:
+                    async with httpx.AsyncClient() as client:
+                        await client.post(callback_url, json={"status": "failed", "error": str(e)}, headers=headers, timeout=10.0)
+                except Exception:
+                    pass
 
     async def require_internal_request(self, request: Request) -> None:
         expected = env_handler.get_instance().env("ORION_SOCIAL_INTERNAL_TOKEN", "").strip()
@@ -65,3 +94,61 @@ class SocialRoutes:
 
     async def classify_hate_speech(self, payload: HateSpeechRequest) -> HateSpeechResult:
         return await asyncio.to_thread(hate_speech_classifier.classify, payload.text)
+
+    async def trigger_post(self, request: Request, background_tasks: BackgroundTasks) -> Any:
+        import tempfile
+        import json
+        import httpx
+        
+        data = await request.json()
+        session_state = data.get("session_state")
+        platform = data.get("platform")
+        text = data.get("text")
+        image_url = data.get("image_url")
+        callback_url = data.get("callback_url")
+        token = request.headers.get("x-orion-internal-token", "")
+        
+        if not session_state or not platform or not text:
+            raise HTTPException(status_code=400, detail="session_state, platform, and text are required")
+            
+        session_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode='w')
+        json.dump(session_state, session_file)
+        session_file.close()
+        
+        cmd_args = ["run", "social:post", "--", "--session-file", session_file.name, "--platform", platform, "--text", text]
+        
+        if image_url:
+            image_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+            image_file.close()
+            async with httpx.AsyncClient(follow_redirects=True) as client:
+                img_resp = await client.get(image_url, timeout=15.0)
+                if img_resp.status_code == 200:
+                    with open(image_file.name, 'wb') as f:
+                        f.write(img_resp.content)
+                    cmd_args.extend(["--image", image_file.name])
+                    
+        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token)
+        return {"status": "started"}
+
+    async def trigger_ad_monitor(self, request: Request, background_tasks: BackgroundTasks) -> Any:
+        import tempfile
+        import json
+        
+        data = await request.json()
+        session_state = data.get("session_state")
+        platform = data.get("platform")
+        callback_url = data.get("callback_url")
+        token = request.headers.get("x-orion-internal-token", "")
+
+        if not session_state or not platform:
+            raise HTTPException(status_code=400, detail="session_state and platform are required")
+            
+        session_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode='w')
+        json.dump(session_state, session_file)
+        session_file.close()
+        
+        script = "social:detect-ig-ads" if platform == "instagram" else "social:detect-ads"
+        cmd_args = ["run", script, "--", "--session-file", session_file.name]
+        
+        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token)
+        return {"status": "started"}

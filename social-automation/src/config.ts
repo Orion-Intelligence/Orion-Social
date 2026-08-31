@@ -10,7 +10,7 @@ export const Config = Object.freeze({
   sessionsBaseDir: process.env['ORION_SOCIAL_SESSIONS_DIR']
     ?? path.join(PACKAGE_ROOT, '..', 'sessions'),
 
-  headless: (process.env['ORION_SOCIAL_HEADLESS'] ?? 'false').toLowerCase() === 'true',
+  headless: (process.env['ORION_SOCIAL_HEADLESS'] ?? 'true').toLowerCase() === 'true',
 
   loginTimeoutMs: Number(process.env['ORION_SOCIAL_LOGIN_TIMEOUT_MS'] ?? 300_000),
 
