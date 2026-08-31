@@ -35,8 +35,11 @@ RUN python3 -c "from transformers import pipeline; pipeline('text-classification
 
 COPY app /app
 COPY config /app
+COPY dockerFiles/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /app
 
 EXPOSE 8020
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8020"]

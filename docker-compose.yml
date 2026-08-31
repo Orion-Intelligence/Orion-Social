@@ -23,6 +23,7 @@ services:
       - ./app/raw:/app/raw:cached
       - ./sessions:/app/sessions:cached
       - ./social-automation:/app/social-automation:cached
+      - social_automation_node_modules:/app/social-automation/node_modules
 
     deploy:
       resources:
@@ -78,3 +79,6 @@ networks:
       driver: default
       config:
         - subnet: 172.25.0.0/24
+
+volumes:
+  social_automation_node_modules:
