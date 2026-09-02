@@ -1,6 +1,8 @@
 import { getSocialContext } from '../session/manager.js';
 import { trackContext, untrackContext } from '../session/shutdown.js';
-import type { BrowserContext, Page } from 'playwright';
+import { errorReason, isSessionExpired, parseResultFileArg, writeResult } from '../result.js';
+import type { AdDetectionResult } from '../result.js';
+import type { BrowserContext } from 'playwright';
 
 async function extractAdDetails(context: BrowserContext, postUrl: string) {
   console.log(`\n  [AdDetails] Opening new tab for: ${postUrl}`);
@@ -51,9 +53,29 @@ async function detectAds() {
     }
   }
 
-  const context = await getSocialContext(platform, 'default', sessionFile);
+  const resultFile = parseResultFileArg(process.argv);
+  const result: AdDetectionResult = {
+    total_detected_ads: 0,
+    ads: [],
+    error: false,
+    error_reason: '',
+    session_expired: false,
+  };
+
+  let context: BrowserContext;
+  try {
+    context = await getSocialContext(platform, 'default', sessionFile);
+  } catch (error) {
+    console.error(`[AdDetector] Error during execution:`, error);
+    result.error = true;
+    result.error_reason = errorReason(error);
+    result.session_expired = isSessionExpired(error);
+    writeResult(resultFile, result);
+    return;
+  }
+
   trackContext(context);
-  
+
   try {
     const page = context.pages()[0] ?? await context.newPage();
     console.log(`[AdDetector] Navigating to Home page...`);
@@ -114,14 +136,33 @@ async function detectAds() {
               
               if (likesMatch) console.log(`[Feed Metadata] Likes: ${likesMatch[1]}`);
 
+              let adDate = '';
+              let adLikes = likesMatch ? likesMatch[1] : '0';
+              let adViews = '0';
+
               if (postUrl !== 'Unknown URL') {
                 const details = await extractAdDetails(context, postUrl);
+                adDate = details.date;
+                adLikes = details.likes || (likesMatch ? likesMatch[1] : '0');
+                adViews = details.views;
                 console.log(`[Metadata] Date: ${details.date}`);
-                console.log(`[Metadata] Likes: ${details.likes || (likesMatch ? likesMatch[1] : '0')}, Views: ${details.views}`);
+                console.log(`[Metadata] Likes: ${adLikes}, Views: ${details.views}`);
               } else {
                  console.log(`[Metadata] No internal Instagram post URL found. This is a purely external ad card.`);
               }
-              
+
+              result.ads.push({
+                url: uniqueId,
+                author,
+                content_text: lines.slice(2, 5).join(' | '),
+                metadata: adDate,
+                likes: adLikes,
+                shares: '',
+                views: adViews,
+                detected_at: new Date().toISOString(),
+              });
+              result.total_detected_ads = result.ads.length;
+
               console.log(`======================================\n`);
             }
           }
@@ -135,12 +176,16 @@ async function detectAds() {
     }
 
     console.log(`[AdDetector] Finished scanning. Total unique ads detected: ${detectedAds.size}`);
-    
+
   } catch (error) {
     console.error(`[AdDetector] Error during execution:`, error);
+    result.error = true;
+    result.error_reason = errorReason(error);
+    result.session_expired = isSessionExpired(error);
   } finally {
     untrackContext(context);
     await context.close();
+    writeResult(resultFile, result);
   }
 }
 

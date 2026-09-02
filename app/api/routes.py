@@ -25,7 +25,7 @@ class SocialRoutes:
         self.router.add_api_route("/social/automation/post", self.trigger_post, methods=["POST"])
         self.router.add_api_route("/social/automation/ad-monitor", self.trigger_ad_monitor, methods=["POST"])
 
-    async def run_background_automation(self, cmd_args: list, callback_url: str, token: str):
+    async def run_background_automation(self, cmd_args: list, callback_url: str, token: str, result_file: str = "", result_type: str = "", user_id: str = "", profile_id: str = ""):
         import asyncio
         import httpx
         try:
@@ -38,19 +38,52 @@ class SocialRoutes:
             stdout, stderr = await process.communicate()
             output = stdout.decode('utf-8', errors='replace') if stdout else ""
             error = stderr.decode('utf-8', errors='replace') if stderr else ""
-            
+
+            result = self.read_automation_result(result_file, result_type, user_id, profile_id)
+
             if callback_url:
                 headers = {"x-orion-internal-token": token} if token else {}
                 async with httpx.AsyncClient() as client:
-                    await client.post(callback_url, json={"status": "complete", "output": output, "error": error}, headers=headers, timeout=10.0)
+                    await client.post(callback_url, json={"status": "complete", "output": output, "error": error, "result": result}, headers=headers, timeout=10.0)
         except Exception as e:
+            result = self.read_automation_result(result_file, result_type, user_id, profile_id)
             if callback_url:
                 headers = {"x-orion-internal-token": token} if token else {}
                 try:
                     async with httpx.AsyncClient() as client:
-                        await client.post(callback_url, json={"status": "failed", "error": str(e)}, headers=headers, timeout=10.0)
+                        await client.post(callback_url, json={"status": "failed", "error": str(e), "result": result}, headers=headers, timeout=10.0)
                 except Exception:
                     pass
+
+    def read_automation_result(self, result_file: str, result_type: str, user_id: str, profile_id: str):
+        import json
+        import os
+        from datetime import datetime, timezone
+
+        if not result_file or not result_type:
+            return None
+
+        try:
+            with open(result_file, "r", encoding="utf-8") as handle:
+                data = json.load(handle)
+        except Exception as read_error:
+            print(f"[Automation] Could not read result file {result_file}: {read_error}")
+            return None
+        finally:
+            try:
+                os.unlink(result_file)
+            except OSError:
+                pass
+
+        data["profile_id"] = profile_id
+        data["date_time"] = datetime.now(timezone.utc).isoformat()
+
+        result = {"user_id": user_id, "profile_id": profile_id, "result_type": result_type}
+        if result_type == "post":
+            result["post_result"] = data
+        else:
+            result["ad_detection_result"] = data
+        return result
 
     async def require_internal_request(self, request: Request) -> None:
         expected = env_handler.get_instance().env("ORION_SOCIAL_INTERNAL_TOKEN", "").strip()
@@ -106,6 +139,8 @@ class SocialRoutes:
         text = data.get("text")
         image_url = data.get("image_url")
         callback_url = data.get("callback_url")
+        user_id = data.get("user_id") or ""
+        profile_id = data.get("profile_id") or ""
         token = request.headers.get("x-orion-internal-token", "")
         
         if not session_state or not platform or not text:
@@ -114,8 +149,11 @@ class SocialRoutes:
         session_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode='w')
         json.dump(session_state, session_file)
         session_file.close()
+
+        result_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
+        result_file.close()
         
-        cmd_args = ["run", "social:post", "--", "--session-file", session_file.name, "--platform", platform, "--text", text]
+        cmd_args = ["run", "social:post", "--", "--session-file", session_file.name, "--platform", platform, "--text", text, "--result-file", result_file.name]
         
         if image_url:
             image_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
@@ -131,7 +169,7 @@ class SocialRoutes:
                     import logging
                     logging.error(f"Failed to download image {image_url}, status code: {img_resp.status_code}")
                     
-        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token)
+        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token, result_file.name, "post", user_id, profile_id)
         return {"status": "started"}
 
     async def trigger_ad_monitor(self, request: Request, background_tasks: BackgroundTasks) -> Any:
@@ -142,6 +180,8 @@ class SocialRoutes:
         session_state = data.get("session_state")
         platform = data.get("platform")
         callback_url = data.get("callback_url")
+        user_id = data.get("user_id") or ""
+        profile_id = data.get("profile_id") or ""
         token = request.headers.get("x-orion-internal-token", "")
 
         if not session_state or not platform:
@@ -150,9 +190,12 @@ class SocialRoutes:
         session_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode='w')
         json.dump(session_state, session_file)
         session_file.close()
+
+        result_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
+        result_file.close()
         
         script = "social:detect-ig-ads" if platform == "instagram" else "social:detect-ads"
-        cmd_args = ["run", script, "--", "--session-file", session_file.name]
+        cmd_args = ["run", script, "--", "--session-file", session_file.name, "--result-file", result_file.name]
         
-        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token)
+        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token, result_file.name, "ad_detection", user_id, profile_id)
         return {"status": "started"}

@@ -1,6 +1,8 @@
 import { getSocialContext } from '../session/manager.js';
 import { trackContext, untrackContext } from '../session/shutdown.js';
-import type { BrowserContext, Page } from 'playwright';
+import { errorReason, isSessionExpired, parseResultFileArg, writeResult } from '../result.js';
+import type { AdDetectionResult } from '../result.js';
+import type { BrowserContext } from 'playwright';
 
 async function extractAdDetails(context: BrowserContext, tweetUrl: string) {
   console.log(`\n  [AdDetails] Opening new tab for: ${tweetUrl}`);
@@ -57,9 +59,29 @@ async function detectAds() {
     }
   }
 
-  const context = await getSocialContext(platform, 'default', sessionFile);
+  const resultFile = parseResultFileArg(process.argv);
+  const result: AdDetectionResult = {
+    total_detected_ads: 0,
+    ads: [],
+    error: false,
+    error_reason: '',
+    session_expired: false,
+  };
+
+  let context: BrowserContext;
+  try {
+    context = await getSocialContext(platform, 'default', sessionFile);
+  } catch (error) {
+    console.error(`[AdDetector] Error during execution:`, error);
+    result.error = true;
+    result.error_reason = errorReason(error);
+    result.session_expired = isSessionExpired(error);
+    writeResult(resultFile, result);
+    return;
+  }
+
   trackContext(context);
-  
+
   try {
     const page = context.pages()[0] ?? await context.newPage();
     console.log(`[AdDetector] Navigating to Home page...`);
@@ -113,7 +135,19 @@ async function detectAds() {
               const details = await extractAdDetails(context, tweetUrl);
               console.log(`[Metadata] Date: ${details.date}`);
               console.log(`[Metadata] Likes: ${details.likes}, Shares/Reposts: ${details.shares}, Views: ${details.views}`);
-              
+
+              result.ads.push({
+                url: tweetUrl,
+                author,
+                content_text: lines.slice(1, 4).join(' | '),
+                metadata: details.date,
+                likes: details.likes,
+                shares: details.shares,
+                views: details.views,
+                detected_at: new Date().toISOString(),
+              });
+              result.total_detected_ads = result.ads.length;
+
               console.log(`======================================\n`);
             }
           }
@@ -127,12 +161,16 @@ async function detectAds() {
     }
 
     console.log(`[AdDetector] Finished scanning. Total unique ads detected: ${detectedAds.size}`);
-    
+
   } catch (error) {
     console.error(`[AdDetector] Error during execution:`, error);
+    result.error = true;
+    result.error_reason = errorReason(error);
+    result.session_expired = isSessionExpired(error);
   } finally {
     untrackContext(context);
     await context.close();
+    writeResult(resultFile, result);
   }
 }
 

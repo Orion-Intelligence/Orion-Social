@@ -132,6 +132,7 @@ export class SocialPublisher {
         platform: platformName,
         success: false,
         error: message,
+        errorCode: code,
       };
     } finally {
       if (context) {

@@ -7,6 +7,8 @@ import { SocialAutomationError } from '../errors.js';
 import { logger } from '../logger.js';
 import { isPlatformName, PLATFORM_NAMES } from '../publish/types.js';
 import type { SocialPlatformName, PublishPost } from '../publish/types.js';
+import { errorReason, isSessionExpired, isSessionExpiredCode, parseResultFileArg, writeResult } from '../result.js';
+import type { PostResult } from '../result.js';
 
 interface PostArgs {
   platforms: SocialPlatformName[];
@@ -72,6 +74,13 @@ function parseArgs(argv: string[]): PostArgs {
           exitUsage('Missing value for --session-file');
         }
         sessionFile = next;
+        i++;
+        break;
+
+      case '--result-file':
+        if (!next) {
+          exitUsage('Missing value for --result-file');
+        }
         i++;
         break;
 
@@ -141,8 +150,24 @@ async function main(): Promise<void> {
 
   const publisher = new SocialPublisher();
 
+  const resultFile = parseResultFileArg(process.argv);
+  const postResult: PostResult = {
+    post_url: '',
+    error: false,
+    error_reason: '',
+    session_expired: false,
+  };
+
   try {
     const results = await publisher.publish(post, { dryRun, sessionFile });
+
+    const primary = results.find((item) => item.platform === platforms[0]) ?? results[0];
+    if (primary) {
+      postResult.post_url = primary.postUrl ?? '';
+      postResult.error = !primary.success;
+      postResult.error_reason = primary.error ?? '';
+      postResult.session_expired = isSessionExpiredCode(primary.errorCode);
+    }
 
     console.log('\n═══════════════════════════════════');
     console.log(dryRun ? ' DRY RUN RESULTS' : ' PUBLISH RESULTS');
@@ -170,6 +195,8 @@ async function main(): Promise<void> {
       console.log('');
     }
 
+    writeResult(resultFile, postResult);
+
     if (hasFailure) {
       process.exit(1);
     }
@@ -181,6 +208,10 @@ async function main(): Promise<void> {
         error: err instanceof Error ? err.message : String(err),
       });
     }
+    postResult.error = true;
+    postResult.error_reason = errorReason(err);
+    postResult.session_expired = isSessionExpired(err);
+    writeResult(resultFile, postResult);
     process.exit(1);
   }
 }

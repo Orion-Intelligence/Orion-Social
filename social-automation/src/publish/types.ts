@@ -22,6 +22,7 @@ export interface PublishResult {
   readonly success: boolean;
   readonly postUrl?: string;
   readonly error?: string;
+  readonly errorCode?: string;
 }
 
 export type PublishStatus = 'pending' | 'publishing' | 'success' | 'failed' | 'verification_failed';
