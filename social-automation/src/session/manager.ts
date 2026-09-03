@@ -4,14 +4,14 @@ import { chromium } from 'playwright';
 import type { Browser, BrowserContext, Page } from 'playwright';
 
 import { Config } from '../config.js';
-import { logger } from '../logger.js';
+
 import {
   BrowserLaunchError,
   ProfileNotFoundError,
   SessionExpiredError,
 } from '../errors.js';
-import { getPlatform } from '../platforms/registry.js';
-import type { SessionStatus } from '../platforms/types.js';
+import { getPlatform } from '../authenticate-platforms/registry.js';
+import type { SessionStatus } from '../types.js';
 
 async function launchBrowser(
   platformName: string,
@@ -50,7 +50,7 @@ function findSessionFile(platformName: string): string | null {
 
 export async function getSocialContext(
   platformName: string,
-  userId: string = 'default',
+  _userId: string = 'default',
   sessionFile?: string
 ): Promise<BrowserContext> {
   const platform = getPlatform(platformName);
@@ -60,7 +60,7 @@ export async function getSocialContext(
     throw new ProfileNotFoundError(platform.name, 'sessions folder');
   }
 
-  logger.info(`Loading session for ${platform.displayName} (User: ${userId})`);
+
 
   const content = fs.readFileSync(sessionPath, 'utf-8');
   let cookies = JSON.parse(content);
@@ -114,10 +114,10 @@ export async function getSocialContext(
 
 export async function getSocialPage(
   platformName: string,
-  userId: string = 'default',
+  _userId: string = 'default',
   sessionFile?: string
 ): Promise<Page> {
-  const context = await getSocialContext(platformName, userId, sessionFile);
+  const context = await getSocialContext(platformName, _userId, sessionFile);
   return context.pages()[0] ?? await context.newPage();
 }
 
@@ -131,7 +131,7 @@ export async function getSocialBrowser(
 
 export async function getSessionStatus(
   platformName: string,
-  userId: string = 'default',
+  _userId: string = 'default',
   sessionFile?: string
 ): Promise<SessionStatus> {
   const platform = getPlatform(platformName);
@@ -142,7 +142,7 @@ export async function getSessionStatus(
   if (configured) {
     let context: BrowserContext | null = null;
     try {
-      context = await getSocialContext(platformName, userId, sessionFile);
+      context = await getSocialContext(platformName, _userId, sessionFile);
       
       authenticated = true;
     } catch {
@@ -166,8 +166,6 @@ async function safeClose(context: BrowserContext): Promise<void> {
   try {
     await context.close();
   } catch (err: unknown) {
-    logger.warn('Error closing browser context', {
-      error: err instanceof Error ? err.message : String(err),
-    });
+
   }
 }

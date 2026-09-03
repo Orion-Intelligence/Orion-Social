@@ -5,7 +5,6 @@ import type { AdDetectionResult } from '../result.js';
 import type { BrowserContext } from 'playwright';
 
 async function extractAdDetails(context: BrowserContext, tweetUrl: string) {
-  console.log(`\n  [AdDetails] Opening new tab for: ${tweetUrl}`);
   const page = await context.newPage();
   
   const details = {
@@ -38,7 +37,6 @@ async function extractAdDetails(context: BrowserContext, tweetUrl: string) {
     }
 
   } catch (err) {
-    console.error(`  [AdDetails] Failed to extract details:`, (err as Error).message);
   } finally {
     await page.close();
   }
@@ -48,7 +46,6 @@ async function extractAdDetails(context: BrowserContext, tweetUrl: string) {
 
 async function detectAds() {
   const platform = 'x';
-  console.log(`[AdDetector] Starting X (Twitter) Ad Detection...`);
 
   const args = process.argv.slice(2);
   let sessionFile: string | undefined;
@@ -72,7 +69,6 @@ async function detectAds() {
   try {
     context = await getSocialContext(platform, 'default', sessionFile);
   } catch (error) {
-    console.error(`[AdDetector] Error during execution:`, error);
     result.error = true;
     result.error_reason = errorReason(error);
     result.session_expired = isSessionExpired(error);
@@ -84,17 +80,14 @@ async function detectAds() {
 
   try {
     const page = context.pages()[0] ?? await context.newPage();
-    console.log(`[AdDetector] Navigating to Home page...`);
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(5000); 
 
     const maxScrolls = 50;
     const detectedAds = new Set<string>();
 
-    console.log(`[AdDetector] Starting scroll process (${maxScrolls} scrolls max)...`);
 
     for (let i = 0; i < maxScrolls; i++) {
-      console.log(`[AdDetector] Scroll ${i + 1}/${maxScrolls}...`);
 
       const articles = page.locator('article');
       const count = await articles.count();
@@ -125,16 +118,9 @@ async function detectAds() {
 
             if (tweetUrl !== 'Unknown URL' && !detectedAds.has(tweetUrl)) {
               detectedAds.add(tweetUrl);
-              console.log(`\n======================================`);
-              console.log(`🚀 AD DETECTED!`);
-              console.log(`URL: ${tweetUrl}`);
               const author = lines.length > 0 ? lines[0] : 'Unknown';
-              console.log(`Author: ${author}`);
-              console.log(`Content Snippet: ${lines.slice(1, 4).join(' | ')}`);
               
               const details = await extractAdDetails(context, tweetUrl);
-              console.log(`[Metadata] Date: ${details.date}`);
-              console.log(`[Metadata] Likes: ${details.likes}, Shares/Reposts: ${details.shares}, Views: ${details.views}`);
 
               result.ads.push({
                 url: tweetUrl,
@@ -148,7 +134,6 @@ async function detectAds() {
               });
               result.total_detected_ads = result.ads.length;
 
-              console.log(`======================================\n`);
             }
           }
         } catch (err) {
@@ -160,10 +145,8 @@ async function detectAds() {
       await page.waitForTimeout(2000);
     }
 
-    console.log(`[AdDetector] Finished scanning. Total unique ads detected: ${detectedAds.size}`);
 
   } catch (error) {
-    console.error(`[AdDetector] Error during execution:`, error);
     result.error = true;
     result.error_reason = errorReason(error);
     result.session_expired = isSessionExpired(error);
@@ -174,4 +157,4 @@ async function detectAds() {
   }
 }
 
-detectAds().catch(console.error);
+detectAds().catch(() => {});

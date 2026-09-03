@@ -25,7 +25,7 @@ class SocialRoutes:
         self.router.add_api_route("/social/automation/post", self.trigger_post, methods=["POST"])
         self.router.add_api_route("/social/automation/ad-monitor", self.trigger_ad_monitor, methods=["POST"])
 
-    async def run_background_automation(self, cmd_args: list, callback_url: str, token: str, result_file: str = "", result_type: str = "", user_id: str = "", profile_id: str = ""):
+    async def run_background_automation(self, cmd_args: list, callback_url: str, token: str, result_file: str = "", result_type: str = "", user_id: str = "", profile_id: str = "", files_to_cleanup: list = None):
         import asyncio
         import httpx
         try:
@@ -54,6 +54,15 @@ class SocialRoutes:
                         await client.post(callback_url, json={"status": "failed", "error": str(e), "result": result}, headers=headers, timeout=10.0)
                 except Exception:
                     pass
+        finally:
+            if files_to_cleanup:
+                import os
+                for f in files_to_cleanup:
+                    try:
+                        if os.path.exists(f):
+                            os.unlink(f)
+                    except OSError:
+                        pass
 
     def read_automation_result(self, result_file: str, result_type: str, user_id: str, profile_id: str):
         import json
@@ -153,11 +162,13 @@ class SocialRoutes:
         result_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
         result_file.close()
         
+        files_to_cleanup = [session_file.name, result_file.name]
         cmd_args = ["run", "social:post", "--", "--session-file", session_file.name, "--platform", platform, "--text", text, "--result-file", result_file.name]
         
         if image_url:
             image_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
             image_file.close()
+            files_to_cleanup.append(image_file.name)
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
             async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
                 img_resp = await client.get(image_url, timeout=15.0)
@@ -169,7 +180,7 @@ class SocialRoutes:
                     import logging
                     logging.error(f"Failed to download image {image_url}, status code: {img_resp.status_code}")
                     
-        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token, result_file.name, "post", user_id, profile_id)
+        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token, result_file.name, "post", user_id, profile_id, files_to_cleanup)
         return {"status": "started"}
 
     async def trigger_ad_monitor(self, request: Request, background_tasks: BackgroundTasks) -> Any:
@@ -194,8 +205,9 @@ class SocialRoutes:
         result_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
         result_file.close()
         
+        files_to_cleanup = [session_file.name, result_file.name]
         script = "social:detect-ig-ads" if platform == "instagram" else "social:detect-ads"
         cmd_args = ["run", script, "--", "--session-file", session_file.name, "--result-file", result_file.name]
         
-        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token, result_file.name, "ad_detection", user_id, profile_id)
+        background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token, result_file.name, "ad_detection", user_id, profile_id, files_to_cleanup)
         return {"status": "started"}

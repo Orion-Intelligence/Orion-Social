@@ -1,4 +1,4 @@
-import type { SocialPlatformAdapter, SocialPlatformName } from '../types.js';
+import type { SocialPlatformAdapter, SocialPlatformName } from '../../types.js';
 import { FacebookAdapter } from './facebook.js';
 import { XAdapter } from './x.js';
 import { InstagramAdapter } from './instagram.js';

@@ -1,5 +1,5 @@
 import type { BrowserContext } from 'playwright';
-import { logger } from '../logger.js';
+
 
 const activeContexts = new Set<BrowserContext>();
 
@@ -35,8 +35,8 @@ function ensureHandlersRegistered(): void {
   }
   registered = true;
 
-  const shutdown = (signal: string) => {
-    logger.info(`Received ${signal}, closing browser contexts…`);
+  const shutdown = (_signal: string) => {
+
     closeAll()
       .catch(() => {  })
       .finally(() => process.exit(0));
@@ -44,10 +44,8 @@ function ensureHandlersRegistered(): void {
 
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('uncaughtException', (err) => {
-    logger.error('Uncaught exception – shutting down', {
-      error: err.message,
-    });
+  process.on('uncaughtException', (_err) => {
+
     closeAll()
       .catch(() => {  })
       .finally(() => process.exit(1));

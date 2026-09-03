@@ -1,4 +1,4 @@
-import type { SocialPlatform } from './types.js';
+import type { SocialPlatform } from '../types.js';
 import { FacebookPlatform } from './facebook.js';
 import { XPlatform } from './x.js';
 import { InstagramPlatform } from './instagram.js';
@@ -24,4 +24,4 @@ export function listPlatforms(): readonly string[] {
   return [...platforms.keys()];
 }
 
-export type { SocialPlatform, SocialPost, PostResult, SessionStatus } from './types.js';
+export type { SocialPlatform, SocialPost, PostResult, SessionStatus } from '../types.js';

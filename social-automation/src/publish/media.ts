@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { MediaValidationError } from './errors.js';
+import { MediaValidationError } from '../errors.js';
 
 const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 

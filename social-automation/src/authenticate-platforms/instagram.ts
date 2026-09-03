@@ -1,5 +1,5 @@
 import type { Page } from 'playwright';
-import type { SocialPlatform } from './types.js';
+import type { SocialPlatform } from '../types.js';
 
 export class InstagramPlatform implements SocialPlatform {
   readonly name = 'instagram';

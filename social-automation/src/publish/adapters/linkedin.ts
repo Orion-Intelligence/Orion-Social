@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
-import type { SocialPlatformAdapter, PublishPost } from '../types.js';
-import { ComposerError, MediaUploadError, PublishError } from '../errors.js';
+import type { SocialPlatformAdapter, PublishPost } from '../../types.js';
+import { ComposerError, MediaUploadError, PublishError } from '../../errors.js';
 
 export class LinkedInAdapter implements SocialPlatformAdapter {
   readonly platform = 'linkedin' as const;
@@ -9,30 +9,7 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
   readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 9;
 
-  async isAuthenticated(page: Page): Promise<boolean> {
-    try {
-      await page.goto('https://www.linkedin.com/feed/', {
-        waitUntil: 'domcontentloaded',
-        timeout: 15_000,
-      });
 
-      return page.evaluate(() => {
-        const url = window.location.href;
-        
-        if (url.includes('/login') || url.includes('/authwall') || url.includes('/signup') || url.includes('/checkpoint')) {
-          return false;
-        }
-        
-        const globalNav = document.querySelector('#global-nav, .global-nav, .global-nav__me');
-        const feedIdentity = document.querySelector('.feed-identity-module, .scaffold-layout');
-        const messaging = document.querySelector('a[href*="/messaging/"]');
-        const profile = document.querySelector('a[href*="/in/"]');
-        return globalNav !== null || feedIdentity !== null || messaging !== null || profile !== null;
-      });
-    } catch {
-      return false;
-    }
-  }
 
   async openComposer(page: Page): Promise<void> {
     try {

@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
-import type { SocialPlatformAdapter, PublishPost } from '../types.js';
-import { ComposerError, MediaUploadError, PublishError } from '../errors.js';
+import type { SocialPlatformAdapter, PublishPost } from '../../types.js';
+import { ComposerError, MediaUploadError, PublishError } from '../../errors.js';
 
 export class InstagramAdapter implements SocialPlatformAdapter {
   readonly platform = 'instagram' as const;
@@ -9,27 +9,6 @@ export class InstagramAdapter implements SocialPlatformAdapter {
   readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 10; 
 
-  async isAuthenticated(page: Page): Promise<boolean> {
-    try {
-      await page.goto('https://www.instagram.com/', {
-        waitUntil: 'domcontentloaded',
-        timeout: 15_000,
-      });
-
-      return page.evaluate(() => {
-        const url = window.location.href;
-        if (url.includes('/accounts/login')) {
-          return false;
-        }
-        const navProfile = document.querySelector('a[href*="/direct/"], svg[aria-label="Home"]');
-        const createIcon = document.querySelector('svg[aria-label="New post"]');
-        const navBar = document.querySelector('nav[role="navigation"]');
-        return navProfile !== null || createIcon !== null || navBar !== null;
-      });
-    } catch {
-      return false;
-    }
-  }
 
   async openComposer(page: Page): Promise<void> {
     try {

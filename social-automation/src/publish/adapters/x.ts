@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
-import type { SocialPlatformAdapter, PublishPost } from '../types.js';
-import { ComposerError, MediaUploadError, PublishError } from '../errors.js';
+import type { SocialPlatformAdapter, PublishPost } from '../../types.js';
+import { ComposerError, MediaUploadError, PublishError } from '../../errors.js';
 
 export class XAdapter implements SocialPlatformAdapter {
   readonly platform = 'x' as const;
@@ -9,40 +9,18 @@ export class XAdapter implements SocialPlatformAdapter {
   readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 4;
 
-  async isAuthenticated(page: Page): Promise<boolean> {
-    try {
-      await page.goto('https://x.com/home', {
-        waitUntil: 'domcontentloaded',
-        timeout: 15_000,
-      });
-      
-      await page.waitForTimeout(3_000);
-
-      return page.evaluate(() => {
-        const url = window.location.href;
-        if (url.includes('/i/flow/login') || url.includes('/login')) {
-          return false;
-        }
-        const composeTweet = document.querySelector('[data-testid="SideNav_NewTweet_Button"]');
-        const accountSwitcher = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
-        return composeTweet !== null || accountSwitcher !== null;
-      });
-    } catch {
-      return false;
-    }
-  }
 
   async openComposer(page: Page): Promise<void> {
     try {
       
       await page.goto('https://x.com/compose/post', {
         waitUntil: 'domcontentloaded',
-        timeout: 15_000,
+        timeout: 30_000,
       });
 
       await page.waitForSelector(
         '[data-testid="tweetTextarea_0"], [role="textbox"][data-testid="tweetTextarea_0"]',
-        { state: 'visible', timeout: 10_000 },
+        { state: 'visible', timeout: 20_000 },
       );
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
@@ -53,8 +31,8 @@ export class XAdapter implements SocialPlatformAdapter {
   async createPost(page: Page, post: PublishPost): Promise<void> {
     try {
       const textbox = page.locator('[data-testid="tweetTextarea_0"]').first();
-      await textbox.waitFor({ state: 'visible', timeout: 5_000 });
-      await textbox.click();
+      await textbox.waitFor({ state: 'visible', timeout: 10_000 });
+      await textbox.click({ force: true });
 
       await page.keyboard.type(post.text, { delay: 10 });
 
@@ -74,7 +52,7 @@ export class XAdapter implements SocialPlatformAdapter {
     try {
       const postButton = page.locator('[data-testid="tweetButton"], [data-testid="tweetButtonInline"]').first();
       await postButton.waitFor({ state: 'visible', timeout: 5_000 });
-      await postButton.click();
+      await postButton.click({ timeout: 60_000, force: true });
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
       throw new PublishError(this.platform, detail);
@@ -85,7 +63,7 @@ export class XAdapter implements SocialPlatformAdapter {
     try {
       await page.waitForFunction(() => {
         return !window.location.href.includes('/compose/') || document.querySelector('[data-testid="toast"]') !== null;
-      }, { timeout: 20_000 }).catch(() => {});
+      }, { timeout: 45_000 }).catch(() => {});
 
       const url = page.url();
       const composerDismissed = !url.includes('/compose/');

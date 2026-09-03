@@ -12,11 +12,6 @@ export const Config = Object.freeze({
 
   headless: (process.env['ORION_SOCIAL_HEADLESS'] ?? 'true').toLowerCase() === 'true',
 
-  loginTimeoutMs: Number(process.env['ORION_SOCIAL_LOGIN_TIMEOUT_MS'] ?? 300_000),
-
-  authPollIntervalMs: Number(process.env['ORION_SOCIAL_AUTH_POLL_MS'] ?? 3_000),
-
-  navigationTimeoutMs: Number(process.env['ORION_SOCIAL_NAV_TIMEOUT_MS'] ?? 30_000),
 });
 
 export type SocialConfig = typeof Config;

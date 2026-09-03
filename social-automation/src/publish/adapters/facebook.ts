@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
-import type { SocialPlatformAdapter, PublishPost } from '../types.js';
-import { ComposerError, MediaUploadError, PublishError } from '../errors.js';
+import type { SocialPlatformAdapter, PublishPost } from '../../types.js';
+import { ComposerError, MediaUploadError, PublishError } from '../../errors.js';
 
 export class FacebookAdapter implements SocialPlatformAdapter {
   readonly platform = 'facebook' as const;
@@ -9,26 +9,7 @@ export class FacebookAdapter implements SocialPlatformAdapter {
   readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 10;
 
-  async isAuthenticated(page: Page): Promise<boolean> {
-    try {
-      await page.goto('https://www.facebook.com/', {
-        waitUntil: 'domcontentloaded',
-        timeout: 15_000,
-      });
 
-      return page.evaluate(() => {
-        const url = window.location.href;
-        if (url.includes('/login') || url.includes('/reg') || url.includes('/r.php')) {
-          return false;
-        }
-        const profileLink = document.querySelector('[aria-label="Your profile"], [data-pagelet="ProfileTail"]');
-        const navBar = document.querySelector('[role="navigation"]');
-        return profileLink !== null || navBar !== null;
-      });
-    } catch {
-      return false;
-    }
-  }
 
   async openComposer(page: Page): Promise<void> {
     try {

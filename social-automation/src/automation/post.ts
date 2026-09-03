@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { SocialPublisher } from '../publish/publisher.js';
 import { SocialAutomationError } from '../errors.js';
-import { logger } from '../logger.js';
-import { isPlatformName, PLATFORM_NAMES } from '../publish/types.js';
-import type { SocialPlatformName, PublishPost } from '../publish/types.js';
+
+import { isPlatformName } from '../types.js';
+import type { SocialPlatformName, PublishPost } from '../types.js';
 import { errorReason, isSessionExpired, isSessionExpiredCode, parseResultFileArg, writeResult } from '../result.js';
 import type { PostResult } from '../result.js';
 
@@ -93,7 +93,6 @@ function parseArgs(argv: string[]): PostArgs {
   if (textFile) {
     const filePath = path.resolve(textFile);
     if (!fs.existsSync(filePath)) {
-      console.error(`Error: text file not found: ${filePath}`);
       process.exit(1);
     }
     text = fs.readFileSync(filePath, 'utf-8').trim();
@@ -111,9 +110,6 @@ function parseArgs(argv: string[]): PostArgs {
   const platforms: SocialPlatformName[] = [];
   for (const name of platformNames) {
     if (!isPlatformName(name)) {
-      console.error(
-        `Unknown platform: "${name}". Available: ${PLATFORM_NAMES.join(', ')}`,
-      );
       process.exit(1);
     }
     platforms.push(name);
@@ -122,16 +118,7 @@ function parseArgs(argv: string[]): PostArgs {
   return { platforms, text, images, dryRun, sessionFile };
 }
 
-function exitUsage(error: string): never {
-  console.error(`Error: ${error}\n`);
-  console.error(
-    'Usage:\n' +
-    '  npm run social:post -- --platform facebook,x --text "Hello"\n' +
-    '  npm run social:post -- --platform facebook --text-file post.txt\n' +
-    '  npm run social:post -- --platform facebook --text "Hi" --image ./photo.jpg\n' +
-    '  npm run social:post -- --platform facebook,x --text "Test" --dry-run\n' +
-    `\nAvailable platforms: ${PLATFORM_NAMES.join(', ')}`,
-  );
+function exitUsage(_error: string): never {
   process.exit(1);
 }
 
@@ -139,7 +126,7 @@ async function main(): Promise<void> {
   const { platforms, text, images, dryRun, sessionFile } = parseArgs(process.argv);
 
   if (dryRun) {
-    logger.info('DRY RUN mode – posts will NOT be published');
+
   }
 
   const post: PublishPost = {
@@ -169,31 +156,7 @@ async function main(): Promise<void> {
       postResult.session_expired = isSessionExpiredCode(primary.errorCode);
     }
 
-    console.log('\n═══════════════════════════════════');
-    console.log(dryRun ? ' DRY RUN RESULTS' : ' PUBLISH RESULTS');
-    console.log('═══════════════════════════════════\n');
-
-    let hasFailure = false;
-
-    for (const result of results) {
-      const icon = result.success ? '✔' : '✘';
-      const status = result.success ? 'SUCCESS' : 'FAILED';
-
-      console.log(`${icon}  ${result.platform.toUpperCase()}: ${status}`);
-
-      if (result.postUrl) {
-        console.log(`   Post URL: ${result.postUrl}`);
-      }
-      if (result.error) {
-        console.log(`   Reason: ${result.error}`);
-        
-        if (result.error.includes('AUTHENTICATION')) {
-          console.log(`   Action: Provide a new session file for ${result.platform} from Orion Intelligence.`);
-        }
-        hasFailure = true;
-      }
-      console.log('');
-    }
+    const hasFailure = results.some(r => !r.success);
 
     writeResult(resultFile, postResult);
 
@@ -202,11 +165,9 @@ async function main(): Promise<void> {
     }
   } catch (err: unknown) {
     if (err instanceof SocialAutomationError) {
-      logger.error(err.message, { code: err.code });
+
     } else {
-      logger.error('Unexpected error during publishing', {
-        error: err instanceof Error ? err.message : String(err),
-      });
+
     }
     postResult.error = true;
     postResult.error_reason = errorReason(err);

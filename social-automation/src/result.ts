@@ -43,7 +43,6 @@ export function writeResult(filePath: string | undefined, result: PostResult | A
   try {
     fs.writeFileSync(filePath, JSON.stringify(result), 'utf-8');
   } catch (err: unknown) {
-    console.error('[Result] Failed to write result file:', (err as Error).message);
   }
 }
 
