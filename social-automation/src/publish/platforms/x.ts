@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
-import type { SocialPlatformAdapter, PublishPost } from '../../types.js';
-import { ComposerError, MediaUploadError, PublishError } from '../../errors.js';
+import type { SocialPlatformAdapter, PublishPost } from '../model/models.js';
+import { ComposerError, MediaUploadError, PublishError } from '../../shared/errors.js';
 
 export class XAdapter implements SocialPlatformAdapter {
   readonly platform = 'x' as const;
@@ -63,7 +63,7 @@ export class XAdapter implements SocialPlatformAdapter {
     try {
       await page.waitForFunction(() => {
         return !window.location.href.includes('/compose/') || document.querySelector('[data-testid="toast"]') !== null;
-      }, { timeout: 45_000 }).catch(() => {});
+      }, undefined, { timeout: 45_000 }).catch(() => {});
 
       const url = page.url();
       const composerDismissed = !url.includes('/compose/');

@@ -3,15 +3,15 @@ import fs from 'node:fs';
 import { chromium } from 'playwright';
 import type { Browser, BrowserContext, Page } from 'playwright';
 
-import { Config } from '../config.js';
+import { Config } from '../shared/config.js';
 
 import {
   BrowserLaunchError,
   ProfileNotFoundError,
   SessionExpiredError,
-} from '../errors.js';
-import { getPlatform } from '../authenticate-platforms/registry.js';
-import type { SessionStatus } from '../types.js';
+} from '../shared/errors.js';
+import { getPlatform } from './platforms/registry.js';
+import type { SessionStatus } from '../shared/model/models.js';
 
 async function launchBrowser(
   platformName: string,
@@ -60,7 +60,7 @@ export async function getSocialContext(
     throw new ProfileNotFoundError(platform.name, 'sessions folder');
   }
 
-
+  console.log(`[Session] Loading session for ${platform.displayName}`);
 
   const content = fs.readFileSync(sessionPath, 'utf-8');
   let cookies = JSON.parse(content);
@@ -86,6 +86,7 @@ export async function getSocialContext(
     return cookie;
   });
 
+  console.log(`[Session] Launching browser (${sanitizedCookies.length} cookies)`);
   const browser = await launchBrowser(platform.name, { headless: Config.headless });
   const context = await browser.newContext({ 
     viewport: null,
@@ -101,10 +102,13 @@ export async function getSocialContext(
 
   try {
     const page = context.pages()[0] ?? await context.newPage();
+    console.log(`[Session] Verifying session is still signed in`);
     const valid = await platform.isAuthenticated(page);
     if (!valid) {
+      console.log(`[Session] Session is expired or signed out`);
       throw new SessionExpiredError(platform.name);
     }
+    console.log(`[Session] Session verified, signed in`);
     return context;
   } catch (err) {
     await safeClose(context);

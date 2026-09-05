@@ -1,49 +1,6 @@
 import type { Page } from 'playwright';
 
-export interface SocialPost {
-  readonly text?: string;
-  readonly mediaUrls?: readonly string[];
-  readonly mediaFiles?: readonly string[];
-  readonly link?: string;
-  readonly title?: string;
-}
-
-export interface PostResult {
-  readonly success: boolean;
-  readonly postId?: string;
-  readonly postUrl?: string;
-  readonly error?: string;
-}
-
-export interface SessionStatus {
-  readonly platform: string;
-  readonly authenticated: boolean;
-  readonly profileConfigured: boolean;
-  readonly profilePath: string;
-}
-
-export interface SocialPlatform {
-  
-  readonly name: string;
-
-  readonly displayName: string;
-
-  readonly loginUrl: string;
-
-  isAuthenticated(page: Page, navigate?: boolean): Promise<boolean>;
-
-  createPost?(page: Page, post: SocialPost): Promise<PostResult>;
-}
-
-export type SocialPlatformName = 'facebook' | 'x' | 'instagram' | 'linkedin';
-
-export const PLATFORM_NAMES: readonly SocialPlatformName[] = Object.freeze([
-  'facebook', 'x', 'instagram', 'linkedin',
-] as const);
-
-export function isPlatformName(value: string): value is SocialPlatformName {
-  return (PLATFORM_NAMES as readonly string[]).includes(value.toLowerCase());
-}
+import type { AutomationResult, SocialPlatformName } from '../../shared/model/models.js';
 
 export interface PublishPost {
   readonly text: string;
@@ -95,4 +52,8 @@ export interface SocialPlatformAdapter {
 export interface PublishOptions {
   readonly dryRun?: boolean;
   readonly sessionFile?: string;
+}
+
+export interface PostResult extends AutomationResult {
+  post_url: string;
 }

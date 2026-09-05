@@ -1,5 +1,5 @@
 import type { Page } from 'playwright';
-import type { SocialPlatform } from '../types.js';
+import type { SocialPlatform } from '../../shared/model/models.js';
 
 export class FacebookPlatform implements SocialPlatform {
   readonly name = 'facebook';

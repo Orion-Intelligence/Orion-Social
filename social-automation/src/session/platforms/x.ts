@@ -1,5 +1,5 @@
 import type { Page } from 'playwright';
-import type { SocialPlatform } from '../types.js';
+import type { SocialPlatform } from '../../shared/model/models.js';
 
 export class XPlatform implements SocialPlatform {
   readonly name = 'x';
@@ -24,7 +24,7 @@ export class XPlatform implements SocialPlatform {
         const account = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
         const homeNav = document.querySelector('[data-testid="AppTabBar_Home_Link"]');
         return compose !== null || account !== null || homeNav !== null;
-      }, { timeout: 15_000 });
+      }, undefined, { timeout: 15_000 });
 
       const authenticated = await page.evaluate(() => {
         const url = window.location.href;

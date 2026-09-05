@@ -2,19 +2,19 @@ import crypto from 'node:crypto';
 import type { BrowserContext } from 'playwright';
 
 
-import { SocialAutomationError } from '../errors.js';
-import { getSocialContext } from '../session/manager.js';
+import { SocialAutomationError } from '../shared/errors.js';
+import { getSocialContext } from '../session/session-manager.js';
 import { trackContext, untrackContext } from '../session/shutdown.js';
-import { getAdapter } from './adapters/registry.js';
+import { getAdapter } from './platforms/registry.js';
 import { validateImages } from './media.js';
-import { VerificationError } from '../errors.js';
+import { VerificationError } from '../shared/errors.js';
 import type {
   PublishPost,
   PublishResult,
   PublishOperation,
   PublishOptions,
-  SocialPlatformName,
-} from '../types.js';
+} from './model/models.js';
+import type { SocialPlatformName } from '../shared/model/models.js';
 
 export class SocialPublisher {
   
@@ -61,21 +61,21 @@ export class SocialPublisher {
 
 
 
+      console.log(`[Post] Starting publish on ${platformName}`);
       context = await getSocialContext(platformName, userId, options.sessionFile);
       trackContext(context);
 
       const page = context.pages()[0] ?? await context.newPage();
 
-
-
+      console.log(`[Post] Opening composer`);
       operation.status = 'publishing';
       await adapter.openComposer(page);
 
-
+      console.log(`[Post] Writing post content${post.images?.length ? ` with ${post.images.length} image(s)` : ''}`);
       await adapter.createPost(page, post);
 
       if (options.dryRun) {
-
+        console.log(`[Post] Dry run, not publishing`);
         operation.status = 'success';
         return {
           platform: platformName,
@@ -86,17 +86,18 @@ export class SocialPublisher {
       }
 
 
+      console.log(`[Post] Publishing`);
       await adapter.publishPost(page);
 
-
+      console.log(`[Post] Verifying the post was published`);
       const verification = await adapter.verifyPublished(page);
 
       if (verification.success) {
         operation.status = 'success';
         operation.postUrl = verification.postUrl;
-
+        console.log(`[Post] Published: ${verification.postUrl ?? '(no URL returned)'}`);
       } else {
-        
+        console.log(`[Post] Could not confirm the post was published`);
         operation.status = 'verification_failed';
         throw new VerificationError(
           platformName,
@@ -118,7 +119,7 @@ export class SocialPublisher {
       operation.status = 'failed';
       operation.error = message;
 
-
+      console.log(`[Post] Failed (${code}): ${message}`);
 
       return {
         platform: platformName,

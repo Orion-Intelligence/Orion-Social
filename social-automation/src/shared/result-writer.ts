@@ -1,32 +1,7 @@
 import fs from 'node:fs';
 
 import { SocialAutomationError } from './errors.js';
-
-export interface PostResult {
-  post_url: string;
-  error: boolean;
-  error_reason: string;
-  session_expired: boolean;
-}
-
-export interface DetectedAd {
-  url: string;
-  author: string;
-  content_text: string;
-  metadata: string;
-  likes: string;
-  shares: string;
-  views: string;
-  detected_at: string;
-}
-
-export interface AdDetectionResult {
-  total_detected_ads: number;
-  ads: DetectedAd[];
-  error: boolean;
-  error_reason: string;
-  session_expired: boolean;
-}
+import type { AutomationResult } from './model/models.js';
 
 export function parseResultFileArg(argv: readonly string[]): string | undefined {
   const args = argv.slice(2);
@@ -38,7 +13,7 @@ export function parseResultFileArg(argv: readonly string[]): string | undefined 
   return undefined;
 }
 
-export function writeResult(filePath: string | undefined, result: PostResult | AdDetectionResult): void {
+export function writeResult(filePath: string | undefined, result: AutomationResult): void {
   if (!filePath) return;
   try {
     fs.writeFileSync(filePath, JSON.stringify(result), 'utf-8');

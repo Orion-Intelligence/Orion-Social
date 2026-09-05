@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
-import type { SocialPlatformAdapter, PublishPost } from '../../types.js';
-import { ComposerError, MediaUploadError, PublishError } from '../../errors.js';
+import type { SocialPlatformAdapter, PublishPost } from '../model/models.js';
+import { ComposerError, MediaUploadError, PublishError } from '../../shared/errors.js';
 
 export class InstagramAdapter implements SocialPlatformAdapter {
   readonly platform = 'instagram' as const;

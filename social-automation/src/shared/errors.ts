@@ -125,7 +125,7 @@ export class VerificationError extends SocialAutomationError {
     super(
       'VERIFICATION_ERROR',
       `Post verification failed on ${platform}: ${detail}. ` +
-      'The post may or may not have been published – check manually before retrying.',
+      'The post may or may not have been published – check manually.',
     );
     this.name = 'VerificationError';
   }

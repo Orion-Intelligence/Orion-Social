@@ -1,9 +1,9 @@
-import type { SocialPlatform } from '../types.js';
+import type { SocialPlatform } from '../../shared/model/models.js';
 import { FacebookPlatform } from './facebook.js';
 import { XPlatform } from './x.js';
 import { InstagramPlatform } from './instagram.js';
 import { LinkedInPlatform } from './linkedin.js';
-import { InvalidPlatformError } from '../errors.js';
+import { InvalidPlatformError } from '../../shared/errors.js';
 
 const platforms: ReadonlyMap<string, SocialPlatform> = new Map<string, SocialPlatform>([
   ['facebook', new FacebookPlatform()],
@@ -24,4 +24,4 @@ export function listPlatforms(): readonly string[] {
   return [...platforms.keys()];
 }
 
-export type { SocialPlatform, SocialPost, PostResult, SessionStatus } from '../types.js';
+export type { SocialPlatform, SessionStatus } from '../../shared/model/models.js';

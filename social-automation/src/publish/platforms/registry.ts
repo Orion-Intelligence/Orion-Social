@@ -1,9 +1,10 @@
-import type { SocialPlatformAdapter, SocialPlatformName } from '../../types.js';
+import type { SocialPlatformAdapter } from '../model/models.js';
+import type { SocialPlatformName } from '../../shared/model/models.js';
 import { FacebookAdapter } from './facebook.js';
 import { XAdapter } from './x.js';
 import { InstagramAdapter } from './instagram.js';
 import { LinkedInAdapter } from './linkedin.js';
-import { InvalidPlatformError } from '../../errors.js';
+import { InvalidPlatformError } from '../../shared/errors.js';
 
 const entries: [SocialPlatformName, SocialPlatformAdapter][] = [
   ['facebook', new FacebookAdapter()],

@@ -35,25 +35,44 @@ class SocialRoutes:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            stdout, stderr = await process.communicate()
-            output = stdout.decode('utf-8', errors='replace') if stdout else ""
-            error = stderr.decode('utf-8', errors='replace') if stderr else ""
+            # Streamed rather than communicate() so the automation's own prints reach
+            # the container log live instead of only after the process exits. Lines are
+            # still collected for the callback's output/error fields.
+            out_lines, err_lines = [], []
 
+            async def drain(stream, sink):
+                async for raw in stream:
+                    text = raw.decode('utf-8', errors='replace').rstrip()
+                    print(text, flush=True)
+                    sink.append(text)
+
+            await asyncio.gather(drain(process.stdout, out_lines), drain(process.stderr, err_lines))
+            await process.wait()
+
+            output = "\n".join(out_lines)
+            error = "\n".join(err_lines)
+
+            print(f"[Automation] Process finished (exit={process.returncode})", flush=True)
             result = self.read_automation_result(result_file, result_type, user_id, profile_id)
+            print(f"[Automation] Structured result: {'parsed' if result else 'MISSING'}", flush=True)
 
             if callback_url:
                 headers = {"x-orion-internal-token": token} if token else {}
+                print(f"[Automation] Sending callback to {callback_url}", flush=True)
                 async with httpx.AsyncClient() as client:
-                    await client.post(callback_url, json={"status": "complete", "output": output, "error": error, "result": result}, headers=headers, timeout=10.0)
+                    response = await client.post(callback_url, json={"status": "complete", "output": output, "error": error, "result": result}, headers=headers, timeout=10.0)
+                print(f"[Automation] Callback response: {response.status_code}", flush=True)
         except Exception as e:
+            print(f"[Automation] Run failed: {type(e).__name__}: {e}", flush=True)
             result = self.read_automation_result(result_file, result_type, user_id, profile_id)
             if callback_url:
                 headers = {"x-orion-internal-token": token} if token else {}
                 try:
+                    print(f"[Automation] Sending failure callback to {callback_url}", flush=True)
                     async with httpx.AsyncClient() as client:
                         await client.post(callback_url, json={"status": "failed", "error": str(e), "result": result}, headers=headers, timeout=10.0)
-                except Exception:
-                    pass
+                except Exception as callback_error:
+                    print(f"[Automation] Failure callback could not be sent: {callback_error}", flush=True)
         finally:
             if files_to_cleanup:
                 import os

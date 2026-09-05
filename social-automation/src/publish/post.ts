@@ -3,12 +3,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { SocialPublisher } from '../publish/publisher.js';
-import { SocialAutomationError } from '../errors.js';
+import { SocialAutomationError } from '../shared/errors.js';
 
-import { isPlatformName } from '../types.js';
-import type { SocialPlatformName, PublishPost } from '../types.js';
-import { errorReason, isSessionExpired, isSessionExpiredCode, parseResultFileArg, writeResult } from '../result.js';
-import type { PostResult } from '../result.js';
+import { isPlatformName } from '../shared/model/models.js';
+import type { SocialPlatformName } from '../shared/model/models.js';
+import type { PublishPost } from './model/models.js';
+import { errorReason, isSessionExpired, isSessionExpiredCode, parseResultFileArg, writeResult } from '../shared/result-writer.js';
+import type { PostResult } from './model/models.js';
 
 interface PostArgs {
   platforms: SocialPlatformName[];
@@ -125,8 +126,11 @@ function exitUsage(_error: string): never {
 async function main(): Promise<void> {
   const { platforms, text, images, dryRun, sessionFile } = parseArgs(process.argv);
 
-  if (dryRun) {
+  console.log(`[Post] Platform: ${platforms.join(', ')}`);
+  console.log(`[Post] Text: ${text}`);
 
+  if (dryRun) {
+    console.log(`[Post] Dry run mode, nothing will be published`);
   }
 
   const post: PublishPost = {

@@ -1,7 +1,7 @@
-import { getSocialContext } from '../session/manager.js';
+import { getSocialContext } from '../session/session-manager.js';
 import { trackContext, untrackContext } from '../session/shutdown.js';
-import { errorReason, isSessionExpired, parseResultFileArg, writeResult } from '../result.js';
-import type { AdDetectionResult } from '../result.js';
+import { errorReason, isSessionExpired, parseResultFileArg, writeResult } from '../shared/result-writer.js';
+import type { AdDetectionResult } from './model/models.js';
 import type { BrowserContext } from 'playwright';
 
 async function extractAdDetails(context: BrowserContext, postUrl: string) {
@@ -50,6 +50,8 @@ async function detectAds() {
     }
   }
 
+  console.log(`[AdDetect] Starting Instagram ad detection`);
+
   const resultFile = parseResultFileArg(process.argv);
   const result: AdDetectionResult = {
     total_detected_ads: 0,
@@ -63,6 +65,7 @@ async function detectAds() {
   try {
     context = await getSocialContext(platform, 'default', sessionFile);
   } catch (error) {
+    console.log(`[AdDetect] Could not open session: ${errorReason(error)}`);
     result.error = true;
     result.error_reason = errorReason(error);
     result.session_expired = isSessionExpired(error);
@@ -74,6 +77,7 @@ async function detectAds() {
 
   try {
     const page = context.pages()[0] ?? await context.newPage();
+    console.log(`[AdDetect] Opening feed`);
     await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(5000); 
 
@@ -81,7 +85,10 @@ async function detectAds() {
     const detectedAds = new Set<string>();
 
 
+    console.log(`[AdDetect] Scrolling feed (${maxScrolls} scrolls)`);
+
     for (let i = 0; i < maxScrolls; i++) {
+      console.log(`[AdDetect] Scroll ${i + 1}/${maxScrolls} - ads so far: ${result.ads.length}`);
 
       const articles = page.locator('article');
       const count = await articles.count();
@@ -145,6 +152,7 @@ async function detectAds() {
                 detected_at: new Date().toISOString(),
               });
               result.total_detected_ads = result.ads.length;
+              console.log(`[AdDetect] Ad #${result.ads.length} found: ${author}`);
 
             }
           }
@@ -158,7 +166,10 @@ async function detectAds() {
     }
 
 
+    console.log(`[AdDetect] Finished. Total ads detected: ${result.ads.length}`);
+
   } catch (error) {
+    console.log(`[AdDetect] Failed: ${errorReason(error)}`);
     result.error = true;
     result.error_reason = errorReason(error);
     result.session_expired = isSessionExpired(error);

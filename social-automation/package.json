@@ -7,9 +7,9 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "social:post": "tsx src/automation/post.ts",
-    "social:detect-ads": "tsx src/automation/detect-x-ads.ts",
-    "social:detect-ig-ads": "tsx src/automation/detect-ig-ads.ts",
+    "social:post": "tsx src/publish/post.ts",
+    "social:detect-ads": "tsx src/ad-detection/detect-x-ads.ts",
+    "social:detect-ig-ads": "tsx src/ad-detection/detect-ig-ads.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/ --ext .ts"
