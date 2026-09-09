@@ -1,7 +1,7 @@
-import { getSocialContext } from '../session/session-manager.js';
-import { trackContext, untrackContext } from '../session/shutdown.js';
-import { errorReason, isSessionExpired, parseResultFileArg, writeResult } from '../shared/result-writer.js';
-import type { AdDetectionResult } from './model/models.js';
+import { getSocialContext } from '../../session/session-manager.js';
+import { trackContext, untrackContext } from '../../session/shutdown.js';
+import { errorReason, isSessionExpired, parseResultFileArg, writeResult } from '../../shared/result-writer.js';
+import type { AdDetectionResult } from '../model/models.js';
 import type { BrowserContext } from 'playwright';
 
 async function extractAdDetails(context: BrowserContext, tweetUrl: string) {
@@ -44,21 +44,11 @@ async function extractAdDetails(context: BrowserContext, tweetUrl: string) {
   return details;
 }
 
-async function detectAds() {
+export async function detectAds(sessionFile?: string, resultFile?: string) {
   const platform = 'x';
-
-  const args = process.argv.slice(2);
-  let sessionFile: string | undefined;
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--session-file' && args[i + 1]) {
-      sessionFile = args[i + 1];
-      break;
-    }
-  }
-
   console.log(`[AdDetect] Starting X ad detection`);
 
-  const resultFile = parseResultFileArg(process.argv);
+
   const result: AdDetectionResult = {
     total_detected_ads: 0,
     ads: [],
@@ -167,5 +157,3 @@ async function detectAds() {
     writeResult(resultFile, result);
   }
 }
-
-detectAds().catch(() => {});

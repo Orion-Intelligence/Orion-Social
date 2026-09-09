@@ -8,6 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 from api.orion.orion_controller import orion_controller
 from api.orion.request_manager.queue_monitor import queue_monitor
 from api.routes import SocialRoutes
+from api.extension_manager.extension_manager_routes import ExtensionManagerRoutes
 
 
 class APIService:
@@ -27,6 +28,9 @@ class APIService:
 
         routes = SocialRoutes(self.orion)
         self.app.include_router(routes.router)
+        
+        extension_manager = ExtensionManagerRoutes(self.orion)
+        self.app.include_router(extension_manager.router)
 
         @self.app.get("/health")
         async def health_check():
