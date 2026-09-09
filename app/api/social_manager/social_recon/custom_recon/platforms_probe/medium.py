@@ -21,18 +21,49 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if not user or not user.get("username"):
         return VerdictConstants.ABSENT, {}
     info = {
-        "display_name": parse.text(user.get("name")),
-        "description": parse.text(user.get("bio")),
+        "display_name": parse.clean(user.get("name")),
+        "username": parse.text(user.get("username")),
+        "description": parse.clean(user.get("bio")),
         "avatar": f"https://miro.medium.com/{user.get('imageId')}" if user.get("imageId") else "",
+        "cover": f"https://miro.medium.com/{user.get('backgroundImageId')}" if user.get("backgroundImageId") else "",
         "id": parse.text(user.get("userId")),
         "created_at": parse.text(user.get("createdAt")),
+        "twitter": parse.text(user.get("twitterScreenName")),
     }
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+
+def evaluate_resource(status: int, body: str, final_url: str) -> tuple[str, dict]:
+    if status in (404, 410):
+        return VerdictConstants.ABSENT, {}
+    if status != 200:
+        return VerdictConstants.UNKNOWN, {}
+    meta = parse.meta(body)
+    image = parse.text(meta.get("og:image") or meta.get("twitter:image"))
+    info = {
+        "title": parse.clean(meta.get("og:title") or parse.title(body)),
+        "description": parse.clean(meta.get("og:description") or meta.get("description")),
+        "image": "" if parse.is_generic_image(image) else image,
+    }
+    entity = parse.ld_entity(body, "Article", "VideoObject", "DiscussionForumPosting", "Question", "SocialMediaPosting", "CreativeWork", "MusicRecording", "Product")
+    if entity:
+        if not info["description"]:
+            info["description"] = parse.clean(entity.get("description") or entity.get("headline"))
+        author = entity.get("author")
+        if isinstance(author, list) and author:
+            author = author[0]
+        if isinstance(author, dict):
+            info["author"] = parse.clean(author.get("name"))
+        elif isinstance(author, str):
+            info["author"] = parse.clean(author)
+        info["published"] = parse.text(entity.get("datePublished") or entity.get("uploadDate"))
+    if not any(info.get(key) for key in ("title", "description", "image")):
+        return VerdictConstants.UNKNOWN, {}
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 SUBDOMAIN = ("medium.com", "page")
 ROUTES = (
-    ("@(?P<id>[^/@]+)/(?P<post>[^/]+)", "post"),
     ("@(?P<id>[^/@]+)", "profile"),
-    ("(?P<id>[^/@]+)/(?P<post>[^/]+)", "post"),
     ("(?P<id>[^/@]+)", "page"),
 )
+

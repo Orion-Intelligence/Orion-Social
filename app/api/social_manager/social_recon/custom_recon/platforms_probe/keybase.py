@@ -19,12 +19,28 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         return VerdictConstants.ABSENT, {}
     if not (isinstance(payload, dict) and isinstance(payload.get("them"), list) and payload["them"] and payload["them"][0]):
         return VerdictConstants.UNKNOWN, {}
+    them = payload["them"][0]
+    profile = them.get("profile") if isinstance(them.get("profile"), dict) else {}
+    basics = them.get("basics") if isinstance(them.get("basics"), dict) else {}
+    pictures = them.get("pictures") if isinstance(them.get("pictures"), dict) else {}
+    proofs = (them.get("proofs_summary") or {}).get("by_presentation_group") if isinstance(them.get("proofs_summary"), dict) else {}
     info = {
-        "display_name": parse.text(((payload["them"][0].get("profile") or {}).get("full_name"))),
-        "description": parse.text(((payload["them"][0].get("profile") or {}).get("bio"))),
-        "avatar": parse.text((((payload["them"][0].get("pictures") or {}).get("primary") or {}).get("url"))),
-        "id": parse.text(payload["them"][0].get("id")),
+        "display_name": parse.clean(profile.get("full_name")),
+        "username": parse.text(basics.get("username")),
+        "description": parse.clean(profile.get("bio")),
+        "avatar": parse.text((pictures.get("primary") or {}).get("url")),
+        "location": parse.clean(profile.get("location")),
+        "id": parse.text(them.get("id")),
+        "created_at": parse.text(basics.get("ctime")),
     }
+    for service, entries in (proofs or {}).items():
+        if isinstance(entries, list) and entries and isinstance(entries[0], dict):
+            link = parse.text(entries[0].get("service_url") or entries[0].get("nametag"))
+            key = parse.text(service).lower()
+            if key.startswith(("web", "dns", "http")):
+                key = "website"
+            if link and key and not info.get(key):
+                info[key] = link
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 ROUTES = (

@@ -1,0 +1,5369 @@
+{
+  "facebook": {
+    "username": "zuck",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.facebook.com/zuck",
+    "final_url": "https://www.facebook.com/zuck",
+    "reason": "",
+    "data": {
+      "display_name": "Mark Zuckerberg",
+      "description": "Mark Zuckerberg. 121,204,307 likes · 753,661 talking about this. Bringing the world closer together.",
+      "avatar": "https://scontent.flhe42-1.fna.fbcdn.net/v/t39.30808-1/632598281_10117314650513371_3238643608998008744_n.jpg?stp=dst-jpg_tt6&cstp=mx711x711&ctp=s711x711&_nc_cat=1&ccb=1-7&_nc_sid=3ab345&_nc_ohc=7_27smuPbeAQ7kNvwGN6VUm&_nc_oc=AdqIASsV-c-Tla5VMjONOhIQnJJ6fvDy7SQslsn0B1M5stYRf0xDTDAyqF8f7BqFNz4&_nc_zt=24&_nc_ht=scontent.flhe42-1.fna&_nc_gid=GAy6vjGbj2FEH_7BRpffVQ&_nc_ss=7b289&oh=00_AQLrwufzs5fhwq_0p_-6vSJj-oZ5hq8c_FUcq4UOMZZLmw&oe=6AA6238B",
+      "likes": "121,204,307",
+      "talking_about": "753,661"
+    }
+  },
+  "instagram": {
+    "username": "instagram",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.instagram.com/instagram/",
+    "final_url": "https://www.instagram.com/instagram/",
+    "reason": "",
+    "data": {
+      "display_name": "Instagram",
+      "description": "Discover what's new on Instagram 🔎✨",
+      "avatar": "https://scontent.cdninstagram.com/v/t51.82787-19/550891366_18667771684001321_1383210656577177067_n.jpg?stp=dst-jpg_s100x100_tt6&_nc_cat=1&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=iKL2PIQZ5vgQ7kNvwHYzz-w&_nc_oc=AdqaNcFfXy5JpFoozJmBy5DZp1P0WI3bYmJQYVsZMQo_zyHBHdpXZHDgBgOh1-cpcrM&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=P42SfZE6KTlaDltj9DLWbg&_nc_ss=7b289&oh=00_AQKq_u2zVw9Qn8Kr7KcQpYyNVVAbSVtTylLX05gRtgg3Kw&oe=6AA62A67",
+      "followers": "686M",
+      "following": "286",
+      "posts": "8,579",
+      "username": "instagram"
+    }
+  },
+  "youtube": {
+    "username": "MrBeast",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.youtube.com/@MrBeast",
+    "final_url": "https://www.youtube.com/@MrBeast",
+    "reason": "",
+    "data": {
+      "display_name": "MrBeast",
+      "description": "SUBSCRIBE FOR A COOKIE! New MrBeast or MrBeast Gaming video every single Saturday at noon eastern time! Accomplishments: - Raised $20,000,000 To Plant 20,000,000 Trees - Removed 30,000,000 pounds of trash from the ocean - Helped 2,000 people walk again - Helped 1,000 blind people see - Helped 1,000 deaf people hear - Built wells in Africa - Built and gave away 100 houses - Adopted every dog in a shelter (twice) - Given millions to charity - Started my own snack company Feastables - Started my own software company Viewstats - Gave away a private island (twice) - Gave away 1 million meals - I counted to 100k - Ran a marathon in the world's largest shoes - Survived 50 hours in Antarctica - Recreated Squid Game in real life - Created the largest competition show with 1000 people (Beast Games) - Gave $5,000,000 to one person - Raised $40,000,000 To Bring Clean Water To Millions Of People - Granted 100+ Dream Wishes for Kids Fighting Cancer - Gave Away Another $5,000,000 On Beast Games S2",
+      "avatar": "https://yt3.googleusercontent.com/nxYrc_1_2f77DoBadyxMTmv7ZpRZapHR5jbuYe7PlPd5cIRJxtNNEYyOC0ZsxaDyJJzXrnJiuDE=s900-c-k-c0x00ffffff-no-rj",
+      "cover": "https://yt3.googleusercontent.com/mHMO_eEMp0dPvh0ADwXhPXNYb_GnjSVsLI8biqF1CpxT8OPl7izhNQsDPD3JHhd5y5Mg9GrP=w1060-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj",
+      "username": "MrBeast",
+      "subscribers": "30.4 million"
+    }
+  },
+  "tiktok": {
+    "username": "tiktok",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.tiktok.com/@tiktok",
+    "final_url": "https://www.tiktok.com/@tiktok",
+    "reason": "",
+    "data": {
+      "display_name": "TikTok",
+      "username": "tiktok",
+      "description": "One TikTok can make a big impact",
+      "avatar": "https://p16-common-sign.tiktokcdn.com/tos-maliva-avt-0068/ba67b11de451691939223e9d978e613a~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=abf554e5&x-expires=1789059600&x-signature=AFu9mw31%2FrvAvTVw3JqtzE37DJk%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my2",
+      "id": "107955",
+      "verified": "true",
+      "followers": "95700000",
+      "following": "1",
+      "likes": "463400000",
+      "videos": "1505"
+    }
+  },
+  "x": {
+    "username": "jack",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://x.com/jack",
+    "final_url": "https://x.com/jack",
+    "reason": "",
+    "data": {
+      "display_name": "jack (@jack) on X",
+      "description": "no state is the best state",
+      "avatar": "https://pbs.twimg.com/profile_images/1661201415899951105/azNjKOSH_200x200.jpg"
+    }
+  },
+  "reddit": {
+    "username": "spez",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.reddit.com/user/spez",
+    "final_url": "https://www.reddit.com/user/spez/?solution=b13b355f8ee50b25b13b355f8ee50b25&js_challenge=1&jsc_token=7afd7253fec22262ff1c52b1703fe9ec8ac48affe4ba6187632dc41591795f41&jsc_orig_r=",
+    "reason": "",
+    "data": {}
+  },
+  "pinterest": {
+    "username": "nike",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.pinterest.com/nike/",
+    "final_url": "https://www.pinterest.com/nike/",
+    "reason": "",
+    "data": {
+      "display_name": "Nike",
+      "description": "Inspired by athletes*, styled by you.",
+      "avatar": "https://i.pinimg.com/280x280_RS/5f/4f/9e/5f4f9e2ed079e6692451f9d20f6806a1.jpg",
+      "cover": "https://i.pinimg.com/200x150/1f/3a/8e/1f3a8e3e50fc6ac31912fe744726fd23.jpg",
+      "username": "nike",
+      "followers": "1088442",
+      "following": "5"
+    }
+  },
+  "threads": {
+    "username": "zuck",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.threads.net/@zuck",
+    "final_url": "https://www.threads.com/@zuck",
+    "reason": "",
+    "data": {
+      "display_name": "Mark Zuckerberg",
+      "description": "Mostly superintelligence and MMA takes",
+      "avatar": "https://scontent.cdninstagram.com/v/t51.82787-19/550174606_17925811725103224_8363667901743352243_n.jpg?stp=dst-jpg_s640x640_tt6&_nc_cat=108&ccb=7-5&_nc_sid=b3fa00&_nc_ohc=sClzRzy7uu4Q7kNvwH2DR53&_nc_oc=AdpcXNsKRFs6UKire31W-yew83tfYBdo-9XAUGSV3p-W3hEvc5Nz_5OiDj8WB7ags4Y&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=-QtKZkoIbKK7AkLCUQOMfQ&_nc_ss=7b289&oh=00_AQJaPzh0fgI2pagabVc7TTm1g7dCU4z5TeqmCNJ54la1wA&oe=6AA6327E",
+      "username": "zuck",
+      "followers": "5.7M",
+      "posts": "158"
+    }
+  },
+  "bluesky": {
+    "username": "bsky.app",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://bsky.app/profile/bsky.app",
+    "final_url": "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=bsky.app",
+    "reason": "",
+    "data": {
+      "display_name": "Bluesky",
+      "username": "bsky.app",
+      "description": "official Bluesky account (check username👆) Bugs, feature requests, feedback: support@bsky.app",
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:z72i7hdynmk6r22z27h6tvur/bafkreihwihm6kpd6zuwhhlro75p5qks5qtrcu55jp3gddbfjsieiv7wuka",
+      "cover": "https://cdn.bsky.app/img/banner/plain/did:plc:z72i7hdynmk6r22z27h6tvur/bafkreichzyovokfzmymz36p5jibbjrhsur6n7hjnzxrpbt5jaydp2szvna",
+      "id": "did:plc:z72i7hdynmk6r22z27h6tvur",
+      "followers": "34829841",
+      "following": "14",
+      "posts": "827",
+      "created_at": "2023-04-12T04:53:57.057Z",
+      "lists": "17",
+      "feeds": "7",
+      "starter_packs": "14"
+    }
+  },
+  "quora": {
+    "username": "Balaji-Viswanathan-2",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.quora.com/profile/Balaji-Viswanathan-2",
+    "final_url": "https://www.quora.com/profile/Dr-Balaji-Viswanathan",
+    "reason": "",
+    "data": {
+      "display_name": "Dr. Balaji Viswanathan (பாலாஜி விஸ்வநாதன்)",
+      "description": "Building the road towards Artificial General Intelligence.",
+      "avatar": "https://qph.cf2.quoracdn.net/main-thumb-2355058-200-mffjyumnhcycpdqiqosvtgckcmeynarc.jpeg"
+    }
+  },
+  "twitch": {
+    "username": "ninja",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.twitch.tv/ninja",
+    "final_url": "https://gql.twitch.tv/gql",
+    "reason": "",
+    "data": {
+      "display_name": "Ninja",
+      "username": "ninja",
+      "description": "Just want to make people happy. Co-Founder @DrinkNutcase.",
+      "avatar": "https://static-cdn.jtvnw.net/jtv_user_pictures/90d40495-f467-4911-9035-72d8d10a49c5-profile_image-300x300.png",
+      "cover": "https://static-cdn.jtvnw.net/jtv_user_pictures/36b341d1-0ee2-4cb2-ae00-361740b0051d-profile_banner-480.png",
+      "id": "19571641",
+      "created_at": "2011-01-16T04:31:20.024666Z",
+      "followers": "19238645",
+      "partner": "true"
+    }
+  },
+  "okru": {
+    "username": "elonmusk",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://ok.ru/elonmusk",
+    "final_url": "https://ok.ru/elonmusk",
+    "reason": "",
+    "data": {
+      "display_name": "Илон Маск (Elon Musk)",
+      "description": "Группа Илон Маск (Elon Musk) в Одноклассниках. https://www.youtube.com/c/ElonMusksu Канал рассказывает об Илоне Маске, его проектах Tesla inc, Tesla Energy, Solar City, SpaceX, The Boring Company, HyperLoop, Neuralink, Open AI. Наша группа объединяет фанатов Илона Маска в странах СНГ, но мы не имеем никакого отношения к самому Илону Маску или его компаниям Поддержать канал: Яндекс Кошелек - https://money.yandex.ru/to/4100119539... PayPal - https://www.paypal.me/elonmusksu Карта Сбербанк - 4276 1300 2242 9033",
+      "avatar": "https://i.okcdn.ru/i?r=CICeQJv1RQZIqEhgaodScIWKKoFIDbXaFxfhnldcR9bMl-bcbFGU1euRra5VeqbrLvw7AZB4X2t166vxewpVJg2ARzlsWv1nwW_hE34WyrgVjveiSUxucm9omOcgLSw5siDqF_q21bW059hj7h-zkM7Xf9UgIDWYwlQ1QKbodBQIVvb3E9kF8s27WGk7KcCfbTcE7_IfOA_3jwGWs5ngvwAAACk"
+    }
+  },
+  "bilibili": {
+    "username": "2",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://space.bilibili.com/2",
+    "final_url": "https://api.bilibili.com/x/web-interface/card?mid=2&photo=true",
+    "reason": "",
+    "data": {
+      "display_name": "碧诗",
+      "description": "https://kami.im 直男过气网红 # We Are Star Dust",
+      "avatar": "https://i2.hdslb.com/bfs/face/ef0457addb24141e15dfac6fbf45293ccf1e32ab.jpg",
+      "cover": "https://i1.hdslb.com/bfs/space/cb1c3ef50e22b6096fde67febe863494caefebad.png",
+      "id": "2",
+      "followers": "1427900",
+      "following": "429",
+      "gender": "男",
+      "level": "6",
+      "videos": "44"
+    }
+  },
+  "tieba": {
+    "username": "tieba",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://tieba.baidu.com/home/main?un=tieba",
+    "final_url": "https://tieba.baidu.com/home/get/panel?un=tieba",
+    "reason": "",
+    "data": {
+      "display_name": "贴吧用户_0000Q6b🐾",
+      "avatar": "tb.1.d4d04925.ZGLeM1cuzGhxbZjBa4o0ww?t=1664738574",
+      "followers": "9"
+    }
+  },
+  "mastodon": {
+    "username": "Gargron",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://mastodon.social/@Gargron",
+    "final_url": "https://mastodon.social/api/v1/accounts/lookup?acct=Gargron",
+    "reason": "",
+    "data": {
+      "display_name": "Eugen Rochko",
+      "username": "Gargron",
+      "description": "Executive Strategy & Product Advisor, Founder of @ Mastodon . Film photography, prog metal, Dota 2. Likes all things analog. Luddite.",
+      "avatar": "https://files.mastodon.social/accounts/avatars/000/000/001/original/6b2384b33799a0dd.png",
+      "cover": "https://files.mastodon.social/accounts/headers/000/000/001/original/d13e4417706a5fec.jpg",
+      "id": "1",
+      "created_at": "2016-03-16T00:00:00.000Z",
+      "followers": "382524",
+      "following": "739",
+      "posts": "82207",
+      "github": "https://github.com/Gargron",
+      "website": "https://github.com/Gargron"
+    }
+  },
+  "mewe": {
+    "username": "mewe",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://mewe.com/i/mewe",
+    "final_url": "https://mewe.com/mewe",
+    "reason": "",
+    "data": {
+      "display_name": "mewe: The best chat & group app with privacy you trust."
+    }
+  },
+  "rumble": {
+    "username": "Bongino",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://rumble.com/user/Bongino",
+    "final_url": "https://rumble.com/user/Bongino",
+    "reason": "http 404",
+    "data": {}
+  },
+  "kick": {
+    "username": "xqc",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://kick.com/xqc",
+    "final_url": "https://kick.com/api/v2/channels/xqc",
+    "reason": "",
+    "data": {
+      "display_name": "xQc",
+      "username": "xqc",
+      "description": "THE BEST AT ABSOLUTELY EVERYTHING. THE JUICER. LEADER OF THE JUICERS.",
+      "avatar": "https://files.kick.com/images/user/676/profile_image/conversion/931b4e8f-5445-427c-bd82-b473530390cc-fullsize.webp",
+      "cover": "https://files.kick.com/images/channel/668/banner_image/6fcf7418-df00-460b-9467-1fa95b8eb981",
+      "id": "668",
+      "followers": "1105360",
+      "verified": "true",
+      "instagram": "xqcow1/",
+      "twitter": "xqc",
+      "youtube": "channel/UCmDTrq0LNgPodDOFZiSbsww",
+      "discord": "xqcow"
+    }
+  },
+  "lemon8": {
+    "username": "lemon8",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.lemon8-app.com/@lemon8",
+    "final_url": "https://www.lemon8-app.com/@lemon8",
+    "reason": "http 404",
+    "data": {}
+  },
+  "vsco": {
+    "username": "vsco",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://vsco.co/vsco/gallery",
+    "final_url": "https://vsco.co/vsco/gallery",
+    "reason": "",
+    "data": {
+      "display_name": "VSCO",
+      "username": "vsco"
+    }
+  },
+  "flickr": {
+    "username": "thomashawk",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.flickr.com/people/thomashawk",
+    "final_url": "https://www.flickr.com/people/thomashawk",
+    "reason": "",
+    "data": {
+      "display_name": "Thomas Hawk",
+      "description": "Sometimes I like to think of myself as a photography factory. I see my photographs mostly as raw material for projects that might be worked on at some point later on in life. We all have but a short time on this earth. As slow as time can be it is also fast, swift, furious and mighty and then it’s over. Jack Kerouac is dead. Andy Warhol is dead. Garry Winogrand is dead. Lee Friedlander, William Eggleston and Bob Dylan are not dead yet, but probably will be at some point. Charles Bukowski once said that endurance was more important than truth. Charles Bukowski's now dead. When I'm not taking or processing the pictures I'm mostly thinking about the pictures. I'm trying to publish a library of 1,000,000 hand crafted, lovingly created, individually finished and processed photographs before I die. Mostly I'm focusing on America. The absurdity of my obsessive view on photography is not lost on me -- but it is the absurdity of life that I find most beautiful of all. Where Sisyphus had his stone I have my camera and a bag full of lenses. Document, explore, lather, rinse, repeat. Photography for me then becomes a kind of hyperactivity, loosely arranged and presented. My work is less about individual images and instead more about the power of a massive amount of excessive and disjointed images where stories, characters and places sometimes stay and other times reappear or disappear entirely for no good reason at all. If you want to see good overview portfolio of some of my more popular work you can find that here. \"Don't think about making art. Just get it done. Let everyone else decide if it's good or bad, whether they love it or hate it. While they're deciding, make even more art.\" - Andy Warhol I collect photography books, postcards and vernacular found photographs. Thomas Hawk on Flickr Thomas Hawk on Stocksy Thomas Hawk on Instagram Thomas Hawk on X Thomas Hawk on SmugMug Thomas Hawk on Thomas Hawk's Digital Connection I've got over 4,000 photo albums on Flickr that I've put together. You can see these here. Here's a video interview about me and my work from the Flickr blog. You can contact me at tom(at)thomashawk.com but I check my flickrmail much more frequently.",
+      "username": "thomashawk",
+      "posts": "364650"
+    }
+  },
+  "behance": {
+    "username": "matiasfz",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.behance.net/matiasfz",
+    "final_url": "https://www.behance.net/matiasfz",
+    "reason": "http 404",
+    "data": {}
+  },
+  "dribbble": {
+    "username": "simplebits",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://dribbble.com/simplebits",
+    "final_url": "https://dribbble.com/simplebits",
+    "reason": "",
+    "data": {
+      "display_name": "Dan Cederholm",
+      "username": "simplebits",
+      "description": "Making type & goods at SimpleBits®. Dribbble Co-Founder.",
+      "avatar": "https://cdn.dribbble.com/users/1/avatars/normal/92f85f398c5616f0cd49ab158d82a3b7.png?1745959455"
+    }
+  },
+  "imgur": {
+    "username": "imgur",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://imgur.com/user/imgur",
+    "final_url": "https://api.imgur.com/account/v1/accounts/imgur?client_id=546c25a59c58ad7",
+    "reason": "",
+    "data": {
+      "display_name": "imgur",
+      "username": "imgur",
+      "description": "Imgur's announcement account. All messages are automatic and will not be responded to. For support, contact us via http://help.imgur.com",
+      "avatar": "https://i.imgur.com/W0uma97_d.png?maxwidth=290&fidelity=grand",
+      "cover": "https://imgur.com/user/imgur/cover?maxwidth=2560",
+      "id": "48",
+      "created_at": "2010-01-09T00:00:00Z",
+      "reputation": "431287.8",
+      "reputation_name": "Glorious"
+    }
+  },
+  "artstation": {
+    "username": "wlop",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.artstation.com/wlop",
+    "final_url": "https://www.artstation.com/users/wlop.json",
+    "reason": "",
+    "data": {
+      "display_name": "WLOP",
+      "username": "wlop",
+      "description": "Software engineer, freelance artist",
+      "avatar": "https://cdnb.artstation.com/p/users/avatars/000/047/207/large/029ccf4bd7dc08a4283c082f56397295.jpg?1425212926",
+      "cover": "https://cdnb.artstation.com/p/users/covers/000/047/207/default/397b8d7047f3b729a60210fdb979c9f3.jpg?1726062841",
+      "id": "47207",
+      "location": "Sha Xi, China",
+      "followers": "233917",
+      "following": "154",
+      "posts": "198",
+      "pro": "true",
+      "twitter": "https://twitter.com/wlopwangling",
+      "facebook": "https://www.facebook.com/pages",
+      "instagram": "https://www.instagram.com/wlop",
+      "website": "https://linktr.ee/wlop"
+    }
+  },
+  "bandcamp": {
+    "username": "infectedmushroom",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://infectedmushroom.bandcamp.com",
+    "final_url": "https://infectedmushroom.bandcamp.com/album/dont-panic",
+    "reason": "",
+    "data": {
+      "display_name": "Infected Mushroom",
+      "avatar": "https://f4.bcbits.com/img/0032720928_10.jpg",
+      "id": "3733749173"
+    }
+  },
+  "lastfm": {
+    "username": "rj",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.last.fm/user/rj",
+    "final_url": "https://www.last.fm/user/rj",
+    "reason": "",
+    "data": {
+      "display_name": "RJ",
+      "avatar": "https://lastfm-img.freetls.fastly.net/i/u/ar0/b26d6fd11de240a1c045dfb5c5d9fe65.png",
+      "scrobbles": "151,481",
+      "top_artists": "Green Day, The Offspring, Jack Black"
+    }
+  },
+  "goodreads": {
+    "username": "otis",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.goodreads.com/otis",
+    "final_url": "https://www.goodreads.com/user/show/1-otis-chandler",
+    "reason": "",
+    "data": {
+      "display_name": "Otis Chandler",
+      "description": "Otis Chandler has 1,652 books on Goodreads, and is currently reading Solve for Happy: Engineer Your Path to Joy by Mo Gawdat, The Great Work of Your Life...",
+      "avatar": "https://images.gr-assets.com/users/1506617226p5/1.jpg",
+      "username": "otis",
+      "location": "San Francisco, CA",
+      "books": "1,652"
+    }
+  },
+  "letterboxd": {
+    "username": "dave",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://letterboxd.com/dave/",
+    "final_url": "https://letterboxd.com/dave/",
+    "reason": "",
+    "data": {
+      "display_name": "Dave Vis",
+      "description": "Member since 12/11/2011 My 4 favourites are the last 4 films I rated 5 stars (including rewatches). Looking at my average ratings I might seem a bit too generous... The thing is, I started choosing movies to watch in a different way since I started using Letterboxd. Lots of classics were added to (and ticked off) my watchlist as I'm more serious about films because of this awesome site. And since I only rate the ones with diary entries, the percentage of high ratings is quite substantial...",
+      "avatar": "https://secure.gravatar.com/avatar/b7b59a60d69cdb2ff36f363fb953cdbc?rating=PG&size=1000&border=&default=https%3A%2F%2Fs.ltrbxd.com%2Fstatic%2Fimg%2Favatar1000-BdGBhe59.png",
+      "username": "dave",
+      "films_watched": "2,577",
+      "favorites": "High and Low (1963), Burning (2018), My Neighbor Totoro (1988), Mulholland Drive (2001)"
+    }
+  },
+  "academia": {
+    "username": "noamchomsky",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://independent.academia.edu/noamchomsky",
+    "final_url": "https://independent.academia.edu/noamchomsky",
+    "reason": "",
+    "data": {
+      "display_name": "noam chomsky",
+      "created_at": "2014-06-13T04:37:37-07:00",
+      "interests": "Languages and Linguistics"
+    }
+  },
+  "stackoverflow": {
+    "username": "22656",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://stackoverflow.com/users/22656",
+    "final_url": "https://stackoverflow.com/users/22656/jon-skeet",
+    "reason": "",
+    "data": {
+      "display_name": "Jon Skeet",
+      "description": "Stack Overflow | The World’s Largest Online Community for Developers",
+      "avatar": "https://stackoverflow.com/Content/Sites/stackoverflow/Img/apple-touch-icon@2.png?v=0f0cab681579",
+      "username": "jon-skeet"
+    }
+  },
+  "stackexchange": {
+    "username": "1",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://stackexchange.com/users/1",
+    "final_url": "https://stackexchange.com/users/1/jeff-atwood",
+    "reason": "",
+    "data": {
+      "display_name": "Jeff Atwood",
+      "username": "jeff-atwood"
+    }
+  },
+  "github": {
+    "username": "torvalds",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://github.com/torvalds",
+    "final_url": "https://api.github.com/users/torvalds",
+    "reason": "",
+    "data": {
+      "display_name": "Linus Torvalds",
+      "username": "torvalds",
+      "avatar": "https://avatars.githubusercontent.com/u/1024025?v=4",
+      "id": "1024025",
+      "followers": "321541",
+      "repos": "12",
+      "created_at": "2011-09-03T15:26:22Z",
+      "updated_at": "2026-07-21T17:42:26Z",
+      "location": "Portland, OR",
+      "company": "Linux Foundation",
+      "type": "User"
+    }
+  },
+  "gitlab": {
+    "username": "gitlab-bot",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://gitlab.com/gitlab-bot",
+    "final_url": "https://gitlab.com/api/v4/users?username=gitlab-bot",
+    "reason": "",
+    "data": {
+      "display_name": "🤖 GitLab Bot 🤖",
+      "username": "gitlab-bot",
+      "avatar": "https://gitlab.com/uploads/-/system/user/avatar/1786152/avatar.png?v=1788888810",
+      "id": "1786152",
+      "website": "https://gitlab.com/gitlab-bot",
+      "state": "active"
+    }
+  },
+  "hackernews": {
+    "username": "pg",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://news.ycombinator.com/user?id=pg",
+    "final_url": "https://hacker-news.firebaseio.com/v0/user/pg.json",
+    "reason": "",
+    "data": {
+      "id": "pg",
+      "description": "Bug fixer.",
+      "created_at": "1160418092",
+      "karma": "157316",
+      "submissions": "15565"
+    }
+  },
+  "producthunt": {
+    "username": "rrhoover",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.producthunt.com/@rrhoover",
+    "final_url": "https://www.producthunt.com/@rrhoover",
+    "reason": "",
+    "data": {
+      "display_name": "Ryan Hoover",
+      "description": "Founder of Product Hunt & Weekend Fund",
+      "username": "rrhoover"
+    }
+  },
+  "medium": {
+    "username": "dan",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://medium.com/@dan",
+    "final_url": "https://medium.com/@dan?format=json",
+    "reason": "",
+    "data": {
+      "display_name": "Dan",
+      "username": "dan",
+      "description": "I've got an opinion for every occasion.",
+      "avatar": "https://miro.medium.com/0*cJRv-RvERPnt4LWD.jpeg",
+      "id": "549c9bcd7dca",
+      "created_at": "1345011511473",
+      "twitter": "dan"
+    }
+  },
+  "substack": {
+    "username": "newsletter",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://substack.com/@newsletter",
+    "final_url": "https://substack.com/@newsletter",
+    "reason": "",
+    "data": {
+      "display_name": "Harshika Singh",
+      "avatar": "https://substackcdn.com/image/fetch/$s_!CfPx!,f_auto,q_auto:best,fl_progressive:steep/https%3A%2F%2Fsubstack.com%2Fapi%2Fv1%2Fprofile%2Fassets%2F2371303%2Flight%3FaspectRatio%3Dlink%26version%3D1",
+      "username": "newsletter"
+    }
+  },
+  "fandom": {
+    "username": "Sannse",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://community.fandom.com/wiki/User:Sannse",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "steam": {
+    "username": "robinwalker",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://steamcommunity.com/id/robinwalker",
+    "final_url": "https://steamcommunity.com/id/robinwalker?xml=1",
+    "reason": "",
+    "data": {
+      "display_name": "Robin",
+      "username": "robinwalker",
+      "description": "If there's someone on Discord claiming to be me, they're trying to scam you. No one from Valve or Steam Support will ever contact you over Discord, or any other social / chat service, including Steam chat itself. Instead, all Steam's support issues are resolved directly through Steam's support site at https://help.steampowered.com/ I don't have the ability to take down scammer Discord accounts, so please report any such scammers to Discord at: https://support.discord.com/hc/en-us/articles/360000291932-How-to-Properly-Report-Issues-to-Trust-Safety",
+      "avatar": "https://avatars.fastly.steamstatic.com/81b5478529dce13bf24b55ac42c1af7058aaf7a9_full.jpg",
+      "id": "76561197960435530",
+      "realname": "Robin Walker",
+      "location": "Bellevue, Washington, United States",
+      "created_at": "September 12, 2003"
+    }
+  },
+  "roblox": {
+    "username": "builderman",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.roblox.com/users/profile?username=builderman",
+    "final_url": "https://users.roblox.com/v1/users/156",
+    "reason": "",
+    "data": {
+      "display_name": "builderman",
+      "username": "builderman",
+      "avatar": "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-882C70E071E5997E51F8CB373002AFC3-Png/420/420/AvatarHeadshot/Png/noFilter",
+      "id": "156",
+      "created_at": "2006-03-08T17:17:52.9Z",
+      "verified": "true"
+    }
+  },
+  "gamejolt": {
+    "username": "cros",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://gamejolt.com/@cros",
+    "final_url": "https://gamejolt.com/site-api/web/profile/@cros",
+    "reason": "",
+    "data": {
+      "display_name": "🌩️",
+      "username": "CROS",
+      "avatar": "https://i.gjcdn.net/public-data/users/0/1/1/avatars/david-10-zwaztep5.png",
+      "cover": "https://i.gjcdn.net/public-data/users/0/1/1/headers/pixel test banner - dark-kwwyhekj.png",
+      "id": "1",
+      "followers": "7200",
+      "following": "863",
+      "likes": "58648",
+      "website": "http://davidjolt.com",
+      "created_at": "1229755204000",
+      "verified": "true"
+    }
+  },
+  "myanimelist": {
+    "username": "Xinil",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://myanimelist.net/profile/Xinil",
+    "final_url": "https://myanimelist.net/profile/Xinil",
+    "reason": "",
+    "data": {
+      "display_name": "Xinil",
+      "description": "Check out Xinil's anime and manga lists, stats, favorites and so much more on MyAnimeList, the largest online anime and manga database in the world! Join the online community, create your anime and manga list, read reviews, explore the forums, follow news, and so much more!",
+      "avatar": "https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png",
+      "username": "Xinil"
+    }
+  },
+  "anilist": {
+    "username": "Josh",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://anilist.co/user/Josh",
+    "final_url": "https://graphql.anilist.co/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "interpals": {
+    "username": "maria",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.interpals.net/maria",
+    "final_url": "https://www.interpals.net/maria",
+    "reason": "http 200",
+    "data": {}
+  },
+  "livejournal": {
+    "username": "brad",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://brad.livejournal.com/profile",
+    "final_url": "https://brad.livejournal.com/profile/",
+    "reason": "",
+    "data": {
+      "display_name": "brad",
+      "username": "brad"
+    }
+  },
+  "plurk": {
+    "username": "plurk",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.plurk.com/plurk",
+    "final_url": "https://www.plurk.com/plurk",
+    "reason": "",
+    "data": {
+      "display_name": "Plurk",
+      "description": "Plurk Official Account -- This is system account f...",
+      "avatar": "https://avatars.plurk.com/11604460-big80538848.jpg",
+      "username": "plurk"
+    }
+  },
+  "misskey": {
+    "username": "ai",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://misskey.io/@ai",
+    "final_url": "https://misskey.io/api/users/show",
+    "reason": "",
+    "data": {
+      "display_name": "藍",
+      "username": "ai",
+      "description": "Misskey常駐AIの藍です！ よろしくお願いします♪ [私のサイト](https://xn--931a.moe/) | [説明書](https://github.com/syuilo/ai/blob/master/torisetu.md) Repository: [Public](https://github.com/syuilo/ai)",
+      "avatar": "https://proxy.misskeyusercontent.jp/avatar.webp?url=https%3A%2F%2Fmedia.misskeyusercontent.jp%2Fmisskey%2Fwebpublic-ecc1008f-3e2e-4206-ae7e-5093221f08be.png&avatar=1",
+      "id": "7rkr3b1c1c",
+      "created_at": "2019-04-14T17:11:39.168Z",
+      "location": "Misskey",
+      "followers": "21980",
+      "following": "1463",
+      "posts": "282079",
+      "bot": "true"
+    }
+  },
+  "nostr": {
+    "username": "nostr",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://njump.me/nostr",
+    "final_url": "https://njump.me/nostr",
+    "reason": "http 404",
+    "data": {}
+  },
+  "microblog": {
+    "username": "manton",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://micro.blog/manton",
+    "final_url": "https://micro.blog/manton",
+    "reason": "",
+    "data": {
+      "avatar": "https://avatars.micro.blog/avatars/2025/22/3.jpg",
+      "username": "manton",
+      "display_name": "manton"
+    }
+  },
+  "vimeo": {
+    "username": "staff",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://vimeo.com/staff",
+    "final_url": "https://vimeo.com/api/v2/staff/info.json",
+    "reason": "",
+    "data": {
+      "display_name": "Vimeo",
+      "username": "staff",
+      "description": "Vimeo is the world's most innovative video experience platform. We enable anyone to create high-quality video experiences to better connect and bring ideas to life. We proudly serve our community of millions of users – from creative storytellers to globally distributed teams at the world's largest companies – whose videos receive billions of views each month.",
+      "avatar": "https://i.vimeocdn.com/portrait/121863746_300x300?subrect=0%2C0%2C344%2C344&r=cover&sig=54c2fef7b23ff87b9fbff04008bce0bee1125865ef62aa056299edb1cce3e0c4&v=1&region=us",
+      "id": "152184",
+      "created_at": "2007-01-18 11:40:11",
+      "videos": "811"
+    }
+  },
+  "patreon": {
+    "username": "patreon",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.patreon.com/patreon",
+    "final_url": "https://www.patreon.com/cw/patreon",
+    "reason": "",
+    "data": {
+      "display_name": "Patreon",
+      "description": "Patreon is empowering a new generation of creators. Support and engage with artists and creators as they live out their passions!",
+      "avatar": "https://www.patreon.com/ig/card-teaser-image/creator/14685527.png?v=bakr8q"
+    }
+  },
+  "linktree": {
+    "username": "shawnmendes",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://linktr.ee/shawnmendes",
+    "final_url": "https://linktr.ee/shawnmendes",
+    "reason": "",
+    "data": {
+      "username": "shawnmendes",
+      "avatar": "https://ugc.production.linktr.ee/e11a699a-4079-4751-a154-8cc7026ed6bd_453831070-1851044942043165-6930315343607466007-n.jpeg",
+      "instagram": "https://instagram.com/shawnmendes",
+      "tiktok": "https://tiktok.com/@shawnmendes",
+      "youtube": "https://www.youtube.com/shawnmendes",
+      "twitter": "https://x.com/shawnmendes"
+    }
+  },
+  "aboutme": {
+    "username": "natalie",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://about.me/natalie",
+    "final_url": "https://about.me/natalie",
+    "reason": "",
+    "data": {
+      "display_name": "Natalie Jost",
+      "username": "natalie",
+      "description": "Previously a freelance web designer I now design and make by hand beautiful, functional pieces for the home. Married, with three funny girls, life is good.",
+      "cover": "https://assets.about.me/background/users/n/a/t/natalie_1447676619_43.jpg",
+      "company": "Olive Manna",
+      "id": "1225530",
+      "twitter": "natalie",
+      "instagram": "http://instagram.com/nataliejost"
+    }
+  },
+  "gravatar": {
+    "username": "beau",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://gravatar.com/beau",
+    "final_url": "https://gravatar.com/beau.json",
+    "reason": "",
+    "data": {
+      "display_name": "Beau Lebens",
+      "username": "beau",
+      "description": "Lead of WooCommerce, at Automattic. Previously Jetpack, WordPress.com and more. I've been building the web for over 20 years.",
+      "avatar": "https://0.gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109",
+      "cover": "https://2.gravatar.com/bg/1428/5eb8482783a9b095bc8c43399f845ad2",
+      "location": "Golden, CO",
+      "job": "Lead, WooCommerce",
+      "company": "Automattic",
+      "pronouns": "he/him",
+      "twitter": "https://x.com/beaulebens",
+      "linkedin": "https://www.linkedin.com/in/beaulebens",
+      "github": "https://github.com/beaulebens",
+      "instagram": "https://instagram.com/beaulebens"
+    }
+  },
+  "keybase": {
+    "username": "chris",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://keybase.io/chris",
+    "final_url": "https://keybase.io/_/api/1.0/user/lookup.json?usernames=chris",
+    "reason": "",
+    "data": {
+      "display_name": "Chris Coyne",
+      "username": "chris",
+      "description": "Previously worked on 🔐 Keybase, 😻OkCupid, 📘SparkNotes, and some random other junk. I love making things.",
+      "avatar": "https://s3.amazonaws.com/keybase_processed_uploads/4c7cff041ee54c71fd25595898133505_360_360.jpg",
+      "location": "Maine",
+      "id": "23260c2ce19420f97b58d7d95b68ca00",
+      "created_at": "1391653108",
+      "twitter": "https://twitter.com/malgorithms",
+      "github": "https://github.com/malgorithms",
+      "reddit": "https://reddit.com/user/malgorithms",
+      "hackernews": "https://news.ycombinator.com/user?id=malgorithms",
+      "website": "https://chriscoyne.com"
+    }
+  },
+  "dockerhub": {
+    "username": "jess",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://hub.docker.com/u/jess",
+    "final_url": "https://hub.docker.com/v2/users/jess",
+    "reason": "",
+    "data": {
+      "display_name": "Jessie Frazelle",
+      "username": "jess",
+      "avatar": "https://www.gravatar.com/avatar/cd8d4e368c2b48e8eabfeeb23e6e89bf?s=80&r=g&d=mm",
+      "id": "51876f1a74c011e4bea40242ac11001b",
+      "created_at": "2014-05-10T19:02:08Z",
+      "location": "New York, NY",
+      "type": "User"
+    }
+  },
+  "opensea": {
+    "username": "justinaversano",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://opensea.io/justinaversano",
+    "final_url": "https://opensea.io/justinaversano",
+    "reason": "",
+    "data": {
+      "display_name": "justinaversano",
+      "username": "justinaversano",
+      "bio": "Justin Aversano is an artist and curator working within the New York City art scene.",
+      "avatar": "https://i2c.seadn.io/profiles/0x799e1fe921d587d7c956e73e95ff6103dc3e7883/avatar/a039e22c92d2f6b0f47c25109a195f/b4a039e22c92d2f6b0f47c25109a195f.jpeg",
+      "cover": "https://i2c.seadn.io/profiles/0x799e1fe921d587d7c956e73e95ff6103dc3e7883/banner/3b058c33d9832c6b1338f0da083577/c73b058c33d9832c6b1338f0da083577.png",
+      "address": "0x799e1fe921d587d7c956e73e95ff6103dc3e7883",
+      "account_id": "9efe14c4d72e4e96ae2dc8ec75a8953f",
+      "created_at": "2021-02-05T18:27:35.021Z",
+      "website": "https://justinaversano.com",
+      "ens_name": "justinaversano.eth",
+      "twitter": "justinaversano",
+      "instagram": "justinaversano",
+      "followers": "17",
+      "verified": "true"
+    }
+  },
+  "codepen": {
+    "username": "chriscoyier",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://codepen.io/chriscoyier",
+    "final_url": "https://codepen.io/chriscoyier",
+    "reason": "",
+    "data": {
+      "display_name": "Chris Coyier",
+      "description": "Team CodePen and I built this here place.",
+      "avatar": "https://assets.codepen.io/3/internal/avatars/users/default.png?fit=crop&format=auto&height=512&version=48&width=512",
+      "username": "chriscoyier"
+    }
+  },
+  "chesscom": {
+    "username": "hikaru",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.chess.com/member/hikaru",
+    "final_url": "https://api.chess.com/pub/player/hikaru",
+    "reason": "",
+    "data": {
+      "display_name": "Hikaru Nakamura",
+      "username": "hikaru",
+      "avatar": "https://images.chesscomfiles.com/uploads/v1/user/15448422.88c010c1.200x200o.3c5619f5441e.png",
+      "id": "15448422",
+      "followers": "1409631",
+      "created_at": "1389043258",
+      "last_online": "1788877417",
+      "title": "GM",
+      "location": "Florida",
+      "country": "US",
+      "status": "premium",
+      "league": "Legend",
+      "twitch": "https://twitch.tv/gmhikaru",
+      "streamer": "true"
+    }
+  },
+  "lichess": {
+    "username": "thibault",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://lichess.org/@/thibault",
+    "final_url": "https://lichess.org/api/user/thibault",
+    "reason": "",
+    "data": {
+      "display_name": "Thibault Duplessis",
+      "username": "thibault",
+      "description": "I turn coffee into bugs.",
+      "id": "thibault",
+      "created_at": "1290415680000",
+      "last_online": "1788886615281",
+      "games": "23723",
+      "verified": "true",
+      "patron": "true",
+      "twitch": "https://www.twitch.tv/ornicar2",
+      "github": "https://github.com/ornicar"
+    }
+  },
+  "speedrun": {
+    "username": "AnInternetTroll",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.speedrun.com/users/AnInternetTroll",
+    "final_url": "https://www.speedrun.com/api/v1/users/7j477kvj",
+    "reason": "",
+    "data": {
+      "display_name": "AnInternetTroll",
+      "username": "AnInternetTroll",
+      "id": "7j477kvj",
+      "created_at": "2017-11-21T16:00:20Z",
+      "location": "Valhalla"
+    }
+  },
+  "dailymotion": {
+    "username": "euronews",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.dailymotion.com/euronews",
+    "final_url": "https://api.dailymotion.com/user/euronews?fields=id,screenname,username,description,avatar_720_url,cover_url,url,followers_total,videos_total,views_total,created_time,country,language,verified",
+    "reason": "",
+    "data": {
+      "display_name": "euronews",
+      "username": "euronews",
+      "avatar": "https://s2.dmcdn.net/u/1Q7eQ1gcT1YKREwD6/720x720",
+      "cover": "https://s2.dmcdn.net/b/1Q7eQ1gcT1Y_pd6wo",
+      "id": "xe2cka",
+      "followers": "7338",
+      "videos": "91870",
+      "views": "4963072",
+      "created_at": "1228126664",
+      "country": "FR",
+      "language": "fr",
+      "verified": "true"
+    }
+  },
+  "giphy": {
+    "username": "nike",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://giphy.com/nike",
+    "final_url": "https://giphy.com/nike",
+    "reason": "",
+    "data": {
+      "display_name": "Nike",
+      "username": "nike",
+      "description": "Just Do It"
+    }
+  },
+  "unsplash": {
+    "username": "unsplash",
+    "verdict": "unknown",
+    "status": 401,
+    "url": "https://unsplash.com/@unsplash",
+    "final_url": "https://unsplash.com/.within.website?redir=%2F%40unsplash",
+    "reason": "http 401",
+    "data": {}
+  },
+  "pexels": {
+    "username": "bemisaal-restaurant-234506",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.pexels.com/@bemisaal-restaurant-234506",
+    "final_url": "https://www.pexels.com/@bemisaal-restaurant-234506/",
+    "reason": "",
+    "data": {
+      "display_name": "Bemisaal Restaurant",
+      "username": "bemisaal-restaurant-234506",
+      "followers": "13",
+      "photos": "2"
+    }
+  },
+  "wikipedia": {
+    "username": "Jimbo_Wales",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://en.wikipedia.org/wiki/User:Jimbo_Wales",
+    "final_url": "https://en.wikipedia.org/w/api.php?action=query&list=users&ususers=Jimbo_Wales&usprop=registration|editcount|groups&format=json",
+    "reason": "",
+    "data": {
+      "display_name": "Jimbo Wales",
+      "username": "Jimbo Wales",
+      "id": "24",
+      "created_at": "2001-03-27T20:47:31Z",
+      "edits": "15116",
+      "groups": "founder, reviewer"
+    }
+  },
+  "xing": {
+    "username": "test_test",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.xing.com/profile/test_test",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "wellfound": {
+    "username": "naval",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://wellfound.com/u/naval",
+    "final_url": "https://wellfound.com/p/naval",
+    "reason": "",
+    "data": {
+      "display_name": "Naval Ravikant",
+      "description": "Seed Fund - San Francisco - Sweat: @angellist , @venture-hacks @vast @epinions ; Money: @twitter @heyzap @uber -",
+      "avatar": "https://photos.wellfound.com/users/155-large?1462899600",
+      "username": "naval"
+    }
+  },
+  "habr": {
+    "username": "kafeman",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://habr.com/ru/users/kafeman/",
+    "final_url": "https://habr.com/ru/users/kafeman/",
+    "reason": "",
+    "data": {
+      "username": "kafeman",
+      "description": "Пользователь",
+      "avatar": "https://habrastorage.org/getpro/habr/avatars/7bf/80e/da6/7bf80eda638211ca4a38ed48b4058c2d.png",
+      "score": "308",
+      "followers": "49",
+      "following": "6",
+      "last_activity": "2026-05-15T14:56:12+00:00"
+    }
+  },
+  "pikabu": {
+    "username": "Pikabu",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://pikabu.ru/@Pikabu",
+    "final_url": "https://pikabu.ru/@Pikabu",
+    "reason": "",
+    "data": {
+      "display_name": "pikabu",
+      "description": "454 поста, 4536 комментариев, 3598 подписчиков",
+      "avatar": "https://cs15.pikabu.ru/avatars/0/x94-695807454.png",
+      "username": "pikabu"
+    }
+  },
+  "wordpress": {
+    "username": "en.blog",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://en.blog.wordpress.com",
+    "final_url": "https://public-api.wordpress.com/rest/v1.1/sites/en.blog.wordpress.com",
+    "reason": "",
+    "data": {
+      "display_name": "WordPress.com Blog",
+      "description": "News, Tips & Website Tutorials",
+      "avatar": "https://en-blog.files.wordpress.com/2026/01/wp_favicon_512x512px.png?w=96",
+      "id": "3584907",
+      "website": "https://en.blog.wordpress.com"
+    }
+  },
+  "mixcloud": {
+    "username": "spartacus",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.mixcloud.com/spartacus/",
+    "final_url": "https://api.mixcloud.com/spartacus/",
+    "reason": "",
+    "data": {
+      "display_name": "Spartacus",
+      "username": "spartacus",
+      "description": "Part of the Mixcloud team - since Mixcloud was just a good idea.",
+      "avatar": "https://thumbnailer.mixcloud.com/unsafe/600x600/profile/2/7/9/e/c70a-cdba-4fb6-a57d-c16f5520fdc9",
+      "location": "London, United Kingdom",
+      "followers": "771",
+      "following": "102",
+      "tracks": "5",
+      "created_at": "2009-03-10T07:32:56Z"
+    }
+  },
+  "itch": {
+    "username": "leafo",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://leafo.itch.io",
+    "final_url": "https://leafo.itch.io/",
+    "reason": "",
+    "data": {
+      "display_name": "leafo",
+      "avatar": "https://img.itch.zone/aW1hZ2UvMjAxMDMwLzkzOTIzMS5wbmc=/508x254%23mb/ha4N8c.png",
+      "username": "leafo",
+      "twitter": "https://twitter.com/moonscript"
+    }
+  },
+  "minecraft": {
+    "username": "Notch",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://namemc.com/profile/Notch",
+    "final_url": "https://api.mojang.com/users/profiles/minecraft/Notch",
+    "reason": "",
+    "data": {
+      "display_name": "Notch",
+      "username": "Notch",
+      "id": "069a79f444e94726a5befca90e38aaf5",
+      "avatar": "https://crafatar.com/avatars/069a79f444e94726a5befca90e38aaf5?size=128&overlay"
+    }
+  },
+  "osu": {
+    "username": "peppy",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://osu.ppy.sh/users/peppy",
+    "final_url": "https://osu.ppy.sh/users/2",
+    "reason": "",
+    "data": {
+      "display_name": "peppy",
+      "username": "peppy",
+      "avatar": "https://a.ppy.sh/2?1657169614.png",
+      "cover": "https://assets.ppy.sh/user-profile-covers/2/baba245ef60834b769694178f8f6d4f6166c5188c740de084656ad2b80f1eea7.jpeg",
+      "id": "2",
+      "country": "AU",
+      "created_at": "2007-08-28T03:09:12+00:00",
+      "followers": "60059",
+      "pp": "1184.23",
+      "rank": "769504",
+      "play_count": "7813",
+      "supporter": "true"
+    }
+  },
+  "codeforces": {
+    "username": "tourist",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://codeforces.com/profile/tourist",
+    "final_url": "https://codeforces.com/api/user.info?handles=tourist",
+    "reason": "",
+    "data": {
+      "display_name": "Gennady Korotkevich",
+      "username": "tourist",
+      "avatar": "https://userpic.codeforces.org/422/title/50a270ed4a722867.jpg",
+      "location": "Gomel, Belarus",
+      "organization": "ITMO University",
+      "rank": "legendary grandmaster",
+      "max_rank": "tourist",
+      "rating": "3528",
+      "max_rating": "4009",
+      "contribution": "112",
+      "followers": "90661",
+      "created_at": "1265987288",
+      "last_online": "1788854521"
+    }
+  },
+  "leetcode": {
+    "username": "lee215",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://leetcode.com/u/lee215/",
+    "final_url": "https://leetcode.com/graphql",
+    "reason": "",
+    "data": {
+      "display_name": "lee",
+      "username": "lee215",
+      "description": "Lee codes for fun :) 🍠lee215: 2950607729",
+      "avatar": "https://assets.leetcode.com/users/lee215/avatar_1551541889.png",
+      "location": "China",
+      "ranking": "106082",
+      "reputation": "230603",
+      "website": "https://www.youtube.com/channel/UCUBt1TDQTl1atYsscVoUzoQ"
+    }
+  },
+  "hackerrank": {
+    "username": "vatsal",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.hackerrank.com/profile/vatsal",
+    "final_url": "https://www.hackerrank.com/rest/contests/master/hackers/vatsal/profile",
+    "reason": "",
+    "data": {
+      "display_name": "vatsal rastogi",
+      "username": "vatsal",
+      "id": "20923",
+      "location": "India",
+      "level": "5",
+      "created_at": "2012-12-05T17:44:55.000Z"
+    }
+  },
+  "codewars": {
+    "username": "myjinxin2015",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.codewars.com/users/myjinxin2015",
+    "final_url": "https://www.codewars.com/api/v1/users/myjinxin2015",
+    "reason": "",
+    "data": {
+      "display_name": "忧郁的胡茬",
+      "username": "myjinxin2015",
+      "id": "56434db1abfb0e0df800005f",
+      "clan": "中国 长垣",
+      "honor": "399420",
+      "leaderboard_position": "3",
+      "rank": "1 dan",
+      "skills": "create 1000 katas"
+    }
+  },
+  "kaggle": {
+    "username": "dansbecker",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.kaggle.com/dansbecker",
+    "final_url": "https://www.kaggle.com/dansbecker",
+    "reason": "",
+    "data": {
+      "display_name": "DanB",
+      "description": "Created Kaggle Learn - Later founded Decision AI - Now VP Product for ML Dev Tools at DataRobot",
+      "avatar": "https://storage.googleapis.com/kaggle-avatars/thumbnails/9028-fb.jpg",
+      "username": "dansbecker"
+    }
+  },
+  "crates": {
+    "username": "carllerche",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://crates.io/users/carllerche",
+    "final_url": "https://crates.io/api/v1/users/carllerche",
+    "reason": "",
+    "data": {
+      "display_name": "Carl Lerche",
+      "username": "carllerche",
+      "avatar": "https://avatars.githubusercontent.com/u/6180?v=4",
+      "id": "10",
+      "github": "https://github.com/carllerche",
+      "created_at": "2008-04-10T17:55:54Z"
+    }
+  },
+  "devto": {
+    "username": "ben",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://dev.to/ben",
+    "final_url": "https://dev.to/api/users/by_username?url=ben",
+    "reason": "",
+    "data": {
+      "display_name": "Ben Halpern",
+      "username": "ben",
+      "description": "A Canadian software developer who thinks he’s funny.",
+      "avatar": "https://media2.dev.to/dynamic/image/width=320,height=320,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.us-east-2.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F1%2Fbabb96d0-9cd2-49bc-a412-2dc4caf94c2a.png",
+      "id": "1",
+      "created_at": "Dec 27, 2015",
+      "location": "NY",
+      "website": "http://benhalpern.com",
+      "twitter": "bendhalpern",
+      "github": "benhalpern"
+    }
+  },
+  "hashnode": {
+    "username": "sandeep",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://hashnode.com/@sandeep",
+    "final_url": "https://hashnode.com/@sandeep",
+    "reason": "",
+    "data": {
+      "display_name": "Sandeep Panda",
+      "description": "co-founder, Hashnode",
+      "username": "sandeep"
+    }
+  },
+  "gumroad": {
+    "username": "andrewkelley",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://andrewkelley.gumroad.com",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "redbubble": {
+    "username": "nike",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.redbubble.com/people/nike/shop",
+    "final_url": "https://www.redbubble.com/people/nike/shop",
+    "reason": "",
+    "data": {
+      "display_name": "nike",
+      "description": "nike is an independent artist creating amazing designs for great products such as t-shirts, stickers, posters, and phone cases.",
+      "avatar": "/frontend-static/og-image.jpeg",
+      "username": "nike"
+    }
+  },
+  "kitsu": {
+    "username": "vikhyat",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://kitsu.io/users/vikhyat",
+    "final_url": "https://kitsu.io/api/edge/users?filter[name]=vikhyat",
+    "reason": "",
+    "data": {
+      "display_name": "vikhyat",
+      "username": "vikhyat",
+      "avatar": "https://media.kitsu.app/users/avatars/1/original.jpg",
+      "cover": "https://media.kitsu.app/users/cover_images/1/original.jpeg",
+      "id": "1",
+      "location": "Seattle, WA",
+      "followers": "1673",
+      "following": "1084",
+      "created_at": "2013-02-20T16:21:01.289Z"
+    }
+  },
+  "rubygems": {
+    "username": "dhh",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://rubygems.org/profiles/dhh",
+    "final_url": "https://rubygems.org/profiles/dhh",
+    "reason": "",
+    "data": {
+      "display_name": "dhh",
+      "username": "dhh"
+    }
+  },
+  "scratch": {
+    "username": "griffpatch",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://scratch.mit.edu/users/griffpatch/",
+    "final_url": "https://api.scratch.mit.edu/users/griffpatch",
+    "reason": "",
+    "data": {
+      "display_name": "griffpatch",
+      "username": "griffpatch",
+      "description": "Got hooked on coding when I was a kid, now I'm a parent and nothing's changed! My day job involves java coding. In my spare time I love making games, being creative & drumming in church.",
+      "avatar": "https://cdn2.scratch.mit.edu/get_image/user/1882674_90x90.png?v=",
+      "id": "1882674",
+      "created_at": "2012-10-24T12:59:31.000Z",
+      "location": "United Kingdom"
+    }
+  },
+  "houzz": {
+    "username": "spacecrafting",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.houzz.com/user/spacecrafting",
+    "final_url": "https://www.houzz.com/user/spacecrafting",
+    "reason": "",
+    "data": {
+      "display_name": "spacecrafting"
+    }
+  },
+  "smule": {
+    "username": "SmuleOfficial",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.smule.com/SmuleOfficial",
+    "final_url": "https://www.smule.com/SmuleOfficial",
+    "reason": "",
+    "data": {
+      "description": "Be who you are. Say what you feel. Those who mind don't matter. And those who matter, don't mind.",
+      "avatar": "https://c-cf.cdn.smule.com/rs-z0/account/picture/60/f1/8117672b-d709-4a05-83b7-cfe617267e9d.jpg",
+      "username": "smuleofficial",
+      "display_name": "smuleofficial"
+    }
+  },
+  "notion": {
+    "username": "notion",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.notion.so/@notion",
+    "final_url": "https://www.notion.com/@notion",
+    "reason": "",
+    "data": {
+      "display_name": "Notion",
+      "description": "Discover new ways to use Notion across work and life.",
+      "avatar": "https://www.notion.com/en-us/front-api/og-image/templates/creators/notion"
+    }
+  },
+  "tellonym": {
+    "username": "tellonym",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://tellonym.me/tellonym",
+    "final_url": "https://tellonym.me/tellonym",
+    "reason": "",
+    "data": {
+      "display_name": "Send me Anonymous Questions! - @Tellonym",
+      "description": "Send",
+      "avatar": "https://userimg.tellonym.me/md/1_7b1d770876bb11ceb1eef5661e1f715c.jpg",
+      "username": "Tellonym"
+    }
+  },
+  "bigo": {
+    "username": "883238946",
+    "verdict": "absent",
+    "status": 200,
+    "url": "https://www.bigo.tv/user/883238946",
+    "final_url": "https://www.bigo.tv/account-inactivation",
+    "reason": "http 200",
+    "data": {}
+  },
+  "ebay": {
+    "username": "musicmagpie",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.ebay.com/usr/musicmagpie",
+    "final_url": "https://www.ebay.com/usr/musicmagpie",
+    "reason": "http 403",
+    "data": {}
+  },
+  "slideshare": {
+    "username": "dmc500hats",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.slideshare.net/dmc500hats",
+    "final_url": "https://www.slideshare.net/dmc500hats",
+    "reason": "",
+    "data": {
+      "display_name": "Dave Mcclure",
+      "description": "Investor at Practical venture capital",
+      "username": "dmc500hats"
+    }
+  },
+  "audiomack": {
+    "username": "drake",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://audiomack.com/drake",
+    "final_url": "https://audiomack.com/drake",
+    "reason": "",
+    "data": {
+      "display_name": "Drake",
+      "description": "Hailing from Toronto, Canada, Drake (Aubrey Drake Graham) is one of the most statistically dominant artists in music history. He built a global empire by blending hip-hop realism with melodic R&B, routinely shattering records on the US Billboard charts. After definitive early eras spanning albums like Take Care (2011) and Views (2016), he became the first artist to simultaneously debut in and hold the top three spots on the Billboard 200 with his unprecedented 2026 album trilogy: ICEMAN, HABIBTI, and MAID OF HONOUR. He also holds the record for the most career entries on the Billboard Hot 100, a milestone extended by the chart-topping success of his 2026 single \"Janice STFU.\" Mirroring his historic North American footprint, Drake regularly commands the UK Official Charts, cementing his legacy as a defining voice of his generation.",
+      "avatar": "https://i.audiomack.com/drake/3c58cd741a.webp?width=1200",
+      "genre": "rap",
+      "location": "Toronto, Ontario, Canada",
+      "plays": "205085778",
+      "twitter": "https://x.com/Drake",
+      "instagram": "https://instagram.com/champagnepapi",
+      "facebook": "https://www.facebook.com/Drake",
+      "youtube": "https://www.youtube.com/channel/UCByOQJjav0CUDwxCk-jVNRQ"
+    }
+  },
+  "beacons": {
+    "username": "jenna",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://beacons.ai/jenna",
+    "final_url": "https://beacons.ai/jenna",
+    "reason": "",
+    "data": {
+      "display_name": "jenna",
+      "description": "Welcome to my page! 👋 Check out my links below",
+      "avatar": "https://cdn.beacons.ai/profile_pictures/instagram/jenna.jpg",
+      "username": "jenna"
+    }
+  },
+  "spotify": {
+    "username": "spotify",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://open.spotify.com/user/spotify",
+    "final_url": "https://open.spotify.com/user/spotify",
+    "reason": "",
+    "data": {}
+  },
+  "trakt": {
+    "username": "justin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://trakt.tv/users/justin",
+    "final_url": "https://app.trakt.tv/profile/justin",
+    "reason": "",
+    "data": {
+      "display_name": "Trakt Web: Profile",
+      "avatar": "/trakt_share_movie_5.webp"
+    }
+  },
+  "onlyfans": {
+    "username": "onlyfans",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://onlyfans.com/onlyfans",
+    "final_url": "https://onlyfans.com/onlyfans",
+    "reason": "",
+    "data": {
+      "display_name": "OnlyFans"
+    }
+  },
+  "figma": {
+    "username": "figma",
+    "verdict": "exists",
+    "status": 202,
+    "url": "https://www.figma.com/@figma",
+    "final_url": "https://www.figma.com/@figma",
+    "reason": "",
+    "data": {
+      "display_name": "Figma Community · @figma",
+      "description": "Creator on Figma Community · Explore their work and prototypes",
+      "avatar": "https://www.figma.com/community/profile/2480257/social-image"
+    }
+  },
+  "bitchute": {
+    "username": "Bitchute",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.bitchute.com/channel/Bitchute/",
+    "final_url": "https://www.bitchute.com/channel/Bitchute/",
+    "reason": "",
+    "data": {
+      "display_name": "BitChute",
+      "avatar": "https://static-3.bitchute.com/live/channel_images/1VBwRfyNcKdX/71RTQndat5ej61dmZgc6v9zc_large.jpg"
+    }
+  },
+  "deviantart": {
+    "username": "deviantart",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.deviantart.com/deviantart",
+    "final_url": "https://www.deviantart.com/deviantart",
+    "reason": "http 200",
+    "data": {}
+  },
+  "douyin": {
+    "username": "douyin",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.douyin.com/user/douyin",
+    "final_url": "https://www.douyin.com/user/douyin",
+    "reason": "http 200",
+    "data": {}
+  },
+  "fivehundredpx": {
+    "username": "500px",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://500px.com/p/500px",
+    "final_url": "https://500px.com/p/500px/galleries/new-in-licensing-december-2022",
+    "reason": "",
+    "data": {
+      "display_name": "500px",
+      "description": "New In Licensing | December 2022. Each month, we highlight new and exclusive content uploaded by 500px Licensing Contributors. Check out this roundup of impressive and inspir...Read..."
+    }
+  },
+  "gab": {
+    "username": "a",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://gab.com/a",
+    "final_url": "https://gab.com/a",
+    "reason": "",
+    "data": {
+      "display_name": "Andrew Torba ✝️ (@a) · Gab.com - Gab Social",
+      "description": "August 10, 2016 - Verified account · @a · Joined August 2016 · 80,210 Posts · 4,014,652 Followers · 3,113 Following · Saved servant soldier of Jesus Christ. CEO of @gab."
+    }
+  },
+  "gettr": {
+    "username": "gettr",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://gettr.com/user/gettr",
+    "final_url": "https://gettr.com/user/gettr/following",
+    "reason": "",
+    "data": {
+      "display_name": "GETTR - The Marketplace of Ideas",
+      "description": "24/7 streaming channel with breaking news, live reports, and deep-dive interviews. Constant updates on world affairs, politics, and major events."
+    }
+  },
+  "kuaishou": {
+    "username": "kuaishou",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.kuaishou.com/profile/kuaishou",
+    "final_url": "https://www.kuaishou.com/profile/kuaishou",
+    "reason": "http 200",
+    "data": {}
+  },
+  "minds": {
+    "username": "minds",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.minds.com/minds",
+    "final_url": "https://www.minds.com/minds",
+    "reason": "",
+    "data": {
+      "display_name": "Minds"
+    }
+  },
+  "parler": {
+    "username": "parler",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://parler.com/parler",
+    "final_url": "http://app.parler.com/parler/",
+    "reason": "",
+    "data": {
+      "display_name": "parler.com",
+      "description": "parler.com ... parler.com"
+    }
+  },
+  "pixiv": {
+    "username": "pixiv",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.pixiv.net/users/pixiv",
+    "final_url": "https://www.pixiv.net/users/pixiv",
+    "reason": "http 200",
+    "data": {}
+  },
+  "researchgate": {
+    "username": "researchgate",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.researchgate.net/profile/researchgate",
+    "final_url": "https://www.researchgate.net/profile/Researchgate/publication/366289728_Responses_excl_open_ended_State_of_the_Research_Community_2022/data/63a0027e095a6a77743fce77/Survey-questions-State-of-the-Research-Community-2022.pdf",
+    "reason": "",
+    "data": {
+      "display_name": "Make your voice heard in the State of the Research Community ...",
+      "description": "The State of the Research Community survey covers the following topics: socio-demographic characteristics of scientists, their satisfaction, assessments of academic freedom, career prospects ..."
+    }
+  },
+  "soundcloud": {
+    "username": "discovery",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://soundcloud.com/discovery",
+    "final_url": "https://soundcloud.com/discovery/popular-tracks",
+    "reason": "",
+    "data": {
+      "display_name": "Stream equator | Listen to top hits and popular tracks online ...",
+      "description": "Listen to equator | SoundCloud is an audio platform that lets you listen to what you love and share the sounds you create."
+    }
+  },
+  "strava": {
+    "username": "strava",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.strava.com/athletes/strava",
+    "final_url": "https://www.strava.com/athletes/strava",
+    "reason": "http 200",
+    "data": {}
+  },
+  "telegram": {
+    "username": "durov",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://t.me/durov",
+    "final_url": "https://t.me/durov/359",
+    "reason": "",
+    "data": {
+      "display_name": "Telegram: View @durov",
+      "description": "If I had to give one piece of advice to people in their 20s who want to build something great, it would be: “Never drink alcohol.” I haven’t drunk alcohol in nearly 20 years, but..."
+    }
+  },
+  "truthsocial": {
+    "username": "realDonaldTrump",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://truthsocial.com/@realDonaldTrump",
+    "final_url": "https://truthsocial.com/@realDonaldTrump/posts/115972658725010644?__cf_chl_tk=VQxR.C9OB.pJ.V5e4ciajSb77KTydqy.dnOiKSy1NRY-1769616765-1.0.1.1-EwTolsE3Cgx6KS0Pp9MmQPUVVpekSw2Rs1kGvRa4MDw",
+    "reason": "",
+    "data": {
+      "display_name": "Link to truthsocial.com",
+      "description": "The site owner hides the web page description."
+    }
+  },
+  "tumblr": {
+    "username": "staff",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.tumblr.com/staff",
+    "final_url": "https://1851records-blog.tumblr.com/Staff",
+    "reason": "",
+    "data": {
+      "display_name": "1851 Records | Staff",
+      "description": "Staff Senior Vice President Name: Michael Bukowski Contact: mb479821@gmail.com Vice President of Marketing Name: Lauren Gress Contact:laurgress@gmail.com Vice President of Artist..."
+    }
+  },
+  "vk": {
+    "username": "durov",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://vk.com/durov",
+    "final_url": "https://vk.com/durov/vkapp",
+    "reason": "",
+    "data": {
+      "display_name": "Павел Дуров | ВКонтакте",
+      "description": "Павел Дуров, Санкт-Петербург, Россия. Подписчики - 4514447. Фото - 254. Записи - 1020. Войдите на сайт ..."
+    }
+  },
+  "wattpad": {
+    "username": "TheOriginals",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.wattpad.com/user/TheOriginals",
+    "final_url": "https://www.wattpad.com/user/Theoriginals/following",
+    "reason": "",
+    "data": {
+      "display_name": "Wattpad",
+      "description": "We would like to show you a description here but the site won’t allow us."
+    }
+  },
+  "weibo": {
+    "username": "1642634100",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://weibo.com/u/1642634100",
+    "final_url": "https://weibo.com/u/1642634100",
+    "reason": "http 200",
+    "data": {}
+  },
+  "xiaohongshu": {
+    "username": "xiaohongshu",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.xiaohongshu.com/user/profile/xiaohongshu",
+    "final_url": "https://www.xiaohongshu.com/user/profile/xiaohongshu",
+    "reason": "http 200",
+    "data": {}
+  },
+  "zhihu": {
+    "username": "zhihu",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.zhihu.com/people/zhihu",
+    "final_url": "https://www.zhihu.com/people/zhihu",
+    "reason": "http 200",
+    "data": {}
+  },
+  "linkedin": {
+    "username": "williamhgates",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.linkedin.com/in/williamhgates",
+    "final_url": "https://www.linkedin.com/in/williamhgates/recent-activity/reactions/",
+    "reason": "",
+    "data": {
+      "display_name": "LinkedIn",
+      "description": "We would like to show you a description here but the site won’t allow us."
+    }
+  },
+  "snapchat": {
+    "username": "team.snapchat",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.snapchat.com/add/team.snapchat",
+    "final_url": "https://www.snapchat.com/add/team.snapchat",
+    "reason": "http 200",
+    "data": {}
+  },
+  "imo": {
+    "username": "imo",
+    "verdict": "unknown",
+    "status": 405,
+    "url": "https://imo.im/imo",
+    "final_url": "https://imo.im/imo",
+    "reason": "http 405",
+    "data": {}
+  },
+  "line": {
+    "username": "line",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://line.me/ti/p/line",
+    "final_url": "https://line.me/ti/p/line",
+    "reason": "http 200",
+    "data": {}
+  },
+  "messenger": {
+    "username": "messenger",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://m.me/messenger",
+    "final_url": "https://www.messenger.com/login.php?next=https%3A%2F%2Fwww.messenger.com%2Ft%2F602814669838217%2F%3Fmessaging_source%3Dsource%253Apages%253Amessage_shortlink%26source_id%3D1441792%26recurring_notification%3D0",
+    "reason": "http 200",
+    "data": {}
+  },
+  "navercafe": {
+    "username": "navercafe",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://cafe.naver.com/navercafe",
+    "final_url": "https://cafe.naver.com/navercafe",
+    "reason": "http 200",
+    "data": {}
+  },
+  "qq": {
+    "username": "qq",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://user.qzone.qq.com/qq",
+    "final_url": "https://user.qzone.qq.com/qq",
+    "reason": "http 200",
+    "data": {}
+  },
+  "viber": {
+    "username": "viber",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://invite.viber.com/?g2=viber",
+    "final_url": "https://invite.viber.com/?g2=viber",
+    "reason": "http 200",
+    "data": {}
+  },
+  "wechat": {
+    "username": "wechat",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://u.wechat.com/wechat",
+    "final_url": "https://www.wechat.com/en",
+    "reason": "http 200",
+    "data": {}
+  },
+  "yubo": {
+    "username": "yubo",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://yubo.live/yubo",
+    "final_url": "https://www.yubo.live/yubo",
+    "reason": "http 404",
+    "data": {}
+  },
+  "discord": {
+    "username": "discord",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://discord.com/users/discord",
+    "final_url": "https://discord.com/users/discord",
+    "reason": "http 200",
+    "data": {}
+  },
+  "whatsapp": {
+    "username": "whatsapp",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://wa.me/whatsapp",
+    "final_url": "https://api.whatsapp.com/resolve/?deeplink=%2Fwhatsapp&not_found=1",
+    "reason": "http 404",
+    "data": {}
+  },
+  "wordpressorg": {
+    "username": "matt",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://profiles.wordpress.org/matt/",
+    "final_url": "https://profiles.wordpress.org/matt/",
+    "reason": "",
+    "data": {
+      "display_name": "Matt Mullenweg (@matt) - WordPress user profile",
+      "description": "The WordPress.org profile for Matt Mullenweg (@matt).",
+      "avatar": "https://www.gravatar.com/avatar/767fc9c115a1b989744c755db47feb60?s=1024&r=g&d=mm"
+    }
+  },
+  "sourceforge": {
+    "username": "vmusername",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://sourceforge.net/u/vmusername/profile",
+    "final_url": "https://sourceforge.net/u/vmusername/profile",
+    "reason": "http 403",
+    "data": {}
+  },
+  "blogger": {
+    "username": "google",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://google.blogspot.com",
+    "final_url": "https://google.blogspot.com/",
+    "reason": "",
+    "data": {
+      "display_name": "Google on BlogSpot"
+    }
+  },
+  "bloggerbloggercom": {
+    "username": "bloggerbloggercom",
+    "verdict": "unknown",
+    "status": 400,
+    "url": "https://www.blogger.com/profile/bloggerbloggercom",
+    "final_url": "https://www.blogger.com/profile/bloggerbloggercom",
+    "reason": "http 400",
+    "data": {}
+  },
+  "tripadvisor": {
+    "username": "tripadvisor",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://tripadvisor.com/members/tripadvisor",
+    "final_url": "https://www.tripadvisor.com/members/tripadvisor",
+    "reason": "http 403",
+    "data": {}
+  },
+  "myspace": {
+    "username": "myspace",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://myspace.com/myspace",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "themeforest": {
+    "username": "themeforest",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://themeforest.net/user/themeforest",
+    "final_url": "https://themeforest.net/user/themeforest",
+    "reason": "http 403",
+    "data": {}
+  },
+  "weforum": {
+    "username": "weforum",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.weforum.org/people/weforum",
+    "final_url": "https://www.weforum.org/people/weforum/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "freepik": {
+    "username": "freepik",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.freepik.com/author/freepik",
+    "final_url": "https://www.magnific.com/author/magnific",
+    "reason": "",
+    "data": {
+      "display_name": "Magnific Author Portfolio | Magnific (formerly Freepik)",
+      "description": "Discover all the graphic resources created by Magnific. Images, templates, videos, fonts, and much more.",
+      "avatar": "https://media.magnific.com/meta-tags-social/mg-home-og.jpg?w=1200&h=675"
+    }
+  },
+  "changeorg": {
+    "username": "changeorg",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.change.org/o/changeorg",
+    "final_url": "https://www.change.org/o/changeorg",
+    "reason": "http 403",
+    "data": {}
+  },
+  "slack": {
+    "username": "slack",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://slack.slack.com",
+    "final_url": "https://slack.slack.com/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "disqus": {
+    "username": "disqus",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://disqus.com/disqus",
+    "final_url": "https://disqus.com/by/disqus/",
+    "reason": "",
+    "data": {
+      "display_name": "Disqus Profile - disqus"
+    }
+  },
+  "npm": {
+    "username": "sindresorhus",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.npmjs.com/~sindresorhus",
+    "final_url": "https://www.npmjs.com/~sindresorhus",
+    "reason": "",
+    "data": {
+      "avatar": "https://static-production.npmjs.com/a12c728e90758ccd16976b394b964317.png"
+    }
+  },
+  "digitalocean": {
+    "username": "digitalocean",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.digitalocean.com/community/users/digitalocean",
+    "final_url": "https://www.digitalocean.com/community/users/digitalocean",
+    "reason": "",
+    "data": {
+      "display_name": "digitalocean's Profile | DigitalOcean",
+      "description": "Technical tutorials, Q&A, events — This is an inclusive place where developers can find or lend support and discover new ways to contribute to the community."
+    }
+  },
+  "instructables": {
+    "username": "instructables",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.instructables.com/member/instructables",
+    "final_url": "https://www.instructables.com/member/instructables",
+    "reason": "",
+    "data": {
+      "display_name": "instructables",
+      "description": "BEEP BOOP. I am literally a robot!",
+      "avatar": "https://content.instructables.com/FAY/ZZCL/IHW9RMD6/FAYZZCLIHW9RMD6.jpg?auto=webp&crop=1%3A1&frame=1&width=320"
+    }
+  },
+  "ameblo": {
+    "username": "ameblo",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://ameblo.jp/ameblo",
+    "final_url": "https://ameblo.jp/ameblo/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "huggingface": {
+    "username": "julien-c",
+    "verdict": "unknown",
+    "status": 429,
+    "url": "https://huggingface.co/julien-c",
+    "final_url": "https://huggingface.co/julien-c",
+    "reason": "http 429",
+    "data": {}
+  },
+  "laracast": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://laracasts.com/@admin",
+    "final_url": "https://laracasts.com/@admin",
+    "reason": "",
+    "data": {
+      "display_name": "Laracasts Profile: admin",
+      "description": "The Laracasts user profile page for admin.",
+      "avatar": "https://www.gravatar.com/avatar/d709f370e52b57b4eb75f04e2b3422c4d41a05148cad8f81776d94a048fb70af?s=100&d=https%3A%2F%2Flaracasts.nyc3.digitaloceanspaces.com%2Fmembers%2Favatars%2Fdefault%2F18.png"
+    }
+  },
+  "bitbucket": {
+    "username": "atlassian",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://bitbucket.org/atlassian/",
+    "final_url": "https://bitbucket.org/atlassian/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "upwork": {
+    "username": "upwork",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://upwork.com/fl/upwork",
+    "final_url": "https://www.upwork.com/freelancers/upwork",
+    "reason": "http 403",
+    "data": {}
+  },
+  "istock": {
+    "username": "istock",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.istockphoto.com/ru/portfolio/istock",
+    "final_url": "https://www.istockphoto.com/ru/bot-wall?returnUrl=%2Fru%2Fportfolio%2Fistock",
+    "reason": "http 200",
+    "data": {}
+  },
+  "pastebin": {
+    "username": "pastebin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://pastebin.com/u/pastebin",
+    "final_url": "https://pastebin.com/u/pastebin",
+    "reason": "",
+    "data": {
+      "display_name": "Pastebin's Pastebin - Pastebin.com",
+      "description": "Pastebin.com is the number one paste tool since 2002. Pastebin is a website where you can store text online for a set period of time.",
+      "avatar": "https://pastebin.com/i/facebook.png"
+    }
+  },
+  "foursquare": {
+    "username": "dens",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://foursquare.com/dens",
+    "final_url": "https://foursquare.com/dens",
+    "reason": "http 404",
+    "data": {}
+  },
+  "discogs": {
+    "username": "discogs",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.discogs.com/user/discogs",
+    "final_url": "https://www.discogs.com/user/discogs",
+    "reason": "http 200",
+    "data": {}
+  },
+  "kofi": {
+    "username": "kofi",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://ko-fi.com/kofi",
+    "final_url": "https://ko-fi.com/kofi",
+    "reason": "http 403",
+    "data": {}
+  },
+  "rottentomatoes": {
+    "username": "rottentomatoes",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.rottentomatoes.com/critic/rottentomatoes/movies",
+    "final_url": "https://www.rottentomatoes.com/profiles/critic/rottentomatoes",
+    "reason": "http 404",
+    "data": {}
+  },
+  "smugmug": {
+    "username": "smugmug",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://smugmug.smugmug.com/",
+    "final_url": "https://smugmug.smugmug.com/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "duolingo": {
+    "username": "duolingo",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.duolingo.com/profile/duolingo",
+    "final_url": "https://www.duolingo.com/profile/duolingo",
+    "reason": "http 403",
+    "data": {}
+  },
+  "ustream": {
+    "username": "ustream",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.ustream.tv/channel/adamustream",
+    "final_url": "https://video.ibm.com/channel/adamustream",
+    "reason": "http 404",
+    "data": {}
+  },
+  "wikidot": {
+    "username": "wikidot",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.wikidot.com/user:info/wikidot",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "imageshack": {
+    "username": "imageshack",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://imageshack.com/user/imageshack",
+    "final_url": "https://imageshack.com/user/imageshack",
+    "reason": "",
+    "data": {
+      "display_name": "imageshack"
+    }
+  },
+  "buymeacoffee": {
+    "username": "buymeacoffee",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://buymeacoff.ee/buymeacoffee",
+    "final_url": "https://buymeacoffee.com/buymeacoffee",
+    "reason": "http 404",
+    "data": {}
+  },
+  "gitea": {
+    "username": "gitea",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://gitea.com/gitea",
+    "final_url": "https://gitea.com/gitea",
+    "reason": "",
+    "data": {
+      "display_name": "gitea",
+      "description": "Git with a cup of tea",
+      "avatar": "https://gitea.com/avatars/35dea380390772b3130aafbac7ca49e6"
+    }
+  },
+  "genius": {
+    "username": "genius",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://genius.com/genius",
+    "final_url": "https://genius.com/artists/Genius",
+    "reason": "",
+    "data": {
+      "display_name": "Genius",
+      "description": "Founded in 2009, Genius is a unique multimedia company that’s powered by community, our in-house creative team, and the artists themselves. We serve music knowledge to over 100",
+      "avatar": "https://images.genius.com/0ca83e3130e1303a7f78ba351e3091cd.1000x1000x1.png"
+    }
+  },
+  "hubpages": {
+    "username": "hubpages",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://hubpages.com/@hubpages",
+    "final_url": "https://hubpages.com/@hubpages",
+    "reason": "http 200",
+    "data": {}
+  },
+  "pbase": {
+    "username": "pbase",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://pbase.com/pbase/profile",
+    "final_url": "https://pbase.com/pbase/profile",
+    "reason": "http 200",
+    "data": {}
+  },
+  "geeksforgeeks": {
+    "username": "geeksforgeeks",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://auth.geeksforgeeks.org/user/geeksforgeeks",
+    "final_url": "https://www.geeksforgeeks.org/profile/geeksforgeeks",
+    "reason": "",
+    "data": {
+      "display_name": "GeeksforGeeks - GeeksforGeeks - GeeksforGeeks | GeeksforGeeks Profile",
+      "description": "GfG Connect is a 1:1 mentorship platform by GeeksforGeeks where you can connect with verified industry experts and get personalized guidance on coding, interviews, career paths, and more."
+    }
+  },
+  "codebergorg": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://codeberg.org/admin",
+    "final_url": "https://codeberg.org/user/login",
+    "reason": "",
+    "data": {
+      "display_name": "Sign in"
+    }
+  },
+  "allrecipes": {
+    "username": "allrecipes",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.allrecipes.com/cook/allrecipes",
+    "final_url": "https://auth.allrecipes.com/realms/alrcom/protocol/openid-connect/auth?client_id=alrcom&response_type=code&redirect_uri=https%3A%2F%2Fwww.allrecipes.com%2Fauthentication%2Fcode-exchange&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc1NpZ25VcCI6ZmFsc2UsInN1YiI6Ik52eXRqM1ZaQUo5YmVrWE5vTDNtSE9BaytkdGZMbi9yWkM1a1J1K0pqc0k9IiwicmVkaXJlY3RVcmwiOiJodHRwczovL3d3dy5hbGxyZWNpcGVzLmNvbS9jb29rL2FsbHJlY2lwZXMiLCJteXJSZWRpcmVjdEF1dGhTdGF0dXMiOiJub25lIiwiaXNzIjoiRG90ZGFzaCBNZXJlZGl0aCIsIm5vQmFubmVyVmFsdWUiOiJ0cnVlIiwiZXhwIjoxNzg4ODkyNjIwLCJpYXQiOjE3ODg4ODk5MjAsImhpZGVDb25maXJtYXRpb25CYW5uZXIiOnRydWV9.JLf2G3vLEdcYMbw3NiB06NRl_evo_IKNuSYPfJ6MrOQ&scope=openid",
+    "reason": "http 200",
+    "data": {}
+  },
+  "codecanyon": {
+    "username": "codecanyon",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://codecanyon.net/user/codecanyon",
+    "final_url": "https://codecanyon.net/user/codecanyon",
+    "reason": "http 403",
+    "data": {}
+  },
+  "codecademy": {
+    "username": "codecademy",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.codecademy.com/profiles/codecademy",
+    "final_url": "https://www.codecademy.com/login?redirect=%2Fprofiles%2Fcodecademy&error=You+must+be+logged+in+to+access+this+page.+Please+log+in+to+continue.",
+    "reason": "",
+    "data": {
+      "display_name": "Log in | Codecademy",
+      "description": "Go from no-code to designing, building and deploying professional websites in 10 weeks.Learn HTML, CSS, JavaScript & Github with our interactive learning environment."
+    }
+  },
+  "polygon": {
+    "username": "polygon",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.polygon.com/users/polygon",
+    "final_url": "https://www.polygon.com/users/polygon/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "pcgamer": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://forums.pcgamer.com/members/?username=admin",
+    "final_url": "https://forums.pcgamer.com/members/admin.1/",
+    "reason": "",
+    "data": {
+      "display_name": "admin",
+      "avatar": "https://pcgamer-data.community.forum/avatars/o/0/1.jpg?1577993965"
+    }
+  },
+  "dreamstime": {
+    "username": "dreamstime",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.dreamstime.com/dreamstime_info",
+    "final_url": "https://www.dreamstime.com/dreamstime_info",
+    "reason": "http 403",
+    "data": {}
+  },
+  "speakerdeck": {
+    "username": "speakerdeck",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://speakerdeck.com/speakerdeck",
+    "final_url": "https://speakerdeck.com/speakerdeck",
+    "reason": "http 200",
+    "data": {}
+  },
+  "nextcloudforum": {
+    "username": "nextcloudforum",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://help.nextcloud.com/u/nextcloudforum/summary",
+    "final_url": "https://help.nextcloud.com/u/nextcloudforum/summary",
+    "reason": "http 403",
+    "data": {}
+  },
+  "max": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://max.ru/admin",
+    "final_url": "https://max.ru/admin",
+    "reason": "",
+    "data": {
+      "display_name": "Admin Oneme",
+      "description": "MAX позволяет отправлять любые виды сообщений и звонить даже на слабых устройствах и при низкой скорости интернета."
+    }
+  },
+  "tvtropes": {
+    "username": "tvtropes",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://tvtropes.org/pmwiki/pmwiki.php/Tropers/tvtropes",
+    "final_url": "https://tvtropes.org/pmwiki/pmwiki.php/Tropers/tvtropes",
+    "reason": "http 404",
+    "data": {}
+  },
+  "tistory": {
+    "username": "tistory",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://tistory.tistory.com/",
+    "final_url": "https://tistory.tistory.com/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "jsfiddle": {
+    "username": "jsfiddle",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://jsfiddle.net/user/jsfiddle/",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "gamesradar": {
+    "username": "gamesradar",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.gamesradar.com/uk/author/gamesradar/",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "geocaching": {
+    "username": "geocaching",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.geocaching.com/p/?u=geocaching",
+    "final_url": "https://www.geocaching.com/p/?u=geocaching",
+    "reason": "",
+    "data": {
+      "display_name": "Get the free Official Geocaching app and join the world's largest treasure hunt.",
+      "description": "There are millions of geocaches worldwide, just waiting for you to find them. There are probably even some within walking distance of where you are right now. Visit Geocaching.com to see just how many geocaches are nearby and to learn how to start finding them.",
+      "avatar": "https://www.geocaching.com/play/Content/images/preview-lg.jpg"
+    }
+  },
+  "gog": {
+    "username": "gog",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.gog.com/u/gog",
+    "final_url": "https://www.gog.com/u/gog",
+    "reason": "http 200",
+    "data": {}
+  },
+  "coub": {
+    "username": "coub",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://coub.com/coub",
+    "final_url": "https://coub.com/coub",
+    "reason": "http 404",
+    "data": {}
+  },
+  "odysee": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://odysee.com/@admin",
+    "final_url": "https://odysee.com/@admin",
+    "reason": "",
+    "data": {
+      "display_name": "@admin",
+      "description": "View on Odysee: @admin",
+      "avatar": "https://cdn.thumbs.odycdn.com/a0221766324b36b0835ad4f90e4d380c.webp"
+    }
+  },
+  "replit": {
+    "username": "replit",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://replit.com/@replit",
+    "final_url": "https://replit.com/login?source=root-profile&goto=%2F%40replit",
+    "reason": "",
+    "data": {
+      "display_name": "Sign Up",
+      "description": "Build and deploy software collaboratively with the power of AI without spending a second on setup.",
+      "avatar": "https://replit.com/public/images/opengraph_rebrand.jpg"
+    }
+  },
+  "hackmd": {
+    "username": "hackmd",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://hackmd.io/@hackmd",
+    "final_url": "https://hackmd.io/@hackmd",
+    "reason": "http 403",
+    "data": {}
+  },
+  "inaturalist": {
+    "username": "inaturalist",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.inaturalist.org/lists/inaturalist",
+    "final_url": "https://www.inaturalist.org/lists/inaturalist",
+    "reason": "http 403",
+    "data": {}
+  },
+  "templatemonster": {
+    "username": "templatemonster",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.templatemonster.com/authors/templatemonster/",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "teletype": {
+    "username": "teletype",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://teletype.in/@teletype",
+    "final_url": "https://journal.teletype.in/?cda=",
+    "reason": "",
+    "data": {
+      "display_name": "Teletype on Teletype",
+      "description": "Сервис для публикации и монетизации контента",
+      "avatar": "https://img3.teletype.in/files/a0/1f/a01f2ee8-d8a9-4dd4-9942-39f010bdf86d.png"
+    }
+  },
+  "ctan": {
+    "username": "ctan",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://ctan.org/author/ctan",
+    "final_url": "https://ctan.org/author/ctan",
+    "reason": "http 200",
+    "data": {}
+  },
+  "opencollective": {
+    "username": "opencollective",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://opencollective.com/opencollective",
+    "final_url": "https://opencollective.com/opencollective",
+    "reason": "http 403",
+    "data": {}
+  },
+  "giantbomb": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.giantbomb.com/profile/admin",
+    "final_url": "https://giantbomb.com/profile/admin",
+    "reason": "",
+    "data": {
+      "display_name": "Giant Bomb",
+      "description": "Giant Bomb is the leading source for video game news, reviews, and entertainment.",
+      "avatar": "https://giantbomb.com/website-template-OG.webp"
+    }
+  },
+  "jalbumnet": {
+    "username": "jalbumnet",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://jalbumnet.jalbum.net/",
+    "final_url": "https://jalbumnet.jalbum.net/",
+    "reason": "",
+    "data": {
+      "display_name": "Photo albums by jalbumnet - Profile page",
+      "description": "null:"
+    }
+  },
+  "newgrounds": {
+    "username": "newgrounds",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://newgrounds.newgrounds.com",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "slides": {
+    "username": "slides",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://slides.com/slides",
+    "final_url": "https://slides.com/slides",
+    "reason": "http 404",
+    "data": {}
+  },
+  "ultimateguitar": {
+    "username": "ultimateguitar",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://ultimate-guitar.com/u/ultimateguitar",
+    "final_url": "https://www.ultimate-guitar.com/u/ultimateguitar",
+    "reason": "http 200",
+    "data": {}
+  },
+  "contently": {
+    "username": "contently",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://contently.contently.com/",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "creativemarket": {
+    "username": "creativemarket",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://creativemarket.com/users/creativemarket",
+    "final_url": "https://creativemarket.com/users/creativemarket",
+    "reason": "",
+    "data": {
+      "description": "Making beautiful design simple & accessible to all."
+    }
+  },
+  "opensource": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://opensource.com/users/admin",
+    "final_url": "https://opensource.com/users/admin",
+    "reason": "",
+    "data": {
+      "display_name": "admin",
+      "avatar": "https://opensource.com/sites/default/files/opensource.png"
+    }
+  },
+  "imgflip": {
+    "username": "imgflip",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://imgflip.com/user/imgflip",
+    "final_url": "https://imgflip.com/user/Imgflip",
+    "reason": "http 200",
+    "data": {}
+  },
+  "hackaday": {
+    "username": "hackaday",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://hackaday.io/hackaday",
+    "final_url": "https://hackaday.io/hackaday",
+    "reason": "http 404",
+    "data": {}
+  },
+  "fodors": {
+    "username": "fodors",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.fodors.com/community/profile/fodors/forum-activity",
+    "final_url": "https://www.fodors.com/community/profile/fodors/forum-activity",
+    "reason": "http 403",
+    "data": {}
+  },
+  "designs99": {
+    "username": "designs99",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://99designs.com/profiles/designs99",
+    "final_url": "https://99designs.com/profiles/designs99",
+    "reason": "http 202",
+    "data": {}
+  },
+  "periscope": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.pscp.tv/admin",
+    "final_url": "https://www.pscp.tv/admin",
+    "reason": "",
+    "data": {
+      "display_name": "Del Harvey",
+      "description": "The latest broadcasts from Del Harvey (@admin)."
+    }
+  },
+  "freesound": {
+    "username": "freesound",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://freesound.org/people/freesound/",
+    "final_url": "https://freesound.org/people/freesound/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "metalarchives": {
+    "username": "metalarchives",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.metal-archives.com/users/metalarchives",
+    "final_url": "https://www.metal-archives.com/users/metalarchives",
+    "reason": "http 403",
+    "data": {}
+  },
+  "kongregate": {
+    "username": "kongregate",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.kongregate.com/accounts/kongregate",
+    "final_url": "https://www.kongregate.com/accounts/kongregate",
+    "reason": "http 403",
+    "data": {}
+  },
+  "soup": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.soup.io/author/admin",
+    "final_url": "https://www.soup.io/author/admin",
+    "reason": "",
+    "data": {
+      "display_name": "Campbell Scott",
+      "avatar": "https://www.soup.io/wp-content/uploads/2024/07/cropped-Screenshot-2024-07-10-at-9.46.00 am.png"
+    }
+  },
+  "furaffinity": {
+    "username": "furaffinity",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.furaffinity.net/gallery/furaffinity",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "itemfix": {
+    "username": "itemfix",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.itemfix.com/c/itemfix",
+    "final_url": "https://www.itemfix.com/c/itemfix",
+    "reason": "",
+    "data": {
+      "display_name": "ItemFix - Channel: ItemFix",
+      "description": "Social Video Factory"
+    }
+  },
+  "nintendolife": {
+    "username": "nintendolife",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.nintendolife.com/users/nintendolife",
+    "final_url": "https://www.nintendolife.com/users/nintendolife",
+    "reason": "http 403",
+    "data": {}
+  },
+  "carbonmade": {
+    "username": "carbonmade",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://carbonmade.carbonmade.com",
+    "final_url": "https://carbonmade.carbonmade.com/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "moddb": {
+    "username": "moddb",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.moddb.com/members/moddb",
+    "final_url": "https://www.moddb.com/members/moddb",
+    "reason": "http 403",
+    "data": {}
+  },
+  "audiojungle": {
+    "username": "audiojungle",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://audiojungle.net/user/audiojungle",
+    "final_url": "https://audiojungle.net/user/audiojungle",
+    "reason": "",
+    "data": {
+      "display_name": "AudioJungle's profile on AudioJungle",
+      "description": "Discover AudioJungle's profile and see what items they have for sale, or find great items you may have missed by checking out their collections."
+    }
+  },
+  "tinder": {
+    "username": "tinder",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.tinder.com/@tinder",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "domestikaorg": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.domestika.org/admin",
+    "final_url": "https://www.domestika.org/en",
+    "reason": "",
+    "data": {
+      "display_name": "Online courses for creative professionals | Domestika",
+      "description": "Domestika is the largest creative community. Learn and share from anywhere with online courses taught by the best professionals in the world of design and creativity.",
+      "avatar": "https://static.domestika.org/domestika-web/c63ff462/img/og/home.jpg"
+    }
+  },
+  "noblogs": {
+    "username": "noblogs",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://noblogs.org/members/noblogs/",
+    "final_url": "https://noblogs.org/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "setlist": {
+    "username": "setlist",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.setlist.fm/user/setlist",
+    "final_url": "https://www.setlist.fm/user/setlist",
+    "reason": "http 200",
+    "data": {}
+  },
+  "starcitizen": {
+    "username": "starcitizen",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://robertsspaceindustries.com/citizens/starcitizen",
+    "final_url": "https://robertsspaceindustries.com/en/citizens/starcitizen",
+    "reason": "",
+    "data": {
+      "display_name": "StarCitizen | StarCitizen - Roberts Space Industries | Follow the development of Star Citizen and Squadron 42",
+      "description": "Roberts Space Industries is the official go-to website for all news about Star Citizen and Squadron 42. It also hosts the online store for game items and merch, as well as all the community tools used by our fans.",
+      "avatar": "https://cdn.robertsspaceindustries.com/static"
+    }
+  },
+  "jigsawplanet": {
+    "username": "jigsawplanet",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.jigsawplanet.com/jigsawplanet",
+    "final_url": "https://www.jigsawplanet.com/jigsawplanet",
+    "reason": "",
+    "data": {
+      "display_name": "jigsawplanet",
+      "description": "View jigsawplanet"
+    }
+  },
+  "namuwiki": {
+    "username": "namuwiki",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://namu.wiki/w/%EC%82%AC%EC%9A%A9%EC%9E%90:namuwiki",
+    "final_url": "https://namu.wiki/w/%EC%82%AC%EC%9A%A9%EC%9E%90:namuwiki",
+    "reason": "",
+    "data": {
+      "display_name": "사용자:namuwiki",
+      "avatar": "/img/apple_icon.png"
+    }
+  },
+  "gaiaonline": {
+    "username": "gaiaonline",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.gaiaonline.com/profiles/gaiaonline",
+    "final_url": "https://www.gaiaonline.com/profiles/gaiaonline",
+    "reason": "http 200",
+    "data": {}
+  },
+  "memrise": {
+    "username": "memrise",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.memrise.com/user/memrise/",
+    "final_url": "https://app.memrise.com/signin?next=/user/memrise/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "archiveofourown": {
+    "username": "archiveofourown",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://archiveofourown.org/users/archiveofourown",
+    "final_url": "https://archiveofourown.org/users/archiveofourown",
+    "reason": "http 403",
+    "data": {}
+  },
+  "planetminecraft": {
+    "username": "planetminecraft",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.planetminecraft.com/member/planetminecraft",
+    "final_url": "https://www.planetminecraft.com/member/planetminecraft",
+    "reason": "",
+    "data": {
+      "display_name": "planet-minecraft on Planet Minecraft",
+      "description": "View planet-minecraft's profile on Planet Minecraft to see their public Minecraft community activity.",
+      "avatar": "default.jpg"
+    }
+  },
+  "musescore": {
+    "username": "musescore",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://musescore.com/musescore",
+    "final_url": "https://musescore.com/musescore",
+    "reason": "http 403",
+    "data": {}
+  },
+  "theodysseyonline": {
+    "username": "theodysseyonline",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.theodysseyonline.com/user/@theodysseyonline",
+    "final_url": "https://www.theodysseyonline.com/user/@theodysseyonline",
+    "reason": "http 404",
+    "data": {}
+  },
+  "sportsru": {
+    "username": "sportsru",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.sports.ru/profile/sportsru/",
+    "final_url": "https://www.sports.ru/profile/sportsru/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "picsart": {
+    "username": "picsart",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://picsart.com/u/picsart",
+    "final_url": "https://picsart.com/u/picsart/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "wowhead": {
+    "username": "wowhead",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.wowhead.com/user=wowhead",
+    "final_url": "https://www.wowhead.com/user=wowhead",
+    "reason": "",
+    "data": {
+      "display_name": "Wowhead's Profile - Wowhead",
+      "description": "The largest World of Warcraft (WoW) information site, featuring guides, news, and information on classes, gearing, professions, raids, transmog, and more."
+    }
+  },
+  "armorgames": {
+    "username": "armorgames",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://armorgames.com/user/armorgames",
+    "final_url": "https://armorgames.com/user/armorgames",
+    "reason": "http 403",
+    "data": {}
+  },
+  "fotki": {
+    "username": "fotki",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://members.fotki.com/fotki/about/",
+    "final_url": "https://members.fotki.com/fotki/about/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "paltalk": {
+    "username": "paltalk",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.paltalk.com/people/users/paltalk",
+    "final_url": "https://www.paltalk.com/people/users/paltalk/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "videohive": {
+    "username": "videohive",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://videohive.net/user/videohive",
+    "final_url": "https://videohive.net/user/videohive",
+    "reason": "http 403",
+    "data": {}
+  },
+  "clubhouse": {
+    "username": "clubhouse",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.clubhouse.com/@clubhouse",
+    "final_url": "https://www.clubhouse.com/@clubhouse",
+    "reason": "",
+    "data": {
+      "display_name": "Clubhouse - Clubhouse",
+      "description": "welcome to clubhouse! join the clubhouse HQ house for regular updates. for the latest release info, visit clubhouse.com/whatsnew. any questions? support.clubhouse.com",
+      "avatar": "https://share.clubhouse.com/og/user/@clubhouse.png"
+    }
+  },
+  "prozaru": {
+    "username": "prozaru",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.proza.ru/avtor/prozaru",
+    "final_url": "https://proza.ru/avtor/prozaru",
+    "reason": "http 200",
+    "data": {}
+  },
+  "namepros": {
+    "username": "namepros",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.namepros.com//members/?username=namepros",
+    "final_url": "https://www.namepros.com/members/namepros.951089/",
+    "reason": "",
+    "data": {
+      "display_name": "NamePros",
+      "avatar": "https://nameproscdn.com/data/avatars/o/951/951089.jpg?1608405694"
+    }
+  },
+  "writeas": {
+    "username": "writeas",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://write.as/writeas",
+    "final_url": "https://write.as/writeas/",
+    "reason": "",
+    "data": {
+      "display_name": "Write.as Team"
+    }
+  },
+  "warriorforum": {
+    "username": "warriorforum",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.warriorforum.com/members/warriorforum.html",
+    "final_url": "https://www.warriorforum.com/members/warriorforum.html",
+    "reason": "http 200",
+    "data": {}
+  },
+  "arena": {
+    "username": "arena",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.are.na/arena",
+    "final_url": "https://www.are.na/arena/channels",
+    "reason": "",
+    "data": {
+      "display_name": "ARENA | Are.na",
+      "avatar": "https://www.are.na/og-image.png"
+    }
+  },
+  "wykop": {
+    "username": "wykop",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.wykop.pl/ludzie/wykop/",
+    "final_url": "https://wykop.pl/ludzie/wykop",
+    "reason": "",
+    "data": {
+      "display_name": "Profil: @wykop",
+      "description": "@wykop jest na Wykopie od 20 lat i 8 mies. Obserwuj użytkownika i śledź jego aktywność!"
+    }
+  },
+  "residentadvisor": {
+    "username": "residentadvisor",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.residentadvisor.net/profile/residentadvisor",
+    "final_url": "https://ra.co/profile/residentadvisor",
+    "reason": "http 200",
+    "data": {}
+  },
+  "sporcle": {
+    "username": "sporcle",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.sporcle.com/user/sporcle/people",
+    "final_url": "https://www.sporcle.com/user/sporcle/people",
+    "reason": "http 403",
+    "data": {}
+  },
+  "treehouse": {
+    "username": "treehouse",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://teamtreehouse.com/profiles/treehouse",
+    "final_url": "https://teamtreehouse.com/signin?return_to=https%3A%2F%2Fteamtreehouse.com%2Fhome",
+    "reason": "http 200",
+    "data": {}
+  },
+  "coroflot": {
+    "username": "coroflot",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.coroflot.com/coroflot",
+    "final_url": "https://www.coroflot.com/coroflot",
+    "reason": "",
+    "data": {
+      "display_name": "coroflot coroflot, coroflot in zurich, Switzerland",
+      "description": "coroflot"
+    }
+  },
+  "jeuxvideo": {
+    "username": "jeuxvideo",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.jeuxvideo.com/profil/jeuxvideo?mode=infos",
+    "final_url": "https://www.jeuxvideo.com/profil/jeuxvideo?mode=infos",
+    "reason": "",
+    "data": {
+      "display_name": "JeuxVideo.com toute l'actualité du jeu vidéo et du hardware",
+      "avatar": "https://static.jvc.gg/unversioned/img/default-og.png"
+    }
+  },
+  "stihiru": {
+    "username": "stihiru",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.stihi.ru/avtor/stihiru",
+    "final_url": "https://stihi.ru/avtor/stihiru",
+    "reason": "http 200",
+    "data": {}
+  },
+  "exposure": {
+    "username": "exposure",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://exposure.exposure.co/",
+    "final_url": "https://exposure.exposure.co/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "lyricstranslate": {
+    "username": "lyricstranslate",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://lyricstranslate.com/sco/translator/lyricstranslate",
+    "final_url": "https://lyricstranslate.com/sco/translator/lyricstranslate",
+    "reason": "http 403",
+    "data": {}
+  },
+  "guru": {
+    "username": "guru",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.guru.com/freelancers/guru",
+    "final_url": "https://www.guru.com/freelancers/guru",
+    "reason": "",
+    "data": {
+      "display_name": "@guru# - India",
+      "description": "@guru# - Find and hire freelancers on Guru",
+      "avatar": "https://res.cloudinary.com/gurucom/image/upload/s--ejEKkTwU--/b_auto,c_lpad,h_90,w_185/v1632038117/pimg/FreelancerFiles/3/954/3954867/go4bb0n0l83jkwiwfw1r.jpg"
+    }
+  },
+  "gutefrage": {
+    "username": "gutefrage",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.gutefrage.net/nutzer/gutefrage",
+    "final_url": "https://www.gutefrage.net/nutzer/gutefrage",
+    "reason": "http 200",
+    "data": {}
+  },
+  "coderwall": {
+    "username": "coderwall",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://coderwall.com/coderwall",
+    "final_url": "https://coderwall.com/coderwall",
+    "reason": "",
+    "data": {
+      "display_name": "coderwall's profile | coderwall",
+      "description": "**Rủ nhau mua vé xổ số ba miền và cái kết xảy ra mâu thuẫn** **Người đàn ông ở thành phố Hồ Chí Minh có rủ người bạn thân tới đại lý bán vé gần nhà cùng tham",
+      "avatar": "https://coderwall-assets-0.s3.amazonaws.com/uploads/user/avatar/2217496/1.jpg"
+    }
+  },
+  "observable": {
+    "username": "observable",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://observablehq.com/@observable",
+    "final_url": "https://observablehq.com/@observable",
+    "reason": "http 200",
+    "data": {}
+  },
+  "pushsquare": {
+    "username": "pushsquare",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.pushsquare.com/users/pushsquare",
+    "final_url": "https://www.pushsquare.com/users/pushsquare",
+    "reason": "http 403",
+    "data": {}
+  },
+  "codementor": {
+    "username": "codementor",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://www.codementor.io/codementor",
+    "final_url": "https://www.codementor.io/codementor",
+    "reason": "http 202",
+    "data": {}
+  },
+  "n4g": {
+    "username": "n4g",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://n4g.com/user/home/n4g",
+    "final_url": "https://n4g.com/user/home/n4g",
+    "reason": "",
+    "data": {
+      "display_name": "n4g, Author at N4G"
+    }
+  },
+  "lomography": {
+    "username": "lomography",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.lomography.com/homes/lomography",
+    "final_url": "https://www.lomography.com/homes/lomography",
+    "reason": "http 403",
+    "data": {}
+  },
+  "pixelfedsocial": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://pixelfed.social/admin/",
+    "final_url": "https://pixelfed.social/admin/",
+    "reason": "",
+    "data": {
+      "display_name": "Admin (@admin@pixelfed.social)",
+      "description": "10 Posts, 2 Following, 402.2K Followers · pixelfed.social Admin. Managed by @dansup",
+      "avatar": "https://pixelfed.social/storage/avatars/000/000/000/001/LSHNCgwbby7wu3iCYV6H_avatar.png?v=4"
+    }
+  },
+  "neoseeker": {
+    "username": "neoseeker",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.neoseeker.com/members/neoseeker/",
+    "final_url": "https://www.neoseeker.com/members/neoseeker/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "sythe": {
+    "username": "sythe",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.sythe.org/members/?username=sythe",
+    "final_url": "https://www.sythe.org/members/?username=sythe",
+    "reason": "http 403",
+    "data": {}
+  },
+  "filmweb": {
+    "username": "filmweb",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.filmweb.pl/user/filmweb",
+    "final_url": "https://www.filmweb.pl/user/filmweb",
+    "reason": "http 200",
+    "data": {}
+  },
+  "listal": {
+    "username": "listal",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://listal.listal.com/",
+    "final_url": "https://listal.listal.com/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "spatial": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.spatial.io/@admin",
+    "final_url": "https://www.spatial.io/@admin",
+    "reason": "",
+    "data": {
+      "display_name": "admin (@admin) | Spatial",
+      "description": "Join 2M+ creators & brands building and publishing social games, brand experiences, virtual learning, galleries, onboarding, & training. No-code + Unity-based tools. Web (No Download Required), Mobile, VR.",
+      "avatar": "https://cdn2.spatial.io/s/spatial.io/og-image.jpg"
+    }
+  },
+  "paragraph": {
+    "username": "paragraph",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://paragraph.com/@paragraph",
+    "final_url": "https://paragraph.com/@paragraph",
+    "reason": "",
+    "data": {
+      "display_name": "The paragraph",
+      "avatar": "https://paragraph.com/branding/v2/where_ideas_thrive.jpg"
+    }
+  },
+  "notabugorg": {
+    "username": "notabugorg",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://notabug.org/notabugorg",
+    "final_url": "https://notabug.org/notabugorg",
+    "reason": "http 404",
+    "data": {}
+  },
+  "mydramalist": {
+    "username": "mydramalist",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.mydramalist.com/profile/mydramalist",
+    "final_url": "https://mydramalist.com/profile/mydramalist",
+    "reason": "http 200",
+    "data": {}
+  },
+  "pinkbike": {
+    "username": "pinkbike",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.pinkbike.com/u/pinkbike/",
+    "final_url": "https://www.pinkbike.com/u/pinkbike/",
+    "reason": "",
+    "data": {
+      "display_name": "pinkbike on Pinkbike",
+      "avatar": "https://ep1.pinkbike.org/ph/hl0.jpg"
+    }
+  },
+  "thechive": {
+    "username": "thechive",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://thechive.com/author/thechive",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "goldderby": {
+    "username": "goldderby",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.goldderby.com/members/goldderby/",
+    "final_url": "https://www.goldderby.com/members/goldderby/",
+    "reason": "",
+    "data": {
+      "display_name": "Members",
+      "description": "Listing of all GoldDerby members. See who's active, what their latest predictions are, how they've done in past leagues and what they have to say.",
+      "avatar": "https://s0.wp.com/_si/?t=eyJpbWciOiJodHRwczpcL1wvd3d3LmdvbGRkZXJieS5jb21cL3dwLWNvbnRlbnRcL3VwbG9hZHNcLzIwMThcLzA0XC9jcm9wcGVkLWdkX2Zhdmljb24tMS5wbmciLCJ0eHQiOiJHb2xkIERlcmJ5IiwidGVtcGxhdGUiOiJlZGdlIiwiZm9udCI6IiIsImJsb2dfaWQiOjE0Nzg2MTg2MH0.wbcZGzA1dlQJ0XNA5qMOoKNhTynzTtjm9VCPCwBDpsoMQ"
+    }
+  },
+  "meetme": {
+    "username": "meetme",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.meetme.com/meetme",
+    "final_url": "https://www.meetme.com/meetme",
+    "reason": "http 404",
+    "data": {}
+  },
+  "flyertalk": {
+    "username": "flyertalk",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.flyertalk.com/forum/members/flyertalk.html",
+    "final_url": "https://www.flyertalk.com/forum/members/flyertalk.html",
+    "reason": "http 403",
+    "data": {}
+  },
+  "gbatempnet": {
+    "username": "gbatempnet",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://gbatemp.net//members/?username=gbatempnet",
+    "final_url": "https://gbatemp.net/members/gbatempnet.209021/",
+    "reason": "",
+    "data": {
+      "display_name": "gbatempnet",
+      "avatar": "/icon-512x512.png"
+    }
+  },
+  "brusheezy": {
+    "username": "brusheezy",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.brusheezy.com/members/brusheezy",
+    "final_url": "https://www.brusheezy.com/members/brusheezy",
+    "reason": "",
+    "data": {
+      "display_name": "Free Photoshop Brushes at Brusheezy!"
+    }
+  },
+  "avforums": {
+    "username": "avforums",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.avforums.com/members/?username=avforums",
+    "final_url": "https://www.avforums.com/members/?username=avforums",
+    "reason": "http 403",
+    "data": {}
+  },
+  "mobypicture": {
+    "username": "mobypicture",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.mobypicture.com/user/mobypicture",
+    "final_url": "https://www.mobypicture.com/user/mobypicture",
+    "reason": "http 404",
+    "data": {}
+  },
+  "dlive": {
+    "username": "dlive",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://dlive.tv/dlive",
+    "final_url": "https://dlive.tv/dlive",
+    "reason": "http 200",
+    "data": {}
+  },
+  "trueachievements": {
+    "username": "trueachievements",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.trueachievements.com/gamer/trueachievements",
+    "final_url": "https://www.trueachievements.com/gamer/trueachievements",
+    "reason": "http 403",
+    "data": {}
+  },
+  "physicsforums": {
+    "username": "physicsforums",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.physicsforums.com/members/?username=physicsforums",
+    "final_url": "https://www.physicsforums.com/members/physicsforums.55373/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "opengameart": {
+    "username": "opengameart",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://opengameart.org/users/opengameart",
+    "final_url": "https://opengameart.org/users/opengameart",
+    "reason": "",
+    "data": {
+      "display_name": "opengameart"
+    }
+  },
+  "lobsters": {
+    "username": "lobsters",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://lobste.rs/u/lobsters",
+    "final_url": "https://lobste.rs/~lobsters",
+    "reason": "http 404",
+    "data": {}
+  },
+  "ifunny": {
+    "username": "ifunny",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.ifunny.co/user/ifunny",
+    "final_url": "https://ifunny.co/user/ifunny",
+    "reason": "",
+    "data": {
+      "display_name": "iFunny :)",
+      "description": "Here you can find the list of memes, video and GIFs created by user IFunny",
+      "avatar": "https://imageproxy.getfn.io/noop/user_photos/dd2609085d61c0367cb2a271c29e2f49c7fb8120_0.jpg"
+    }
+  },
+  "topcoder": {
+    "username": "topcoder",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://profiles.topcoder.com/topcoder/",
+    "final_url": "https://profiles.topcoder.com/topcoder/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "picturepushcom": {
+    "username": "picturepushcom",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://picturepushcom.picturepush.com/",
+    "final_url": "https://picturepushcom.picturepush.com/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "voices": {
+    "username": "voices",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.voices.com/actors/voices",
+    "final_url": "https://www.voices.com/profile/voices#skill=voice-over",
+    "reason": "http 403",
+    "data": {}
+  },
+  "nhattaocom": {
+    "username": "nhattaocom",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.nhattao.com/members/?username=nhattaocom",
+    "final_url": "https://nhattao.com/members/?username=nhattaocom",
+    "reason": "http 403",
+    "data": {}
+  },
+  "replitreplit": {
+    "username": "replitreplit",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://repl.it/@replitreplit",
+    "final_url": "https://replit.com/login?source=root-profile&goto=%2F%40replitreplit",
+    "reason": "",
+    "data": {
+      "display_name": "Sign Up",
+      "description": "Build and deploy software collaboratively with the power of AI without spending a second on setup.",
+      "avatar": "https://replit.com/public/images/opengraph_rebrand.jpg"
+    }
+  },
+  "usernameportfolioboxnet": {
+    "username": "usernameportfolioboxnet",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://usernameportfolioboxnet.portfoliobox.net",
+    "final_url": "https://usernameportfolioboxnet.portfoliobox.net/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "dcinside": {
+    "username": "dcinside",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://gallog.dcinside.com/dcinside",
+    "final_url": "https://gallog.dcinside.com/dcinside",
+    "reason": "http 404",
+    "data": {}
+  },
+  "digitalpoint": {
+    "username": "digitalpoint",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.digitalpoint.com/members/?username=digitalpoint",
+    "final_url": "https://www.digitalpoint.com/members/?username=digitalpoint",
+    "reason": "http 403",
+    "data": {}
+  },
+  "asciinema": {
+    "username": "asciinema",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://asciinema.org/~asciinema",
+    "final_url": "https://asciinema.org/~asciinema",
+    "reason": "http 200",
+    "data": {}
+  },
+  "cfdonline": {
+    "username": "cfdonline",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.cfd-online.com/Forums/members/cfdonline.html",
+    "final_url": "https://www.cfd-online.com/Forums/members/cfdonline.html",
+    "reason": "http 403",
+    "data": {}
+  },
+  "funnyjunk": {
+    "username": "funnyjunk",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://funnyjunk.com/user/funnyjunk",
+    "final_url": "https://funnyjunk.com/user/funnyjunk",
+    "reason": "http 403",
+    "data": {}
+  },
+  "gloriatv": {
+    "username": "gloriatv",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://gloria.tv/gloriatv",
+    "final_url": "https://gloria.tv/user/h8sVi2exnhMP4oEE8WhR7gqxm",
+    "reason": "http 200",
+    "data": {}
+  },
+  "ficwad": {
+    "username": "ficwad",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://ficwad.com/a/ficwad/favorites/authors",
+    "final_url": "https://ficwad.com/a/ficwad/favorites/authors",
+    "reason": "http 200",
+    "data": {}
+  },
+  "tripline": {
+    "username": "tripline",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.tripline.net/tripline",
+    "final_url": "https://www.tripline.net/tripline",
+    "reason": "",
+    "data": {
+      "display_name": "Marisa Calvio (@TRIPLINE) on Tripline",
+      "avatar": "//cdn.tripline.net/media/image/tripuser.png"
+    }
+  },
+  "deepdreamgenerator": {
+    "username": "deepdreamgenerator",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://deepdreamgenerator.com/u/deepdreamgenerator",
+    "final_url": "https://deepdreamgenerator.com/u/deepdreamgenerator",
+    "reason": "http 404",
+    "data": {}
+  },
+  "n1x": {
+    "username": "n1x",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://1x.com/n1x",
+    "final_url": "https://1x.com/n1x",
+    "reason": "http 200",
+    "data": {}
+  },
+  "pokecommunity": {
+    "username": "pokecommunity",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.pokecommunity.com/members/?username=pokecommunity",
+    "final_url": "https://www.pokecommunity.com/members/?username=pokecommunity",
+    "reason": "http 403",
+    "data": {}
+  },
+  "samlib": {
+    "username": "samlib",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://samlib.ru/e/samlib",
+    "final_url": "https://samlib.ru/e/samlib",
+    "reason": "http 404",
+    "data": {}
+  },
+  "goodgameru": {
+    "username": "goodgameru",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://goodgame.ru/channel/goodgameru",
+    "final_url": "https://goodgame.ru/Venidicio",
+    "reason": "",
+    "data": {
+      "display_name": "vnAA",
+      "description": "Смотрите прямую трансляцию на канале Venidicio по ArcheAge",
+      "avatar": "https://goodgame.ru/images/ico_tv.png"
+    }
+  },
+  "pling": {
+    "username": "pling",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.pling.com/u/pling/",
+    "final_url": "https://www.opendesktop.org/u/pling/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "hardforum": {
+    "username": "hardforum",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://hardforum.com/members/?username=hardforum",
+    "final_url": "https://hardforum.com/members/hardforum.207621/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "n23hq": {
+    "username": "n23hq",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.23hq.com/n23hq",
+    "final_url": "https://www.23hq.com/n23hq",
+    "reason": "http 404",
+    "data": {}
+  },
+  "androidforums": {
+    "username": "androidforums",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://androidforums.com/members/?username=androidforums",
+    "final_url": "https://forum.earlybird.club/members/androidforums.6324/",
+    "reason": "",
+    "data": {
+      "display_name": "androidforums"
+    }
+  },
+  "comedy": {
+    "username": "comedy",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.comedy.co.uk/profile/comedy/",
+    "final_url": "https://www.comedy.co.uk/fan/comedy/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "youpic": {
+    "username": "youpic",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://youpic.com/photographer/youpic/",
+    "final_url": "https://youpic.com/photographer/youpic/",
+    "reason": "",
+    "data": {
+      "display_name": "youpic — YouPic",
+      "description": "youpic is sharing some inspiration on YouPic. Have a look and be amazed!",
+      "avatar": "https://youpic.com/card/user/934641609546756"
+    }
+  },
+  "polarsteps": {
+    "username": "polarsteps",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://polarsteps.com/polarsteps",
+    "final_url": "https://www.polarsteps.com:443/polarsteps",
+    "reason": "http 200",
+    "data": {}
+  },
+  "platzi": {
+    "username": "platzi",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://platzi.com/p/platzi/",
+    "final_url": "https://platzi.com/p/platzi/",
+    "reason": "",
+    "data": {
+      "display_name": "Platzi - Perfil de Estudiante Platzi",
+      "description": "Conoce el perfil de Platzi en Platzi. Descubre su biografía, enlaces y nivel de aprendizaje.",
+      "avatar": "https://static.platzi.com/media/uploads/OG_Home_03_8da3d711e7.png"
+    }
+  },
+  "writingforumsorg": {
+    "username": "writingforumsorg",
+    "verdict": "unknown",
+    "status": 503,
+    "url": "https://www.writingforums.org//members/?username=writingforumsorg",
+    "final_url": "https://www.writingforums.org//members/?username=writingforumsorg",
+    "reason": "http 503",
+    "data": {}
+  },
+  "chatujmecz": {
+    "username": "chatujmecz",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://profil.chatujme.cz/chatujmecz",
+    "final_url": "https://profil.chatujme.cz/chatujmecz",
+    "reason": "http 404",
+    "data": {}
+  },
+  "antiquers": {
+    "username": "antiquers",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.antiquers.com/members/?username=antiquers",
+    "final_url": "https://www.antiquers.com/members/?username=antiquers",
+    "reason": "http 200",
+    "data": {}
+  },
+  "bigsoccer": {
+    "username": "bigsoccer",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.bigsoccer.com/members/?username=bigsoccer",
+    "final_url": "https://www.bigsoccer.com/members/bigsoccer.6991/",
+    "reason": "",
+    "data": {
+      "display_name": "BigSoccer",
+      "description": "BigSoccer is a New Member at BigSoccer Forum",
+      "avatar": "https://www.bigsoccer.com/styles/bigsoccer/xenforo/avatars/avatar_m.png"
+    }
+  },
+  "skyblock": {
+    "username": "skyblock",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://skyblock.net/members/?username=skyblock",
+    "final_url": "https://skyblock.net/members/skyblock.109545/",
+    "reason": "",
+    "data": {
+      "display_name": "Skyblock | Skyblock",
+      "description": "Explore the original Skyblock worlds on the Skyblock Official Site. Play with friends on Minecraft multiplayer servers, download singleplayer worlds, and discover guides, merch, and more.",
+      "avatar": "https://static.skyblock.net/images/imgur/BpRJZHN.png"
+    }
+  },
+  "hiveblog": {
+    "username": "hiveblog",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://hive.blog/@hiveblog",
+    "final_url": "https://hive.blog/@hiveblog",
+    "reason": "",
+    "data": {
+      "display_name": "@hiveblog",
+      "description": "The latest posts from hiveblog. Follow me at @hiveblog. Hive: Communities Without Borders.",
+      "avatar": "https://hive.blog/images/hive-blog-twshare.png"
+    }
+  },
+  "joyreactorcc": {
+    "username": "joyreactorcc",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://joyreactor.cc/user/joyreactorcc",
+    "final_url": "https://joyreactor.cc/user/joyreactorcc",
+    "reason": "http 200",
+    "data": {}
+  },
+  "viewbug": {
+    "username": "viewbug",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.viewbug.com/member/viewbug",
+    "final_url": "https://www.viewbug.com/member/viewbug",
+    "reason": "http 403",
+    "data": {}
+  },
+  "exophase": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.exophase.com/user/admin/",
+    "final_url": "https://www.exophase.com/user/admin/",
+    "reason": "",
+    "data": {
+      "display_name": "An overview of admin's gaming activity.",
+      "description": "An overview of admin's gaming activity. Earned a total of 128 trophies/achievements. Last played game was Township on Google Play."
+    }
+  },
+  "webdevelopercom": {
+    "username": "webdevelopercom",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://webdeveloper.com/u/webdevelopercom",
+    "final_url": "https://webdeveloper.com/u/webdevelopercom",
+    "reason": "http 404",
+    "data": {}
+  },
+  "fediverseparty": {
+    "username": "fediverseparty",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://fediverse.party/en/fediverseparty",
+    "final_url": "https://fediverse.party/en/fediverseparty",
+    "reason": "http 404",
+    "data": {}
+  },
+  "weblancer": {
+    "username": "weblancer",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.weblancer.net/users/weblancer/",
+    "final_url": "https://www.weblancer.net/users/weblancer/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "sugoidesu": {
+    "username": "sugoidesu",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://sugoidesu.net/members/?username=sugoidesu",
+    "final_url": "https://sugoidesu.net/members/?username=sugoidesu",
+    "reason": "http 200",
+    "data": {}
+  },
+  "profiru": {
+    "username": "profiru",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://profi.ru/profile/profiru/",
+    "final_url": "https://profi.ru/?hiddenProfile=ProfiRU",
+    "reason": "",
+    "data": {
+      "display_name": "Выбирайте профи – более 3 000 000 специалистов для решения ваших задач."
+    }
+  },
+  "thoughtscom": {
+    "username": "thoughtscom",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://thoughts.com/members/thoughtscom",
+    "final_url": "https://forsale.dynadot.com/thoughts.com?drefid=2071",
+    "reason": "http 200",
+    "data": {}
+  },
+  "gapyear": {
+    "username": "gapyear",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.gapyear.com/members/gapyear",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "myinstants": {
+    "username": "myinstants",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.myinstants.com/profile/myinstants/",
+    "final_url": "https://www.myinstants.com/en/profile/myinstants/",
+    "reason": "",
+    "data": {
+      "display_name": "Myinstants Profile",
+      "description": "Listen to favorite sounds of Myinstants! Create your own soundboard on Myinstants!",
+      "avatar": "https://www.myinstants.com/media/images/myinstants-opengraph-v4.jpg"
+    }
+  },
+  "smokingmeatforumscom": {
+    "username": "smokingmeatforumscom",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://smokingmeatforums.com/members/?username=smokingmeatforumscom",
+    "final_url": "https://www.smokingmeatforums.com/members/?username=smokingmeatforumscom",
+    "reason": "http 200",
+    "data": {}
+  },
+  "reibert": {
+    "username": "reibert",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://reibert.info//members/?username=reibert",
+    "final_url": "https://reibert.info//members/?username=reibert",
+    "reason": "http 403",
+    "data": {}
+  },
+  "freelancehunt": {
+    "username": "freelancehunt",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://freelancehunt.com/freelancer/freelancehunt.html",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "atcoder": {
+    "username": "atcoder",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://atcoder.jp/users/atcoder",
+    "final_url": "https://atcoder.jp/users/atcoder",
+    "reason": "http 403",
+    "data": {}
+  },
+  "jetpunk": {
+    "username": "jetpunk",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.jetpunk.com/users/jetpunk",
+    "final_url": "https://www.jetpunk.com/users/jetpunk",
+    "reason": "http 403",
+    "data": {}
+  },
+  "rappad": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.rappad.co/users/admin",
+    "final_url": "https://www.rappad.co/users/admin",
+    "reason": "",
+    "data": {
+      "display_name": "admin on RapPad",
+      "description": "admin is using RapPad to write and share rap songs online. 7 songs have been written by admin."
+    }
+  },
+  "nationstatesnation": {
+    "username": "nationstatesnation",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://nationstates.net/nation=nationstatesnation",
+    "final_url": "https://nationstates.net/nation=nationstatesnation",
+    "reason": "http 403",
+    "data": {}
+  },
+  "ethresear": {
+    "username": "ethresear",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://ethresear.ch/u/ethresear/summary",
+    "final_url": "https://ethresear.ch/u/ethresear/summary",
+    "reason": "http 404",
+    "data": {}
+  },
+  "homebrewtalkcom": {
+    "username": "homebrewtalkcom",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.homebrewtalk.com/members/?username=homebrewtalkcom",
+    "final_url": "https://www.homebrewtalk.com/members/?username=homebrewtalkcom",
+    "reason": "http 403",
+    "data": {}
+  },
+  "lemmyworld": {
+    "username": "lemmyworld",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://lemmy.world/u/lemmyworld",
+    "final_url": "https://lemmy.world/u/lemmyworld",
+    "reason": "http 403",
+    "data": {}
+  },
+  "zoomirir": {
+    "username": "zoomirir",
+    "verdict": "absent",
+    "status": 410,
+    "url": "https://www.zoomit.ir/user/zoomirir",
+    "final_url": "https://www.zoomit.ir/user/zoomirir",
+    "reason": "http 410",
+    "data": {}
+  },
+  "cent": {
+    "username": "cent",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://beta.cent.co/@cent",
+    "final_url": "https://beta.cent.co/@cent",
+    "reason": "",
+    "data": {
+      "display_name": "/@cent",
+      "description": "A network for creative income",
+      "avatar": "https://beta.cent.co/favicon/android-chrome-512x512.png"
+    }
+  },
+  "vjudge": {
+    "username": "vjudge",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://VJudge.net/user/vjudge",
+    "final_url": "https://VJudge.net/user/vjudge",
+    "reason": "http 200",
+    "data": {}
+  },
+  "thesimsresource": {
+    "username": "thesimsresource",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.thesimsresource.com/members/thesimsresource/",
+    "final_url": "https://www.thesimsresource.com/members/thesimsresource/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "vgtimesgames": {
+    "username": "vgtimesgames",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://vgtimes.ru/games/vgtimesgames/forum/",
+    "final_url": "https://vgtimes.ru/games/vgtimesgames/forum/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "windowsforum": {
+    "username": "windowsforum",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://windowsforum.com/members/?username=windowsforum",
+    "final_url": "https://windowsforum.com/members/?username=windowsforum",
+    "reason": "http 403",
+    "data": {}
+  },
+  "warpcast": {
+    "username": "warpcast",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://warpcast.com/warpcast",
+    "final_url": "https://farcaster.xyz/warpcast",
+    "reason": "http 200",
+    "data": {}
+  },
+  "topmate": {
+    "username": "topmate",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://topmate.io/topmate",
+    "final_url": "https://topmate.io/topmate",
+    "reason": "",
+    "data": {
+      "display_name": "Topmate Official (@topmate) | Topmate",
+      "description": "Topmate Official · Official Public Profile of topmate.io | Reach out to us to know more. · 1★ (4 ratings) · Topmate",
+      "avatar": "https://topmate.io/cdn-cgi/image/width=1600,fit=contain,quality=90/https://res.cloudinary.com/topmate/image/upload/s--URXGKXcU--/c_scale,h_628,w_1200/c_fit,g_south_west,h_320,l_profile_pics:topmate_QSWyMNxntVeWkp9NK9NiTo,w_333,x_91,y_219/c_fit,co_rgb:000000,g_south_west,h_56,l_text:Poppins_36:topmate.io%252Ftopmate,w_850,x_124,y_36/v1/meta-image/metanew_kuwlcc.png?ogv=2"
+    }
+  },
+  "typeracer": {
+    "username": "typeracer",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://data.typeracer.com/pit/profile?user=typeracer",
+    "final_url": "https://data.typeracer.com/pit/profile?user=typeracer",
+    "reason": "",
+    "data": {
+      "display_name": "TypeRacer Stats",
+      "description": "Alex (typeracer) has completed 1237 typing races on typeracer.com with an average typing speed of 64 WPM."
+    }
+  },
+  "devrant": {
+    "username": "devrant",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://devrant.com/users/devrant",
+    "final_url": "https://devrant.com/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "rmmedia": {
+    "username": "rmmedia",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://rmmedia.ru/members/?username=rmmedia",
+    "final_url": "https://rmmedia.ru/members/97870/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "hometheaterforum": {
+    "username": "hometheaterforum",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.hometheaterforum.com/community/members/?username=hometheaterforum",
+    "final_url": "https://www.hometheaterforum.com/community/members/?username=hometheaterforum",
+    "reason": "http 403",
+    "data": {}
+  },
+  "vlr": {
+    "username": "vlr",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.vlr.gg/user/vlr",
+    "final_url": "https://www.vlr.gg/user/vlr",
+    "reason": "",
+    "data": {
+      "display_name": "vlr",
+      "description": "Valorant esports coverage featuring news, schedules, rankings, stats, and more",
+      "avatar": "https://www.vlr.gg/img/vlr/card.png"
+    }
+  },
+  "hackingwithswift": {
+    "username": "hackingwithswift",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.hackingwithswift.com/users/hackingwithswift",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "pokemonshowdown": {
+    "username": "pokemonshowdown",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://pokemonshowdown.com/users/pokemonshowdown",
+    "final_url": "https://pokemonshowdown.com/users/pokemonshowdown",
+    "reason": "http 200",
+    "data": {}
+  },
+  "mynicknamecom": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://mynickname.com/admin",
+    "final_url": "https://mynickname.com/admin",
+    "reason": "",
+    "data": {
+      "display_name": "Nickname Админ_, certificate for username Админ_",
+      "description": "Nickname Админ_ is registered to http://vk.com/FeerNoom. Certificate for the nickname Админ_",
+      "avatar": "https://mynickname.com/img.php?id=1066552"
+    }
+  },
+  "ethereummagicians": {
+    "username": "ethereummagicians",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://ethereum-magicians.org/u/ethereummagicians/summary",
+    "final_url": "https://ethereum-magicians.org/u/ethereummagicians/summary",
+    "reason": "http 404",
+    "data": {}
+  },
+  "govloop": {
+    "username": "govloop",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.govloop.com/members/govloop",
+    "final_url": "https://www.govloop.com/author/govloop/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "designspiration": {
+    "username": "designspiration",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://designspiration.com/designspiration/",
+    "final_url": "https://www.designspiration.com/designspiration/",
+    "reason": "",
+    "data": {
+      "display_name": "Collections Designspiration (@designspiration) has discovered on Designspiration",
+      "description": "Find inspiration from Designspiration (@designspiration) on Designspiration.",
+      "avatar": "https://dspncdn.com/a1/avatars/400x/ab/5f/ab5f813174ac95e9b93d587ddfef2e6a.jpg"
+    }
+  },
+  "politforums": {
+    "username": "politforums",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.politforums.net/free/profile.php?showuser=politforums",
+    "final_url": "https://www.politforums.net/free/profile.php?showuser=politforums",
+    "reason": "http 403",
+    "data": {}
+  },
+  "icheckmovies": {
+    "username": "icheckmovies",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.icheckmovies.com/profiles/icheckmovies",
+    "final_url": "https://www.icheckmovies.com/profiles/icheckmovies/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "crevado": {
+    "username": "crevado",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://crevado.crevado.com",
+    "final_url": "https://crevado.crevado.com/",
+    "reason": "http 403",
+    "data": {}
+  },
+  "monkeytype": {
+    "username": "monkeytype",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://monkeytype.com/profile/monkeytype",
+    "final_url": "https://monkeytype.com/profile/monkeytype",
+    "reason": "http 200",
+    "data": {}
+  },
+  "e621": {
+    "username": "e621",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://e621.net/users/e621",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "gvectors": {
+    "username": "gvectors",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://gvectors.com/forum/profile/gvectors/",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "rollitup": {
+    "username": "rollitup",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.rollitup.org/members/?username=rollitup",
+    "final_url": "https://www.rollitup.org/members/rollitup.1141539/",
+    "reason": "",
+    "data": {
+      "display_name": "Rollitup",
+      "avatar": "/styles/rollitup2026/og-image.png"
+    }
+  },
+  "riveapp": {
+    "username": "riveapp",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://rive.app/a/riveapp",
+    "final_url": "https://rive.app/a/riveapp",
+    "reason": "http 403",
+    "data": {}
+  },
+  "mstdnio": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://mstdn.io/@admin",
+    "final_url": "https://mstdn.io/@admin",
+    "reason": "",
+    "data": {
+      "display_name": "mstdn.io admin :mastodance: (@admin@mstdn.io)",
+      "description": "9 Posts, 2 Following, 1.4K Followers · Follow this account for all the news about mstdn.io!",
+      "avatar": "https://media.mstdn.io/mstdn-media/accounts/avatars/000/005/363/original/f53bdb7553721f0c.png"
+    }
+  },
+  "lightstalkingcom": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.lightstalking.com/author/admin/",
+    "final_url": "https://www.lightstalking.com/author/admin/",
+    "reason": "",
+    "data": {
+      "display_name": "Rob Wood (Admin)",
+      "avatar": "https://secure.gravatar.com/avatar/90defee32cc73193e066d64985c188e3679feb0775698f65d5f14b37d3ac0d03?s=500&r=g"
+    }
+  },
+  "gurushots": {
+    "username": "gurushots",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://gurushots.com/gurushots/photos",
+    "final_url": "https://gurushots.com/gurushots/photos",
+    "reason": "http 200",
+    "data": {}
+  },
+  "weasyl": {
+    "username": "weasyl",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.weasyl.com/~weasyl",
+    "final_url": "https://www.weasyl.com/~weasyl",
+    "reason": "",
+    "data": {
+      "display_name": "Weasyl’s profile"
+    }
+  },
+  "touristlink": {
+    "username": "touristlink",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.touristlink.com/user/touristlink",
+    "final_url": "https://www.touristlink.com/user/drindranidas",
+    "reason": "",
+    "data": {
+      "display_name": "Dr Indrani Das, Bhubaneswar, India - Touristlink",
+      "description": "Dr Indrani Das is member of the social travel network Touristlink. Has been an active member since July 2022.",
+      "avatar": "https://cimages1.touristlink.com/repository/default/member_250_250.gif"
+    }
+  },
+  "w7forums": {
+    "username": "w7forums",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.w7forums.com/members/?username=w7forums",
+    "final_url": "https://www.w7forums.com/members/w7forums.19017/",
+    "reason": "",
+    "data": {
+      "display_name": "w7forums"
+    }
+  },
+  "fragment": {
+    "username": "fragment",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://fragment.com/username/fragment",
+    "final_url": "https://fragment.com/username/fragment",
+    "reason": "",
+    "data": {
+      "display_name": "Make an offer for @fragment",
+      "description": "@fragment is taken – send an offer to its owner and see if they’re ready to sell it.",
+      "avatar": "https://nft.fragment.com/username/fragment.webp"
+    }
+  },
+  "allthelyrics": {
+    "username": "allthelyrics",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.allthelyrics.com/forum/member.php?username=allthelyrics",
+    "final_url": "https://www.allthelyrics.com/forum/member.php?username=allthelyrics",
+    "reason": "http 200",
+    "data": {}
+  },
+  "nothingcommunity": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://nothing.community/u/admin",
+    "final_url": "https://nothing.community/u/admin",
+    "reason": "",
+    "data": {
+      "display_name": "Profile of admin",
+      "description": "Profile of admin | 0 discussions | 0 posts"
+    }
+  },
+  "clozemaster": {
+    "username": "clozemaster",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.clozemaster.com/players/clozemaster",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "n999md": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://999.md/ru/profile/admin",
+    "final_url": "https://999.md/ru/profile/admin",
+    "reason": "",
+    "data": {
+      "display_name": "admin - профиль пользователя на 999.md",
+      "description": "999.md - самая популярная доска объявлений Молдовы. Здесь вы найдете новые и б/у товары на любой вкус. Хотите разместить объявлние? С 999.md это более чем просто.",
+      "avatar": "https://i.simpalsmedia.com/999.md/BoardImages/320x240/noimage.gif"
+    }
+  },
+  "arrse": {
+    "username": "arrse",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.arrse.co.uk//community/members/?username=arrse",
+    "final_url": "https://www.arrse.co.uk//community/members/?username=arrse",
+    "reason": "http 403",
+    "data": {}
+  },
+  "n1001tracklists": {
+    "username": "n1001tracklists",
+    "verdict": "unknown",
+    "status": 206,
+    "url": "https://www.1001tracklists.com/user/n1001tracklists/index.html",
+    "final_url": "https://www.1001tracklists.com/user/n1001tracklists/index.html",
+    "reason": "http 206",
+    "data": {}
+  },
+  "livios": {
+    "username": "livios",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.livios.be/nl/forum/leden/livios",
+    "final_url": "https://www.livios.be/nl",
+    "reason": "http 200",
+    "data": {}
+  },
+  "pronounspage": {
+    "username": "pronounspage",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://pronouns.page/@pronounspage",
+    "final_url": "https://pronouns.page/@pronounspage",
+    "reason": "",
+    "data": {
+      "display_name": "@pronounspage • Pronouns.page",
+      "description": "Usage examples of personal pronouns and gender neutral language.",
+      "avatar": "https://pronouns.page/api/banner/@pronounspage.png"
+    }
+  },
+  "au": {
+    "username": "au",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://au.ru/user/au/",
+    "final_url": "https://au.ru/user/au/",
+    "reason": "",
+    "data": {
+      "display_name": "Лоты пользователя Au — Au.ru"
+    }
+  },
+  "listography": {
+    "username": "listography",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://listography.com/listography",
+    "final_url": "https://listography.com/listography",
+    "reason": "http 200",
+    "data": {}
+  },
+  "millerovo161ru": {
+    "username": "millerovo161ru",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://millerovo161.ru/index/8-0-millerovo161ru",
+    "final_url": "https://millerovo161.ru/index/8-0-millerovo161ru",
+    "reason": "http 200",
+    "data": {}
+  },
+  "rlocman": {
+    "username": "rlocman",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.rlocman.ru/forum/member.php?username=rlocman",
+    "final_url": "https://www.rlocman.ru/forum/member.php?username=rlocman",
+    "reason": "http 200",
+    "data": {}
+  },
+  "aminus3": {
+    "username": "aminus3",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://aminus3.aminus3.com/",
+    "final_url": "https://www.aminus3.com/",
+    "reason": "",
+    "data": {
+      "display_name": "Aminus3 Photography Community",
+      "description": "Aminus3 is the world’s largest image a day community for serious photographers. Share photography with an international audience and receive helpful feedback to improve your images.",
+      "avatar": "https://aminus3.s3.amazonaws.com/image/g0001/u00000002/i01038169/a197c8f1bd03a6307b03fdb032abb000_large.jpg"
+    }
+  },
+  "elixirforum": {
+    "username": "elixirforum",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://elixirforum.com/u/elixirforum/summary",
+    "final_url": "https://forum.elixirforum.com/u/elixirforum/summary",
+    "reason": "",
+    "data": {
+      "display_name": "elixirforum",
+      "avatar": "https://forum.elixirforum.com/user_avatar/forum.elixirforum.com/elixirforum/45/169_2.png"
+    }
+  },
+  "egpu": {
+    "username": "egpu",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://egpu.io/forums/profile/egpu/",
+    "final_url": "https://egpu.io/forums/profile/egpu/",
+    "reason": "http 404",
+    "data": {}
+  },
+  "vintagemustangcom": {
+    "username": "vintagemustangcom",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://vintage-mustang.com/members/?username=vintagemustangcom",
+    "final_url": "https://vintage-mustang.com/members/?username=vintagemustangcom",
+    "reason": "http 202",
+    "data": {}
+  },
+  "forumhr": {
+    "username": "forumhr",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.forum.hr/member.php?username=forumhr",
+    "final_url": "https://www.forum.hr/member.php?username=forumhr",
+    "reason": "http 403",
+    "data": {}
+  },
+  "school2dobrinkaru": {
+    "username": "school2dobrinkaru",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://school2dobrinka.ru/index/8-0-school2dobrinkaru",
+    "final_url": "https://school2dobrinka.ru/index/8-0-school2dobrinkaru",
+    "reason": "http 404",
+    "data": {}
+  },
+  "jigidi": {
+    "username": "jigidi",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.jigidi.com/user/jigidi",
+    "final_url": "https://www.jigidi.com/user/jigidi",
+    "reason": "http 200",
+    "data": {}
+  },
+  "chemport": {
+    "username": "chemport",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.chemport.ru/forum/memberlist.php?username=chemport",
+    "final_url": "https://chemport.ru/forum/memberlist.php?username=chemport",
+    "reason": "http 403",
+    "data": {}
+  },
+  "snbforums": {
+    "username": "snbforums",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.snbforums.com/members/?username=snbforums",
+    "final_url": "https://www.snbforums.com/members/?username=snbforums",
+    "reason": "http 403",
+    "data": {}
+  },
+  "redcafe": {
+    "username": "redcafe",
+    "verdict": "unknown",
+    "status": 302,
+    "url": "https://www.redcafe.net/members/?username=redcafe",
+    "final_url": "https://www.redcafe.net/members/redcafe.6993/",
+    "reason": "http 302",
+    "data": {}
+  },
+  "showme": {
+    "username": "showme",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.showme.com/showme",
+    "final_url": "https://www.showme.com/showme",
+    "reason": "",
+    "data": {
+      "display_name": "Anna Meyer",
+      "description": "0 Followers · 0 Following",
+      "avatar": "https://showme1-9071.kxcdn.com/pics/generic-profile-pic-v2.png"
+    }
+  },
+  "officeforums": {
+    "username": "officeforums",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.office-forums.com/members/?username=officeforums",
+    "final_url": "https://www.office-forums.com/members/?username=officeforums",
+    "reason": "http 200",
+    "data": {}
+  },
+  "subaruoutbackorg": {
+    "username": "subaruoutbackorg",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://subaruoutback.org/members/?username=subaruoutbackorg",
+    "final_url": "https://subaruoutback.org/members/?username=subaruoutbackorg",
+    "reason": "http 202",
+    "data": {}
+  },
+  "svtperformancecom": {
+    "username": "svtperformancecom",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://svtperformance.com/members/?username=svtperformancecom",
+    "final_url": "https://svtperformance.com/members/?username=svtperformancecom",
+    "reason": "http 403",
+    "data": {}
+  },
+  "railforumscouk": {
+    "username": "railforumscouk",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.railforums.co.uk/members/?username=railforumscouk",
+    "final_url": "https://www.railforums.co.uk/members/?username=railforumscouk",
+    "reason": "http 403",
+    "data": {}
+  },
+  "subaruforesterorg": {
+    "username": "subaruforesterorg",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://subaruforester.org/members/?username=subaruforesterorg",
+    "final_url": "https://subaruforester.org/members/?username=subaruforesterorg",
+    "reason": "http 202",
+    "data": {}
+  },
+  "rubyforum": {
+    "username": "rubyforum",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.ruby-forum.com/u/rubyforum/summary",
+    "final_url": "https://www.ruby-forum.com/u/rubyforum/summary",
+    "reason": "http 404",
+    "data": {}
+  },
+  "blipfoto": {
+    "username": "blipfoto",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://www.blipfoto.com/blipfoto",
+    "final_url": "https://www.blipfoto.com/blipfoto",
+    "reason": "http 404",
+    "data": {}
+  },
+  "nitrotype": {
+    "username": "nitrotype",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.nitrotype.com/racer/nitrotype",
+    "final_url": "https://www.nitrotype.com/racer/nitrotype",
+    "reason": "",
+    "data": {
+      "display_name": "nitrotype's Nitro Racer Profile",
+      "description": "Amp up your typing speed while competing against others around the globe in our fun online typing game! Free to play and fit for all ages. Start racing now!",
+      "avatar": "https://www.nitrotype.com/dist/site/images/social/nitrotype-teaser-lg.jpg"
+    }
+  },
+  "blast": {
+    "username": "blast",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.blast.hk/members/?username=blast",
+    "final_url": "https://www.blast.hk/members/318602/",
+    "reason": "",
+    "data": {
+      "display_name": "Blast",
+      "avatar": "https://www.blast.hk/styles/io/images/blasthack/metadata/bh_b_new.512.png"
+    }
+  },
+  "vishivalochkaru": {
+    "username": "vishivalochkaru",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://vishivalochka.ru/index/8-0-vishivalochkaru",
+    "final_url": "https://vishivalochka.ru/index/8-0-vishivalochkaru",
+    "reason": "http 200",
+    "data": {}
+  },
+  "cslords": {
+    "username": "cslords",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://cs-lords.ru/index/8-0-cslords",
+    "final_url": "https://cs-lords.ru/index/8-0-cslords",
+    "reason": "http 404",
+    "data": {}
+  },
+  "niketalk": {
+    "username": "niketalk",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://niketalk.com/members/?username=niketalk",
+    "final_url": "https://niketalk.com/members/niketalk.68268/",
+    "reason": "",
+    "data": {
+      "display_name": "niketalk",
+      "avatar": "https://niketalk.com/data/avatars/o/68/68268.jpg?1500057952"
+    }
+  },
+  "thefirearmsforum": {
+    "username": "thefirearmsforum",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.thefirearmsforum.com/members/?username=thefirearmsforum",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "affiliatefix": {
+    "username": "affiliatefix",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.affiliatefix.com/members/?username=affiliatefix",
+    "final_url": "https://www.affiliatefix.com/members/?username=affiliatefix",
+    "reason": "http 403",
+    "data": {}
+  },
+  "sigtalkcom": {
+    "username": "sigtalkcom",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://sigtalk.com/members/?username=sigtalkcom",
+    "final_url": "https://sigtalk.com/members/?username=sigtalkcom",
+    "reason": "http 202",
+    "data": {}
+  },
+  "mirstalkeraru": {
+    "username": "mirstalkeraru",
+    "verdict": "unknown",
+    "status": 503,
+    "url": "https://mir-stalkera.ru/index/8-0-mirstalkeraru",
+    "final_url": "https://www.mir-stalkera.ru/index/8-0-mirstalkeraru",
+    "reason": "http 503",
+    "data": {}
+  },
+  "machelp": {
+    "username": "machelp",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.mac-help.com/members/?username=machelp",
+    "final_url": "https://www.mac-help.com/members/machelp.12047/",
+    "reason": "",
+    "data": {
+      "display_name": "machelp"
+    }
+  },
+  "flashflashrevolution": {
+    "username": "flashflashrevolution",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.flashflashrevolution.com/profile/flashflashrevolution/",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "dmoj": {
+    "username": "dmoj",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://dmoj.ca/user/dmoj",
+    "final_url": "https://dmoj.ca/user/dmoj",
+    "reason": "http 403",
+    "data": {}
+  },
+  "ladavestanet": {
+    "username": "ladavestanet",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.lada-vesta.net/member.php?username=ladavestanet",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "sysadmins": {
+    "username": "sysadmins",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://sysadmins.ru/membersysadmins.html",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "jeepgarageorg": {
+    "username": "jeepgarageorg",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://jeepgarage.org/members/?username=jeepgarageorg",
+    "final_url": "https://jeepgarage.org/members/?username=jeepgarageorg",
+    "reason": "http 202",
+    "data": {}
+  },
+  "n4gameforum": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://4gameforum.com/members/?username=admin",
+    "final_url": "https://4gameforum.com/members/1/",
+    "reason": "",
+    "data": {
+      "display_name": "admin",
+      "description": "admin - на сайте 4Game",
+      "avatar": "https://4gameforum.com/styles/4game/xenforo/avatars/avatar_m.png"
+    }
+  },
+  "spells8": {
+    "username": "spells8",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://forum.spells8.com/u/spells8",
+    "final_url": "https://forum.spells8.com/u/spells8",
+    "reason": "http 404",
+    "data": {}
+  },
+  "n101010pl": {
+    "username": "n101010pl",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://101010.pl/@n101010pl",
+    "final_url": "https://101010.pl/@n101010pl",
+    "reason": "http 404",
+    "data": {}
+  },
+  "cryptohack": {
+    "username": "cryptohack",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://cryptohack.org/user/cryptohack/",
+    "final_url": "https://cryptohack.org/user/cryptohack/",
+    "reason": "",
+    "data": {
+      "display_name": "cryptohack – CryptoHack",
+      "description": "A fun, free platform to learn about cryptography through solving challenges and cracking insecure code. Can you reach the top of the leaderboard?"
+    }
+  },
+  "piccsy": {
+    "username": "piccsy",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://piccsy.piccsy.com/",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "windows10forums": {
+    "username": "windows10forums",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.windows10forums.com//members/?username=windows10forums",
+    "final_url": "https://www.windows10forums.com//members/?username=windows10forums",
+    "reason": "http 200",
+    "data": {}
+  },
+  "ifishnet": {
+    "username": "ifishnet",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://ifish.net/members/?username=ifishnet",
+    "final_url": "https://ifish.net/members/?username=ifishnet",
+    "reason": "http 202",
+    "data": {}
+  },
+  "swedroidse": {
+    "username": "swedroidse",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://swedroid.se/forum/members/?username=swedroidse",
+    "final_url": "https://swedroid.se/forum/members/?username=swedroidse",
+    "reason": "http 403",
+    "data": {}
+  },
+  "cssbattle": {
+    "username": "cssbattle",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://cssbattle.dev/player/cssbattle",
+    "final_url": "https://cssbattle.dev/player/cssbattle",
+    "reason": "http 200",
+    "data": {}
+  },
+  "macosx": {
+    "username": "macosx",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://macosx.com/members/?username=macosx",
+    "final_url": "https://macosx.com/members/macosx.7002/",
+    "reason": "",
+    "data": {
+      "display_name": "macosx"
+    }
+  },
+  "religiousforums": {
+    "username": "religiousforums",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.religiousforums.com/members/?username=religiousforums",
+    "final_url": "https://www.religiousforums.com/members/?username=religiousforums",
+    "reason": "http 403",
+    "data": {}
+  },
+  "not606com": {
+    "username": "not606com",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.not606.com//members/?username=not606com",
+    "final_url": "https://not606.com/members/?username=not606com",
+    "reason": "http 200",
+    "data": {}
+  },
+  "gpodder": {
+    "username": "gpodder",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://gpodder.net/user/gpodder",
+    "final_url": "https://gpodder.net/user/gpodder/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "md": {
+    "username": "md",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://forum.md/ru/users/md",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "imood": {
+    "username": "imood",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.imood.com/users/imood",
+    "final_url": "https://www.imood.com/users/imood",
+    "reason": "",
+    "data": {
+      "display_name": "imood is on imood.com"
+    }
+  },
+  "armtorg": {
+    "username": "armtorg",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://armtorg.ru//forum/memberlist.php?username=armtorg",
+    "final_url": "https://armtorg.ru//forum/memberlist.php?username=armtorg",
+    "reason": "http 200",
+    "data": {}
+  },
+  "russpussru": {
+    "username": "russpussru",
+    "verdict": "absent",
+    "status": 410,
+    "url": "https://www.russpuss.ru/profile/russpussru/",
+    "final_url": "https://www.russpuss.ru/profile/russpussru/",
+    "reason": "http 410",
+    "data": {}
+  },
+  "vtwinforumcom": {
+    "username": "vtwinforumcom",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://v-twinforum.com/members/?username=vtwinforumcom",
+    "final_url": "https://v-twinforum.com/members/?username=vtwinforumcom",
+    "reason": "http 202",
+    "data": {}
+  },
+  "fanficslandiacom": {
+    "username": "fanficslandiacom",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://fanficslandia.com/index.php/members/?username=fanficslandiacom",
+    "final_url": "https://fanficslandia.com/usuario/?username=fanficslandiacom",
+    "reason": "http 200",
+    "data": {}
+  },
+  "qbn": {
+    "username": "qbn",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.qbn.com/qbn",
+    "final_url": "https://www.qbn.com/qbn/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "lkforum": {
+    "username": "lkforum",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.lkforum.ru//member.php?username=lkforum",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "clubsnapcom": {
+    "username": "clubsnapcom",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.clubsnap.com//members/?username=clubsnapcom",
+    "final_url": "https://clubsnap.com/members/?username=clubsnapcom",
+    "reason": "http 200",
+    "data": {}
+  },
+  "wolpy": {
+    "username": "wolpy",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://wolpy.com/wolpy/profile",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "warframemarket": {
+    "username": "warframemarket",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://warframe.market/profile/warframemarket",
+    "final_url": "https://warframe.market/profile/warframemarket",
+    "reason": "",
+    "data": {
+      "display_name": "Profile - -_-WarframeMarket-_- | Orders"
+    }
+  },
+  "cubecraftnet": {
+    "username": "cubecraftnet",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.cubecraft.net/members/?username=cubecraftnet",
+    "final_url": "https://www.cubecraft.net/members/?username=cubecraftnet",
+    "reason": "http 200",
+    "data": {}
+  },
+  "tvgames": {
+    "username": "tvgames",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://tv-games.ru//forum/member.php?username=tvgames",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "sniperforumscom": {
+    "username": "sniperforumscom",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://sniperforums.com/members/?username=sniperforumscom",
+    "final_url": "https://sniperforums.com/members/?username=sniperforumscom",
+    "reason": "http 202",
+    "data": {}
+  },
+  "izobilru": {
+    "username": "izobilru",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://izobil.ru/index/8-0-izobilru",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "goldroyal": {
+    "username": "goldroyal",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://goldroyal.net/member.php?username=goldroyal",
+    "final_url": "https://goldroyal.net/member.php?username=goldroyal",
+    "reason": "http 403",
+    "data": {}
+  },
+  "fcrubin": {
+    "username": "fcrubin",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.fcrubin.ru/forum/member.php?username=fcrubin",
+    "final_url": "https://www.fcrubin.ru/forum/member.php?username=fcrubin",
+    "reason": "http 200",
+    "data": {}
+  },
+  "oakleyforumcom": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.oakleyforum.com/members/?username=admin",
+    "final_url": "https://www.oakleyforum.com/members/admin.1/",
+    "reason": "",
+    "data": {
+      "display_name": "Admin",
+      "avatar": "https://cdn.oakleyforum.com/data/avatars/o/0/1.jpg?1556848442"
+    }
+  },
+  "hunting": {
+    "username": "hunting",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.hunting.ru/forum/members/?username=hunting",
+    "final_url": "https://www.hunting.ru/forum/members/?username=hunting",
+    "reason": "http 403",
+    "data": {}
+  },
+  "uvelir": {
+    "username": "uvelir",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://uvelir.net//member.php?username=uvelir",
+    "final_url": "https://uvelir.net/member.php?19088-uvelir",
+    "reason": "http 200",
+    "data": {}
+  },
+  "thelion": {
+    "username": "thelion",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.thelion.com/bin/profile.cgi?c=s&ru_name=thelion",
+    "final_url": "https://www.thelion.com/bin/profile.cgi?c=s&ru_name=thelion",
+    "reason": "http 200",
+    "data": {}
+  },
+  "xshaker": {
+    "username": "xshaker",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.xshaker.net/xshaker.html",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "nucastlecouk": {
+    "username": "nucastlecouk",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.nucastle.co.uk//members/?username=nucastlecouk",
+    "final_url": "https://www.nucastle.co.uk//members/?username=nucastlecouk",
+    "reason": "http 200",
+    "data": {}
+  },
+  "realmeye": {
+    "username": "realmeye",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.realmeye.com/player/realmeye",
+    "final_url": "https://www.realmeye.com/player/realmeye",
+    "reason": "http 200",
+    "data": {}
+  },
+  "hitmanforum": {
+    "username": "hitmanforum",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.hitmanforum.com/u/hitmanforum/summary",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "datingru": {
+    "username": "datingru",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://dating.ru/datingru",
+    "final_url": "https://dating.ru/datingru/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "volgogradforum": {
+    "username": "volgogradforum",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://www.forum-volgograd.ru/members/?username=volgogradforum",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "tigerfancom": {
+    "username": "tigerfancom",
+    "verdict": "unknown",
+    "status": 525,
+    "url": "https://www.tigerfan.com//members/?username=tigerfancom",
+    "final_url": "https://www.tigerfan.com//members/?username=tigerfancom",
+    "reason": "http 525",
+    "data": {}
+  },
+  "impalaforumscom": {
+    "username": "impalaforumscom",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://impalaforums.com/members/?username=impalaforumscom",
+    "final_url": "https://impalaforums.com/members/?username=impalaforumscom",
+    "reason": "http 202",
+    "data": {}
+  },
+  "forumjizni": {
+    "username": "forumjizni",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.forumjizni.ru/member.php?username=forumjizni",
+    "final_url": "https://www.forumjizni.ru/member.php?username=forumjizni",
+    "reason": "http 200",
+    "data": {}
+  },
+  "xgmguru": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://xgm.guru/user/admin",
+    "final_url": "https://xgm.guru/user/admin",
+    "reason": "",
+    "data": {
+      "display_name": "User Admin - XGM",
+      "description": "XGM - a platform for game development and modding projects. Manage projects, share progress, and receive valuable feedback from the community",
+      "avatar": "https://xgm.guru/public/images/xgm.png"
+    }
+  },
+  "texasguntalk": {
+    "username": "texasguntalk",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.texasguntalk.com/members/?username=texasguntalk",
+    "final_url": "https://www.texasguntalk.com/members/?username=texasguntalk",
+    "reason": "http 200",
+    "data": {}
+  },
+  "politikforum": {
+    "username": "politikforum",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.politikforum.ru//member.php?username=politikforum",
+    "final_url": "https://www.politikforum.ru//member.php?username=politikforum",
+    "reason": "http 200",
+    "data": {}
+  },
+  "truthbook": {
+    "username": "truthbook",
+    "verdict": "absent",
+    "status": 404,
+    "url": "https://truthbook.com/forum/memberlist.php?username=truthbook",
+    "final_url": "https://truthbook.com/forum/memberlist.php?username=truthbook",
+    "reason": "http 404",
+    "data": {}
+  },
+  "defenceforumindia": {
+    "username": "defenceforumindia",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://defenceforumindia.com//members/?username=defenceforumindia",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "forumsdromru": {
+    "username": "forumsdromru",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://www.forumsdrom.ru/member.php?username=forumsdromru",
+    "final_url": "https://www.forumsdrom.ru/member.php?username=forumsdromru",
+    "reason": "http 200",
+    "data": {}
+  },
+  "antiquebottles": {
+    "username": "antiquebottles",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.antique-bottles.net/members/?username=antiquebottles",
+    "final_url": "https://www.antique-bottles.net/members/?username=antiquebottles",
+    "reason": "",
+    "data": {
+      "display_name": "Notable members"
+    }
+  },
+  "ridemonkeycom": {
+    "username": "ridemonkeycom",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.ridemonkey.com/members/?username=ridemonkeycom",
+    "final_url": "https://ridemonkey.com/members/?username=ridemonkeycom",
+    "reason": "http 403",
+    "data": {}
+  },
+  "discussfastpitch": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.discussfastpitch.com/members/?username=admin",
+    "final_url": "https://www.discussfastpitch.com/members/admin.1/",
+    "reason": "",
+    "data": {
+      "display_name": "admin",
+      "avatar": "https://www.discussfastpitch.com/data/avatars/o/0/1.jpg?1736390229"
+    }
+  },
+  "avtoforumname": {
+    "username": "avtoforumname",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://avto-forum.name/members/?username=avtoforumname",
+    "final_url": "https://avto-forum.name/members/?username=avtoforumname",
+    "reason": "http 200",
+    "data": {}
+  },
+  "spaces": {
+    "username": "spaces",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://spaces.im/mysite/index/spaces/",
+    "final_url": "https://spaces.im/mysite/index/spaces/",
+    "reason": "http 200",
+    "data": {}
+  },
+  "russianfi": {
+    "username": "russianfi",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.russian.fi//forum/member.php?username=russianfi",
+    "final_url": "https://www.russian.fi//forum/member.php?username=russianfi",
+    "reason": "",
+    "data": {
+      "avatar": "https://www.russian.fi/forum/images/russianfi/rufi_fb.gif"
+    }
+  },
+  "xtratimeorg": {
+    "username": "xtratimeorg",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://www.xtratime.org/members/?username=xtratimeorg",
+    "final_url": "https://www.xtratime.org/members/?username=xtratimeorg",
+    "reason": "http 202",
+    "data": {}
+  },
+  "nikoncafecom": {
+    "username": "nikoncafecom",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://www.nikoncafe.com//members/?username=nikoncafecom",
+    "final_url": "https://www.nikoncafe.com//members/?username=nikoncafecom",
+    "reason": "http 202",
+    "data": {}
+  },
+  "cowboyszonecom": {
+    "username": "cowboyszonecom",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://cowboyszone.com/members/?username=cowboyszonecom",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  },
+  "thebuddyforum": {
+    "username": "admin",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://www.thebuddyforum.com/members/?username=admin",
+    "final_url": "https://rebornbuddy.com/xf/members/admin.393114/",
+    "reason": "",
+    "data": {
+      "display_name": "admin"
+    }
+  },
+  "vauxhallownersnetworkcouk": {
+    "username": "vauxhallownersnetworkcouk",
+    "verdict": "unknown",
+    "status": 202,
+    "url": "https://www.vauxhallownersnetwork.co.uk/members/?username=vauxhallownersnetworkcouk",
+    "final_url": "https://www.vauxhallownersnetwork.co.uk/members/?username=vauxhallownersnetworkcouk",
+    "reason": "http 202",
+    "data": {}
+  },
+  "erogenclub": {
+    "username": "erogenclub",
+    "verdict": "unknown",
+    "status": 200,
+    "url": "https://erogen.club/members/?username=erogenclub",
+    "final_url": "https://erogen.club/members/?username=erogenclub",
+    "reason": "http 200",
+    "data": {}
+  },
+  "mineplexcom": {
+    "username": "mineplexcom",
+    "verdict": "unknown",
+    "status": 403,
+    "url": "https://www.mineplex.com/members/?username=mineplexcom",
+    "final_url": "https://mineplex.com/members/?username=mineplexcom",
+    "reason": "http 403",
+    "data": {}
+  },
+  "codersrank": {
+    "username": "codersrank",
+    "verdict": "exists",
+    "status": 200,
+    "url": "https://profile.codersrank.io/user/codersrank/",
+    "final_url": "https://profile.codersrank.io/user/codersrank/",
+    "reason": "",
+    "data": {
+      "display_name": "codersrank's CodersRank profile",
+      "description": "Measure your skills and knowledge, compare them to market and find a personalized way to grow.",
+      "avatar": "https://codersrank.io/wp-content/uploads/2020/06/featured-img-developer-2-1.jpg"
+    }
+  },
+  "worldofplayers": {
+    "username": "worldofplayers",
+    "verdict": "unknown",
+    "status": null,
+    "url": "https://worldofplayers.ru/members/?username=worldofplayers",
+    "final_url": "",
+    "reason": "request failed",
+    "data": {}
+  }
+}

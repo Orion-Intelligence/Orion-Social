@@ -2,8 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { SocialPublisher } from '../publish/publisher.js';
-import { SocialAutomationError } from '../shared/errors.js';
+import { SocialPublisher } from './triggers/publisher.js';
 
 import { isPlatformName } from '../shared/model/models.js';
 import type { SocialPlatformName } from '../shared/model/models.js';
@@ -126,13 +125,6 @@ function exitUsage(_error: string): never {
 async function main(): Promise<void> {
   const { platforms, text, images, dryRun, sessionFile } = parseArgs(process.argv);
 
-  console.log(`[Post] Platform: ${platforms.join(', ')}`);
-  console.log(`[Post] Text: ${text}`);
-
-  if (dryRun) {
-    console.log(`[Post] Dry run mode, nothing will be published`);
-  }
-
   const post: PublishPost = {
     text,
     images: images.length > 0 ? images : undefined,
@@ -168,11 +160,6 @@ async function main(): Promise<void> {
       process.exit(1);
     }
   } catch (err: unknown) {
-    if (err instanceof SocialAutomationError) {
-
-    } else {
-
-    }
     postResult.error = true;
     postResult.error_reason = errorReason(err);
     postResult.session_expired = isSessionExpired(err);

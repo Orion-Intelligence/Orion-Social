@@ -14,6 +14,8 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         return VerdictConstants.ABSENT, {}
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
+    if BIGOLIVEConstants.ABSENT_MARKER in (_final_url or ""):
+        return VerdictConstants.ABSENT, {}
     heading = parse.title(body)
     if not heading or heading.casefold() in BIGOLIVEConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}

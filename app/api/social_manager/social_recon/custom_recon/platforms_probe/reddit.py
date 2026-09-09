@@ -58,6 +58,6 @@ def evaluate_resource(status: int, body: str, _final_url: str) -> tuple[str, dic
 
 ROUTES = (
     (r"(?:user|u)/(?P<id>[^/]+)(?:/.*)?", "profile"),
-    (r"r/[^/]+/comments/(?P<id>[^/]+)(?:/.*)?", "post"),
     (r"r/(?P<id>[^/]+)(?:/.*)?", "subreddit"),
 )
+

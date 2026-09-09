@@ -21,7 +21,3 @@ export function getAdapter(platform: string): SocialPlatformAdapter {
   }
   return adapter;
 }
-
-export function getAllAdapters(): readonly SocialPlatformAdapter[] {
-  return [...adapters.values()];
-}

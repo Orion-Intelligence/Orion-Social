@@ -29,5 +29,5 @@ def clean(info: dict) -> dict:
 
 ROUTES = (
     ("channel/(?P<id>[^/]+)(?:/.*)?", "profile"),
-    ("video/(?P<id>[^/]+)(?:/.*)?", "video"),
 )
+

@@ -6,7 +6,6 @@ export class LinkedInAdapter implements SocialPlatformAdapter {
   readonly platform = 'linkedin' as const;
   readonly displayName = 'LinkedIn';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
-  readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 9;
 
 

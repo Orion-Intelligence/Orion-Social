@@ -17,7 +17,16 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     heading = parse.title(body)
     if not heading or heading.casefold() in SubstackConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, SubstackConstants.AVATAR_KEYS, SubstackConstants.COVER_KEYS)
+    info = parse.social_info(body, SubstackConstants.AVATAR_KEYS, SubstackConstants.COVER_KEYS)
+    name = parse.clean(parse.text(info.get("display_name") or heading).split(" | Substack")[0])
+    if name:
+        info["display_name"] = name
+    handle = parse.text(parse.meta(body).get("og:url")).rstrip("/").split("/")[-1].lstrip("@")
+    if handle:
+        info["username"] = handle
+    if info.get("description"):
+        info["description"] = parse.clean(info["description"])
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 SUBDOMAIN = ("substack.com", "page")
 ROUTES = (

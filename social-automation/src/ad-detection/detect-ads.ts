@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import { detectAds as detectXAds } from './platforms/x.js';
-import { detectAds as detectIgAds } from './platforms/instagram.js';
-import { parseResultFileArg } from '../shared/result-writer.js';
+import { XAdDetector } from './platforms/x.js';
+import { InstagramAdDetector } from './platforms/instagram.js';
+import { parseResultFileArg, writeResult } from '../shared/result-writer.js';
+import type { AdDetectionResult } from './model/models.js';
 
 interface DetectArgs {
   platform: string;
@@ -54,14 +55,17 @@ function parseArgs(argv: string[]): DetectArgs {
 async function main() {
   const { platform, sessionFile, resultFile } = parseArgs(process.argv);
 
+  let result: AdDetectionResult;
   if (platform === 'x' || platform === 'twitter') {
-    await detectXAds(sessionFile, resultFile);
+    result = await new XAdDetector(sessionFile).run();
   } else if (platform === 'instagram' || platform === 'ig') {
-    await detectIgAds(sessionFile, resultFile);
+    result = await new InstagramAdDetector(sessionFile).run();
   } else {
     console.error(`Unsupported platform for ad detection: ${platform}`);
     process.exit(1);
   }
+
+  writeResult(resultFile, result);
 }
 
 main().catch(() => {});

@@ -17,7 +17,8 @@ export function writeResult(filePath: string | undefined, result: AutomationResu
   if (!filePath) return;
   try {
     fs.writeFileSync(filePath, JSON.stringify(result), 'utf-8');
-  } catch (err: unknown) {
+  } catch {
+    // result file is best-effort; ignore write failures
   }
 }
 

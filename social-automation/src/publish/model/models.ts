@@ -2,10 +2,16 @@ import type { Page } from 'playwright';
 
 import type { AutomationResult, SocialPlatformName } from '../../shared/model/models.js';
 
+export interface MediaFile {
+  readonly absolutePath: string;
+  readonly extension: string;
+  readonly sizeBytes: number;
+  readonly type: 'image';
+}
+
 export interface PublishPost {
   readonly text: string;
   readonly images?: readonly string[];
-  readonly videos?: readonly string[];
   readonly platforms: readonly SocialPlatformName[];
 }
 
@@ -33,7 +39,6 @@ export interface SocialPlatformAdapter {
   readonly displayName: string;
 
   readonly supportedImageExtensions: readonly string[];
-  readonly supportedVideoExtensions: readonly string[];
   readonly maxImages: number;
 
 

@@ -30,6 +30,5 @@ def clean(info: dict) -> dict:
 
 ROUTES = (
     ("@(?P<id>[^/]+)(?:/.*)?", "profile"),
-    (r"community/(?:file|plugin|widget)/(?P<id>\d+)(?:/.*)?", "post"),
-    ("(?:design|file|proto|board)/(?P<id>[^/]+)(?:/.*)?", "post"),
 )
+

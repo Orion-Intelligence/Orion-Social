@@ -17,14 +17,24 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     payload = parse.as_json(body)
     if not (isinstance(payload, dict) and isinstance(payload.get("model"), dict) and payload["model"].get("username")):
         return VerdictConstants.UNKNOWN, {}
+    model = payload["model"]
+    avatar = parse.text(model.get("avatar"))
     info = {
-        "display_name": parse.text(payload["model"].get("name")),
-        "avatar": parse.text(payload["model"].get("avatar")),
-        "id": parse.text(payload["model"].get("id")),
-        "location": parse.text(payload["model"].get("country")),
+        "display_name": parse.clean(model.get("name")),
+        "username": parse.text(model.get("username")),
+        "description": parse.clean(model.get("short_bio")),
+        "avatar": "" if parse.is_generic_image(avatar) else avatar,
+        "id": parse.text(model.get("id")),
+        "location": parse.clean(model.get("country")),
+        "school": parse.clean(model.get("school")),
+        "level": parse.text(model.get("level")) if model.get("level") else "",
+        "website": parse.text(model.get("website")),
+        "created_at": parse.text(model.get("created_at")),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("(?:profile/)?(?P<id>[^/]+)", "profile"),
 )
+
+

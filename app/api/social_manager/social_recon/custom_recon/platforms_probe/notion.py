@@ -17,9 +17,17 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     heading = parse.title(body)
     if not heading or heading.casefold() in NotionConstants.GENERIC:
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, NotionConstants.AVATAR_KEYS, NotionConstants.COVER_KEYS)
+    info = parse.social_info(body, NotionConstants.AVATAR_KEYS, NotionConstants.COVER_KEYS)
+    name = parse.clean(parse.text(info.get("display_name") or heading).split(" | ")[0])
+    if name:
+        info["display_name"] = name
+    if info.get("description"):
+        info["description"] = parse.clean(info["description"])
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 HOSTS = ("notion.site",)
 ROUTES = (
+    ("(?P<id>[^/]+-[a-f0-9]{32})$", "page"),
     ("@(?P<id>[^/]+)(?:/.*)?", "profile"),
 )
+

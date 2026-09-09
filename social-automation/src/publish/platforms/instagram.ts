@@ -6,19 +6,19 @@ export class InstagramAdapter implements SocialPlatformAdapter {
   readonly platform = 'instagram' as const;
   readonly displayName = 'Instagram';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-  readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 10; 
 
 
   async openComposer(page: Page): Promise<void> {
+    let clicked: boolean;
     try {
       await page.goto('https://www.instagram.com/', {
         waitUntil: 'domcontentloaded',
         timeout: 20_000,
       });
 
-      const clicked = await page.evaluate(() => {
-        
+      clicked = await page.evaluate(() => {
+
         const svg = document.querySelector('svg[aria-label="New post"], svg[aria-label="New Post"]');
         if (svg) {
           const clickable = svg.closest('a') || svg.closest('[role="link"]') || svg.closest('[role="button"]') || svg;
@@ -30,7 +30,7 @@ export class InstagramAdapter implements SocialPlatformAdapter {
             return true;
           }
         }
-        
+
         const spans = Array.from(document.querySelectorAll('span, div'));
         const createEl = spans.find(el => el.textContent?.trim() === 'Create');
         if (createEl && createEl instanceof HTMLElement) {
@@ -40,11 +40,16 @@ export class InstagramAdapter implements SocialPlatformAdapter {
 
         return false;
       });
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : String(err);
+      throw new ComposerError(this.platform, detail);
+    }
 
-      if (!clicked) {
-        throw new Error('Could not find the Create button in the Instagram DOM');
-      }
+    if (!clicked) {
+      throw new ComposerError(this.platform, 'Could not find the Create button in the Instagram DOM');
+    }
 
+    try {
       await page.waitForTimeout(1_000);
 
       const clickedSubmenu = await page.evaluate(() => {

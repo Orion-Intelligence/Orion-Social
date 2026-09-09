@@ -17,12 +17,17 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     payload = parse.as_json(body)
     if not (isinstance(payload, dict) and payload.get("id")):
         return VerdictConstants.UNKNOWN, {}
+    uuid = parse.text(payload.get("id"))
     info = {
         "display_name": parse.text(payload.get("name")),
-        "id": parse.text(payload.get("id")),
+        "username": parse.text(payload.get("name")),
+        "id": uuid,
+        "avatar": f"https://crafatar.com/avatars/{uuid}?size=128&overlay" if uuid else "",
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("profile/(?P<id>[^/]+)", "profile"),
 )
+
+

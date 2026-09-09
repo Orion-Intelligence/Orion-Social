@@ -31,5 +31,5 @@ def clean(info: dict) -> dict:
 ROUTES = (
     ("user/(?P<id>[^/]+)(?:/.*)?", "profile"),
     ("artist/(?P<id>[^/]+)", "page"),
-    ("(?:track|album|playlist|episode|show)/(?P<id>[^/]+)", "post"),
 )
+

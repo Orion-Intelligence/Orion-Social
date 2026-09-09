@@ -23,7 +23,7 @@ async function closeAll(): Promise<void> {
       try {
         await ctx.close();
       } catch {
-        
+        // ignore per-context close failures during shutdown
       }
     }),
   );

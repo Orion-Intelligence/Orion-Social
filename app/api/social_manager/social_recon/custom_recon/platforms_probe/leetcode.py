@@ -1,3 +1,6 @@
+import json
+
+import api.social_manager.social_recon.custom_recon.core.http_client as http_client
 import api.social_manager.social_recon.custom_recon.core.parse as parse
 from api.social_manager.social_recon.constants.custom_recon_constants import VerdictConstants
 from api.social_manager.social_recon.constants.platform_constants import LeetCodeConstants
@@ -9,18 +12,72 @@ def probe_url(username: str) -> str:
     return LeetCodeConstants.PROFILE_URL.format(username=username)
 
 
+def fetch(username: str) -> tuple[int, str, str]:
+    payload = json.dumps({"query": LeetCodeConstants.GQL_QUERY, "variables": {"u": username}})
+    return http_client.post(LeetCodeConstants.GQL_URL, payload, {"Content-Type": "application/json", "Referer": "https://leetcode.com"})
+
+
 def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if status == 404:
         return VerdictConstants.ABSENT, {}
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
-    heading = parse.title(body)
-    if not heading or heading.casefold() in LeetCodeConstants.GENERIC:
+    payload = parse.as_json(body)
+    user = (payload.get("data") or {}).get("matchedUser") if isinstance(payload, dict) else None
+    if isinstance(payload, dict) and isinstance(payload.get("data"), dict) and payload["data"].get("matchedUser") is None:
+        return VerdictConstants.ABSENT, {}
+    if not isinstance(user, dict) or not user.get("username"):
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, LeetCodeConstants.AVATAR_KEYS, LeetCodeConstants.COVER_KEYS)
+    profile = user.get("profile") if isinstance(user.get("profile"), dict) else {}
+    websites = profile.get("websites") if isinstance(profile.get("websites"), list) else []
+    info = {
+        "display_name": parse.clean(profile.get("realName") or user.get("username")),
+        "username": parse.text(user.get("username")),
+        "description": parse.clean(profile.get("aboutMe")),
+        "avatar": parse.text(profile.get("userAvatar")),
+        "location": parse.clean(profile.get("countryName")),
+        "company": parse.clean(profile.get("company")),
+        "school": parse.clean(profile.get("school")),
+        "ranking": parse.text(profile.get("ranking")) if profile.get("ranking") else "",
+        "reputation": parse.text(profile.get("reputation")) if profile.get("reputation") else "",
+        "website": parse.text(websites[0]) if websites else "",
+        "github": parse.text(user.get("githubUrl")),
+        "twitter": parse.text(user.get("twitterUrl")),
+        "linkedin": parse.text(user.get("linkedinUrl")),
+    }
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+
+def evaluate_resource(status: int, body: str, final_url: str) -> tuple[str, dict]:
+    if status in (404, 410):
+        return VerdictConstants.ABSENT, {}
+    if status != 200:
+        return VerdictConstants.UNKNOWN, {}
+    meta = parse.meta(body)
+    image = parse.text(meta.get("og:image") or meta.get("twitter:image"))
+    info = {
+        "title": parse.clean(meta.get("og:title") or parse.title(body)),
+        "description": parse.clean(meta.get("og:description") or meta.get("description")),
+        "image": "" if parse.is_generic_image(image) else image,
+    }
+    entity = parse.ld_entity(body, "Article", "VideoObject", "DiscussionForumPosting", "Question", "SocialMediaPosting", "CreativeWork", "MusicRecording", "Product")
+    if entity:
+        if not info["description"]:
+            info["description"] = parse.clean(entity.get("description") or entity.get("headline"))
+        author = entity.get("author")
+        if isinstance(author, list) and author:
+            author = author[0]
+        if isinstance(author, dict):
+            info["author"] = parse.clean(author.get("name"))
+        elif isinstance(author, str):
+            info["author"] = parse.clean(author)
+        info["published"] = parse.text(entity.get("datePublished") or entity.get("uploadDate"))
+    if not any(info.get(key) for key in ("title", "description", "image")):
+        return VerdictConstants.UNKNOWN, {}
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("u/(?P<id>[^/]+)(?:/.*)?", "profile"),
-    ("problems/(?P<id>[^/]+)(?:/.*)?", "question"),
     ("(?P<id>[^/]+)", "profile"),
 )
+

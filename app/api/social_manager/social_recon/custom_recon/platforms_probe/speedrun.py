@@ -17,13 +17,29 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     payload = parse.as_json(body)
     if not (isinstance(payload, dict) and isinstance(payload.get("data"), dict) and payload["data"].get("id")):
         return VerdictConstants.UNKNOWN, {}
+    data = payload["data"]
+    name = parse.text((data.get("names") or {}).get("international"))
+    country = (((data.get("location") or {}).get("country") or {}).get("names") or {}).get("international") if isinstance(data.get("location"), dict) else None
+
+    def link(key: str) -> str:
+        value = data.get(key)
+        return parse.text(value.get("uri")) if isinstance(value, dict) else ""
+
     info = {
-        "display_name": parse.text(((payload["data"].get("names") or {}).get("international"))),
-        "id": parse.text(payload["data"].get("id")),
-        "created_at": parse.text(payload["data"].get("signup")),
+        "display_name": name,
+        "username": name,
+        "id": parse.text(data.get("id")),
+        "created_at": parse.text(data.get("signup")),
+        "location": parse.clean(country),
+        "twitch": link("twitch"),
+        "youtube": link("youtube"),
+        "twitter": link("twitter"),
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 ROUTES = (
     ("users?/(?P<id>[^/]+)(?:/.*)?", "profile"),
 )
+
+
+

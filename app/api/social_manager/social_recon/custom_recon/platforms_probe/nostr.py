@@ -27,6 +27,6 @@ def clean(info: dict) -> dict:
 
 HOSTS = ("nostr.com", "primal.net", "snort.social")
 ROUTES = (
-    ("(?:e/)?(?P<id>note1[a-z0-9]+|nevent1[a-z0-9]+)", "post"),
     ("(?:p/)?(?P<id>npub1[a-z0-9]+|nprofile1[a-z0-9]+|[^/]+@[^/]+)", "profile"),
 )
+

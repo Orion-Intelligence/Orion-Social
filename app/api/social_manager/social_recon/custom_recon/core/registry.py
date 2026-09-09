@@ -57,6 +57,7 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.aboutme as a
 import api.social_manager.social_recon.custom_recon.platforms_probe.gravatar as gravatar
 import api.social_manager.social_recon.custom_recon.platforms_probe.keybase as keybase
 import api.social_manager.social_recon.custom_recon.platforms_probe.dockerhub as dockerhub
+import api.social_manager.social_recon.custom_recon.platforms_probe.opensea as opensea
 import api.social_manager.social_recon.custom_recon.platforms_probe.codepen as codepen
 import api.social_manager.social_recon.custom_recon.platforms_probe.chesscom as chesscom
 import api.social_manager.social_recon.custom_recon.platforms_probe.lichess as lichess
@@ -543,6 +544,7 @@ platforms: dict[str, ModuleType] = {
     "gravatar": gravatar,
     "keybase": keybase,
     "dockerhub": dockerhub,
+    "opensea": opensea,
     "codepen": codepen,
     "chesscom": chesscom,
     "lichess": lichess,
