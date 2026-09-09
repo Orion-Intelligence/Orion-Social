@@ -86,22 +86,13 @@ Reports safe session information:
 ## Programmatic API
 
 ```typescript
-import {
-  manualLogin,
-  getSocialContext,
-  getSocialPage,
-  getSocialBrowser,
-  getSessionStatus,
-} from '@orion/social-automation';
+import { getSocialContext } from '@orion/social-automation';
 
-// Open an authenticated page
-const page = await getSocialPage('facebook');
+// Open an authenticated browser context for a platform
+const context = await getSocialContext('facebook');
+const page = context.pages()[0] ?? await context.newPage();
 // ... perform automated actions ...
-await page.context().close();
-
-// Check status
-const status = await getSessionStatus('x');
-console.log(status.authenticated); // true/false
+await context.close();
 ```
 
 ## Configuration

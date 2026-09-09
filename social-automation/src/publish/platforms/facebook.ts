@@ -6,12 +6,12 @@ export class FacebookAdapter implements SocialPlatformAdapter {
   readonly platform = 'facebook' as const;
   readonly displayName = 'Facebook';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-  readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 10;
 
 
 
   async openComposer(page: Page): Promise<void> {
+    let clicked: boolean;
     try {
       await page.goto('https://www.facebook.com/', {
         waitUntil: 'domcontentloaded',
@@ -30,7 +30,7 @@ export class FacebookAdapter implements SocialPlatformAdapter {
 
       await page.waitForTimeout(1_000);
 
-      const clicked = await page.evaluate(() => {
+      clicked = await page.evaluate(() => {
         
         const structural = document.querySelector(
           '[data-pagelet="ComposerPost"] [role="button"], ' +
@@ -64,11 +64,19 @@ export class FacebookAdapter implements SocialPlatformAdapter {
 
         return false;
       });
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : String(err);
+      throw new ComposerError(this.platform, detail);
+    }
 
-      if (!clicked) {
-        throw new Error('Could not find the composer trigger ("What\'s on your mind?") in the Facebook DOM');
-      }
+    if (!clicked) {
+      throw new ComposerError(
+        this.platform,
+        'Could not find the composer trigger ("What\'s on your mind?") in the Facebook DOM',
+      );
+    }
 
+    try {
       await page.waitForSelector(
         '[role="dialog"] [role="textbox"], [aria-label="Create a post"] [role="textbox"]',
         { state: 'visible', timeout: 10_000 },

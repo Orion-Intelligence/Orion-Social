@@ -17,12 +17,26 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     payload = parse.as_json(body)
     if not (isinstance(payload, dict) and isinstance(payload.get("entry"), list) and payload["entry"]):
         return VerdictConstants.UNKNOWN, {}
+    entry = payload["entry"][0] if isinstance(payload["entry"][0], dict) else {}
+    background = entry.get("profileBackground") if isinstance(entry.get("profileBackground"), dict) else {}
     info = {
-        "display_name": parse.text(payload["entry"][0].get("displayName")),
-        "description": parse.text(payload["entry"][0].get("aboutMe")),
-        "avatar": parse.text(payload["entry"][0].get("thumbnailUrl")),
-        "id": parse.text(payload["entry"][0].get("id")),
+        "display_name": parse.clean(entry.get("displayName")),
+        "username": parse.text(entry.get("preferredUsername")),
+        "description": parse.clean(entry.get("aboutMe")),
+        "avatar": parse.text(entry.get("thumbnailUrl")),
+        "cover": parse.text(background.get("url")),
+        "id": parse.text(entry.get("id")),
+        "location": parse.clean(entry.get("currentLocation")),
+        "job": parse.clean(entry.get("job_title")),
+        "company": parse.clean(entry.get("company")),
+        "pronouns": parse.clean(entry.get("pronouns")),
     }
+    for account in entry.get("accounts") or []:
+        if not isinstance(account, dict) or not account.get("url"):
+            continue
+        key = parse.clean(account.get("shortname") or account.get("name")).lower()
+        if key and not info.get(key):
+            info[key] = parse.text(account.get("url"))
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 HOSTS = ("en.gravatar.com",)

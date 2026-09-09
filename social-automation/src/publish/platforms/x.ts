@@ -6,7 +6,6 @@ export class XAdapter implements SocialPlatformAdapter {
   readonly platform = 'x' as const;
   readonly displayName = 'X (Twitter)';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-  readonly supportedVideoExtensions = ['.mp4', '.mov'];
   readonly maxImages = 4;
 
 

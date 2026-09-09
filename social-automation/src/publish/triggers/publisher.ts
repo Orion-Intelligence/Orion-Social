@@ -2,27 +2,25 @@ import crypto from 'node:crypto';
 import type { BrowserContext } from 'playwright';
 
 
-import { SocialAutomationError } from '../shared/errors.js';
-import { getSocialContext } from '../session/session-manager.js';
-import { trackContext, untrackContext } from '../session/shutdown.js';
-import { getAdapter } from './platforms/registry.js';
-import { validateImages } from './media.js';
-import { VerificationError } from '../shared/errors.js';
+import { SocialAutomationError } from '../../shared/errors.js';
+import { getSocialContext } from '../../session/session-manager.js';
+import { trackContext, untrackContext } from '../../session/shutdown.js';
+import { getAdapter } from '../platforms/registry.js';
+import { MediaValidator } from './media.js';
+import { VerificationError } from '../../shared/errors.js';
 import type {
   PublishPost,
   PublishResult,
   PublishOperation,
   PublishOptions,
-} from './model/models.js';
-import type { SocialPlatformName } from '../shared/model/models.js';
+} from '../model/models.js';
+import type { SocialPlatformName } from '../../shared/model/models.js';
 
 export class SocialPublisher {
-  
-  async publish(
-    post: PublishPost,
-    options: PublishOptions = {},
-    userId: string = 'default'
-  ): Promise<readonly PublishResult[]> {
+  private readonly mediaValidator = new MediaValidator();
+
+
+  async publish(post: PublishPost, options: PublishOptions = {}, userId: string = 'default'): Promise<readonly PublishResult[]> {
     const results: PublishResult[] = [];
 
     for (const platformName of post.platforms) {
@@ -38,12 +36,7 @@ export class SocialPublisher {
     return results;
   }
 
-  private async publishToSinglePlatform(
-    platformName: SocialPlatformName,
-    post: PublishPost,
-    options: PublishOptions,
-    userId: string
-  ): Promise<PublishResult> {
+  private async publishToSinglePlatform(platformName: SocialPlatformName, post: PublishPost, options: PublishOptions, userId: string): Promise<PublishResult> {
     const operation = this.createOperation(platformName);
     let context: BrowserContext | null = null;
 
@@ -52,7 +45,7 @@ export class SocialPublisher {
       const adapter = getAdapter(platformName);
 
       if (post.images && post.images.length > 0) {
-        validateImages(
+        this.mediaValidator.validateImages(
           post.images,
           adapter.supportedImageExtensions,
           adapter.maxImages,
@@ -147,8 +140,8 @@ export class SocialPublisher {
   private async safeClose(context: BrowserContext): Promise<void> {
     try {
       await context.close();
-    } catch (err: unknown) {
-
+    } catch {
+      // ignore errors while closing the browser context during cleanup
     }
   }
 }

@@ -18,10 +18,12 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if not (isinstance(payload, dict) and payload.get("ID")):
         return VerdictConstants.UNKNOWN, {}
     info = {
-        "display_name": parse.text(payload.get("name")),
-        "description": parse.text(payload.get("description")),
+        "display_name": parse.clean(payload.get("name")),
+        "description": parse.clean(payload.get("description")),
         "avatar": parse.text((payload.get("icon") or {}).get("img") if isinstance(payload.get("icon"), dict) else None),
         "id": parse.text(payload.get("ID")),
+        "website": parse.text(payload.get("URL")),
+        "posts": parse.text(payload.get("post_count")) if payload.get("post_count") else "",
     }
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 

@@ -12,22 +12,20 @@ def probe_url(username: str) -> str:
 def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
-    payload = parse.as_json(body)
-    matches = payload.get("matches") if isinstance(payload, dict) else None
-    if not matches:
+    info = parse.search_result(body)
+    return (VerdictConstants.EXISTS, info) if info else (VerdictConstants.UNKNOWN, {})
+
+
+def evaluate_resource(status: int, body: str, final_url: str) -> tuple[str, dict]:
+    if status != 200:
         return VerdictConstants.UNKNOWN, {}
-    first = matches[0] if isinstance(matches[0], dict) else {}
-    info = {
-        "display_name": parse.text(first.get("title")),
-        "description": parse.text(first.get("body")),
-        "avatar": parse.text(first.get("image")),
-    }
-    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+    info = parse.search_result(body)
+    return (VerdictConstants.EXISTS, info) if info else (VerdictConstants.UNKNOWN, {})
 
 HOSTS = ("telegram.me",)
 ROUTES = (
     ("s/(?P<id>[^/]+)(?:/.*)?", "channel"),
     (r"(?:joinchat/|\+)(?P<id>[^/]+)", "group"),
-    (r"(?P<id>[^/]+)/\d+", "post"),
     ("(?P<id>[^/]+)", "profile"),
 )
+

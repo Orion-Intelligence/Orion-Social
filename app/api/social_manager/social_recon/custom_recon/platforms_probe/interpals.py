@@ -14,6 +14,9 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
         return VerdictConstants.ABSENT, {}
     if status != 200:
         return VerdictConstants.UNKNOWN, {}
+    heading = parse.title(body)
+    if not heading or heading.casefold() in InterPalsConstants.GENERIC:
+        return VerdictConstants.UNKNOWN, {}
     return VerdictConstants.EXISTS, parse.social_info(body, InterPalsConstants.AVATAR_KEYS, InterPalsConstants.COVER_KEYS)
 
 ROUTES = (

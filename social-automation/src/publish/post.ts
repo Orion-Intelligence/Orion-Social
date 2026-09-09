@@ -2,8 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { SocialPublisher } from '../publish/publisher.js';
-import { SocialAutomationError } from '../shared/errors.js';
+import { SocialPublisher } from './triggers/publisher.js';
 
 import { isPlatformName } from '../shared/model/models.js';
 import type { SocialPlatformName } from '../shared/model/models.js';
@@ -168,11 +167,6 @@ async function main(): Promise<void> {
       process.exit(1);
     }
   } catch (err: unknown) {
-    if (err instanceof SocialAutomationError) {
-
-    } else {
-
-    }
     postResult.error = true;
     postResult.error_reason = errorReason(err);
     postResult.session_expired = isSessionExpired(err);

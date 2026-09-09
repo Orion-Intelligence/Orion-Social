@@ -31,6 +31,9 @@ def clean(info: dict) -> dict:
     return {key: value for key, value in info.items() if value}
 
 ROUTES = (
+    ("users/[^/]+/lists/(?P<id>[^/]+)(?:/.*)?", "group"),
+    ("lists/(?P<id>[^/]+)(?:/.*)?", "group"),
     ("users/(?P<id>[^/]+)(?:/.*)?", "profile"),
-    ("(?:movies|shows)/(?P<id>[^/]+)(?:/.*)?", "post"),
 )
+
+

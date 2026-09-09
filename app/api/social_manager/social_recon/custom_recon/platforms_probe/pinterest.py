@@ -1,3 +1,5 @@
+import re
+
 import api.social_manager.social_recon.custom_recon.core.parse as parse
 from api.social_manager.social_recon.constants.custom_recon_constants import VerdictConstants
 from api.social_manager.social_recon.constants.platform_constants import PinterestConstants
@@ -17,9 +19,58 @@ def evaluate(status: int, body: str, _final_url: str) -> tuple[str, dict]:
     heading = parse.title(body)
     if PinterestConstants.PROFILE_MARKER not in heading.casefold():
         return VerdictConstants.UNKNOWN, {}
-    return VerdictConstants.EXISTS, parse.social_info(body, PinterestConstants.AVATAR_KEYS, PinterestConstants.COVER_KEYS)
+    info = parse.social_info(body, PinterestConstants.AVATAR_KEYS, PinterestConstants.COVER_KEYS)
+    full_name = re.search(PinterestConstants.FULL_NAME, body)
+    handle = re.search(PinterestConstants.HANDLE, parse.text(parse.meta(body).get("og:title") or heading))
+    if full_name:
+        info["display_name"] = parse.clean(full_name.group(1))
+    elif info.get("display_name"):
+        info["display_name"] = parse.clean(info["display_name"].split(" (")[0])
+    if handle:
+        info["username"] = handle.group(1)
+    about = re.search(PinterestConstants.ABOUT, body)
+    if about and about.group(1):
+        info["description"] = parse.clean(about.group(1))
+    elif info.get("description"):
+        info["description"] = parse.clean(info["description"])
+    followers = re.search(PinterestConstants.FOLLOWERS, body)
+    if followers:
+        info["followers"] = followers.group(1)
+    following = re.search(PinterestConstants.FOLLOWING, body)
+    if following:
+        info["following"] = following.group(1)
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
+
+
+def evaluate_resource(status: int, body: str, final_url: str) -> tuple[str, dict]:
+    if status in (404, 410):
+        return VerdictConstants.ABSENT, {}
+    if status != 200:
+        return VerdictConstants.UNKNOWN, {}
+    meta = parse.meta(body)
+    image = parse.text(meta.get("og:image") or meta.get("twitter:image"))
+    info = {
+        "title": parse.clean(meta.get("og:title") or parse.title(body)),
+        "description": parse.clean(meta.get("og:description") or meta.get("description")),
+        "image": "" if parse.is_generic_image(image) else image,
+    }
+    entity = parse.ld_entity(body, "Article", "VideoObject", "DiscussionForumPosting", "Question", "SocialMediaPosting", "CreativeWork", "MusicRecording", "Product")
+    if entity:
+        if not info["description"]:
+            info["description"] = parse.clean(entity.get("description") or entity.get("headline"))
+        author = entity.get("author")
+        if isinstance(author, list) and author:
+            author = author[0]
+        if isinstance(author, dict):
+            info["author"] = parse.clean(author.get("name"))
+        elif isinstance(author, str):
+            info["author"] = parse.clean(author)
+        info["published"] = parse.text(entity.get("datePublished") or entity.get("uploadDate"))
+    if not any(info.get(key) for key in ("title", "description", "image")):
+        return VerdictConstants.UNKNOWN, {}
+    return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
 
 ROUTES = (
-    (r"pin/(?P<id>[^/]+)", "post"),
     (r"(?P<id>[^/]+)(?:/.*)?", "profile"),
 )
+

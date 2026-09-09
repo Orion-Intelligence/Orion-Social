@@ -41,7 +41,9 @@ export class XPlatform implements SocialPlatform {
         if (url.includes('/i/flow/login') || url.includes('/login')) {
           return false;
         }
-      } catch {}
+      } catch {
+        // page.url() can fail if the page is already closed; fall through to rethrow
+      }
       throw err;
     }
   }

@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { chromium } from 'playwright';
-import type { Browser, BrowserContext, Page } from 'playwright';
+import type { Browser, BrowserContext } from 'playwright';
 
 import { Config } from '../shared/config.js';
 
@@ -11,12 +11,9 @@ import {
   SessionExpiredError,
 } from '../shared/errors.js';
 import { getPlatform } from './platforms/registry.js';
-import type { SessionStatus } from '../shared/model/models.js';
+import { DEFAULT_USER_AGENT } from './constants/constants.js';
 
-async function launchBrowser(
-  platformName: string,
-  options: { headless: boolean }
-): Promise<Browser> {
+async function launchBrowser(platformName: string, options: { headless: boolean }): Promise<Browser> {
   try {
     const args = platformName.toLowerCase() === 'x' 
       ? ['--disable-blink-features=AutomationControlled'] 
@@ -48,11 +45,7 @@ function findSessionFile(platformName: string): string | null {
   return null;
 }
 
-export async function getSocialContext(
-  platformName: string,
-  _userId: string = 'default',
-  sessionFile?: string
-): Promise<BrowserContext> {
+export async function getSocialContext(platformName: string, _userId: string = 'default', sessionFile?: string): Promise<BrowserContext> {
   const platform = getPlatform(platformName);
   const sessionPath = sessionFile || findSessionFile(platform.name);
 
@@ -69,8 +62,8 @@ export async function getSocialContext(
     else throw new Error('Invalid cookie format');
   }
   
-  const sanitizedCookies = cookies.map((c: any) => {
-    const cookie: any = { ...c };
+  const sanitizedCookies = (cookies as Array<Record<string, unknown>>).map((c) => {
+    const cookie: Record<string, unknown> = { ...c };
     if (cookie.sameSite && typeof cookie.sameSite === 'string') {
       const s = cookie.sameSite.toLowerCase();
       if (s === 'strict') cookie.sameSite = 'Strict';
@@ -88,11 +81,11 @@ export async function getSocialContext(
 
   console.log(`[Session] Launching browser (${sanitizedCookies.length} cookies)`);
   const browser = await launchBrowser(platform.name, { headless: Config.headless });
-  const context = await browser.newContext({ 
+  const context = await browser.newContext({
     viewport: null,
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+    userAgent: DEFAULT_USER_AGENT
   });
-  await context.addCookies(sanitizedCookies);
+  await context.addCookies(sanitizedCookies as unknown as Parameters<typeof context.addCookies>[0]);
 
   const originalClose = context.close.bind(context);
   context.close = async () => {
@@ -100,76 +93,30 @@ export async function getSocialContext(
     await browser.close();
   };
 
+  let valid: boolean;
   try {
     const page = context.pages()[0] ?? await context.newPage();
     console.log(`[Session] Verifying session is still signed in`);
-    const valid = await platform.isAuthenticated(page);
-    if (!valid) {
-      console.log(`[Session] Session is expired or signed out`);
-      throw new SessionExpiredError(platform.name);
-    }
-    console.log(`[Session] Session verified, signed in`);
-    return context;
+    valid = await platform.isAuthenticated(page);
   } catch (err) {
     await safeClose(context);
     throw err;
   }
-}
 
-export async function getSocialPage(
-  platformName: string,
-  _userId: string = 'default',
-  sessionFile?: string
-): Promise<Page> {
-  const context = await getSocialContext(platformName, _userId, sessionFile);
-  return context.pages()[0] ?? await context.newPage();
-}
-
-export async function getSocialBrowser(
-  platformName: string,
-): Promise<Browser> {
-  
-  getPlatform(platformName);
-  return launchBrowser(platformName, { headless: Config.headless });
-}
-
-export async function getSessionStatus(
-  platformName: string,
-  _userId: string = 'default',
-  sessionFile?: string
-): Promise<SessionStatus> {
-  const platform = getPlatform(platformName);
-  const sessionPath = sessionFile || findSessionFile(platform.name);
-  const configured = sessionPath !== null;
-
-  let authenticated = false;
-  if (configured) {
-    let context: BrowserContext | null = null;
-    try {
-      context = await getSocialContext(platformName, _userId, sessionFile);
-      
-      authenticated = true;
-    } catch {
-      authenticated = false;
-    } finally {
-      if (context) {
-        await safeClose(context);
-      }
-    }
+  if (!valid) {
+    console.log(`[Session] Session is expired or signed out`);
+    await safeClose(context);
+    throw new SessionExpiredError(platform.name);
   }
 
-  return {
-    platform: platform.displayName,
-    authenticated,
-    profileConfigured: configured,
-    profilePath: sessionPath || 'Not found',
-  };
+  console.log(`[Session] Session verified, signed in`);
+  return context;
 }
 
 async function safeClose(context: BrowserContext): Promise<void> {
   try {
     await context.close();
-  } catch (err: unknown) {
-
+  } catch {
+    // ignore errors while closing the browser context during cleanup
   }
 }
