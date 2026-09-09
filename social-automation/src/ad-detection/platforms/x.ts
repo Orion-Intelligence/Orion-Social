@@ -11,7 +11,6 @@ export class XAdDetector {
   constructor(private readonly sessionFile?: string) {}
 
   async run(): Promise<AdDetectionResult> {
-    console.log(`[AdDetect] Starting X ad detection`);
 
     const result = createEmptyAdDetectionResult();
 
@@ -19,7 +18,6 @@ export class XAdDetector {
     try {
       context = await getSocialContext(this.platform, 'default', this.sessionFile);
     } catch (error) {
-      console.log(`[AdDetect] Could not open session: ${errorReason(error)}`);
       result.error = true;
       result.error_reason = errorReason(error);
       result.session_expired = isSessionExpired(error);
@@ -30,16 +28,13 @@ export class XAdDetector {
 
     try {
       const page = context.pages()[0] ?? await context.newPage();
-      console.log(`[AdDetect] Opening feed`);
       await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(5000);
 
       const detectedAds = new Set<string>();
 
-      console.log(`[AdDetect] Scrolling feed (${MAX_SCROLLS} scrolls)`);
 
       for (let i = 0; i < MAX_SCROLLS; i++) {
-        console.log(`[AdDetect] Scroll ${i + 1}/${MAX_SCROLLS} - ads so far: ${result.ads.length}`);
 
         const articles = page.locator('article');
         const count = await articles.count();
@@ -85,7 +80,6 @@ export class XAdDetector {
                   detected_at: new Date().toISOString(),
                 });
                 result.total_detected_ads = result.ads.length;
-                console.log(`[AdDetect] Ad #${result.ads.length} found: ${author}`);
 
               }
             }
@@ -98,10 +92,8 @@ export class XAdDetector {
         await page.waitForTimeout(2000);
       }
 
-      console.log(`[AdDetect] Finished. Total ads detected: ${result.ads.length}`);
 
     } catch (error) {
-      console.log(`[AdDetect] Failed: ${errorReason(error)}`);
       result.error = true;
       result.error_reason = errorReason(error);
       result.session_expired = isSessionExpired(error);

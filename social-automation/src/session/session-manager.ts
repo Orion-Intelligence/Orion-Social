@@ -53,7 +53,6 @@ export async function getSocialContext(platformName: string, _userId: string = '
     throw new ProfileNotFoundError(platform.name, 'sessions folder');
   }
 
-  console.log(`[Session] Loading session for ${platform.displayName}`);
 
   const content = fs.readFileSync(sessionPath, 'utf-8');
   let cookies = JSON.parse(content);
@@ -79,7 +78,6 @@ export async function getSocialContext(platformName: string, _userId: string = '
     return cookie;
   });
 
-  console.log(`[Session] Launching browser (${sanitizedCookies.length} cookies)`);
   const browser = await launchBrowser(platform.name, { headless: Config.headless });
   const context = await browser.newContext({
     viewport: null,
@@ -96,7 +94,6 @@ export async function getSocialContext(platformName: string, _userId: string = '
   let valid: boolean;
   try {
     const page = context.pages()[0] ?? await context.newPage();
-    console.log(`[Session] Verifying session is still signed in`);
     valid = await platform.isAuthenticated(page);
   } catch (err) {
     await safeClose(context);
@@ -104,12 +101,10 @@ export async function getSocialContext(platformName: string, _userId: string = '
   }
 
   if (!valid) {
-    console.log(`[Session] Session is expired or signed out`);
     await safeClose(context);
     throw new SessionExpiredError(platform.name);
   }
 
-  console.log(`[Session] Session verified, signed in`);
   return context;
 }
 

@@ -125,13 +125,6 @@ function exitUsage(_error: string): never {
 async function main(): Promise<void> {
   const { platforms, text, images, dryRun, sessionFile } = parseArgs(process.argv);
 
-  console.log(`[Post] Platform: ${platforms.join(', ')}`);
-  console.log(`[Post] Text: ${text}`);
-
-  if (dryRun) {
-    console.log(`[Post] Dry run mode, nothing will be published`);
-  }
-
   const post: PublishPost = {
     text,
     images: images.length > 0 ? images : undefined,
