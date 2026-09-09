@@ -138,15 +138,21 @@ class ExtensionManagerRoutes:
             image_file.close()
             files_to_cleanup.append(image_file.name)
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-            async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
-                img_resp = await client.get(image_url, timeout=15.0)
-                if img_resp.status_code == 200:
-                    with open(image_file.name, 'wb') as f:
-                        f.write(img_resp.content)
-                    cmd_args.extend(["--image", image_file.name])
-                else:
-                    import logging
-                    logging.error(f"Failed to download image {image_url}, status code: {img_resp.status_code}")
+            try:
+                async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
+                    img_resp = await client.get(image_url, timeout=15.0)
+                    if img_resp.status_code == 200:
+                        with open(image_file.name, 'wb') as f:
+                            f.write(img_resp.content)
+                        cmd_args.extend(["--image", image_file.name])
+                    else:
+                        import logging
+                        logging.error(f"Failed to download image {image_url}, status code: {img_resp.status_code}")
+                        raise HTTPException(status_code=400, detail=f"Failed to download image from provided URL. Status: {img_resp.status_code}")
+            except httpx.RequestError as e:
+                import logging
+                logging.error(f"Error downloading image {image_url}: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Failed to fetch image from URL: {str(e)}")
                     
         background_tasks.add_task(self.run_background_automation, cmd_args, callback_url, token, result_file.name, "post", user_id, profile_id, files_to_cleanup)
         return {"status": "started"}
