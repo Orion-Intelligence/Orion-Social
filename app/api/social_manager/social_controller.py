@@ -2,6 +2,7 @@ from typing import Any
 
 from api.orion.request_manager.progress_controller import progress_controller
 from api.social_manager.scrapers.live_search_handler import live_search_handler
+from api.social_manager.automation_handler import automation_handler
 from api.social_manager.social_recon.social_recon import social_recon
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
 
@@ -11,6 +12,7 @@ class social_controller:
         self._recon = social_recon()
         self._progress = progress_controller.get_instance()
         self._ddg = live_search_handler()
+        self._automation = automation_handler()
         self.job_id: str | None = None
 
     def init_job(self, job_id: str) -> None:
@@ -108,6 +110,26 @@ class social_controller:
                 username = self._clean_str(data.get("username")) or None
                 platform = self._clean_str(data.get("platform")) or None
                 result = {"status": "success", "platform": "duckduckgo", "data": self._ddg.search_web(tokens, username, platform)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_AUTOMATION_POST:
+            self.init_job(self._clean_str(data.get("job_id")))
+            try:
+                result = {"status": "success", "platform": "automation_post", "data": self._automation.run_post(data, self.job_id)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
+        if command == SOCIAL_REQUEST_COMMANDS.S_AUTOMATION_AD_MONITOR:
+            self.init_job(self._clean_str(data.get("job_id")))
+            try:
+                result = {"status": "success", "platform": "automation_ad_detection", "data": self._automation.run_ad_detection(data, self.job_id)}
                 self._progress.done(self.job_id, result)
                 return result
             except Exception as exc:

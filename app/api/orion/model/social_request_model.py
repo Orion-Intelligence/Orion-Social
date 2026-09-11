@@ -52,3 +52,21 @@ class DuckDuckGoMetadataRequest(BaseModel):
         if value is None:
             return None
         return value.lower()
+
+
+class SocialAutomationPostRequest(BaseModel):
+    run_id: str = Field(..., min_length=1)
+    user_id: str = Field(..., min_length=1)
+    profile_id: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1)
+    session_state: dict
+    image_url: Optional[str] = Field(default=None)
+
+
+class SocialAutomationAdMonitorRequest(BaseModel):
+    run_id: str = Field(..., min_length=1)
+    user_id: str = Field(..., min_length=1)
+    profile_id: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+    session_state: dict
