@@ -63,6 +63,7 @@ class automation_handler:
 
         cmd_args = [
             "run", script, "--",
+            "--platform", platform,
             "--session-file", session_file,
             "--result-file", result_file,
         ]
@@ -98,11 +99,30 @@ class automation_handler:
 
         payload["profile_id"] = profile_id
         payload["date_time"] = datetime.now(timezone.utc).isoformat()
+        payload["is_manual"] = data.get("is_manual", False)
 
         result = {"user_id": user_id, "profile_id": profile_id, "result_type": result_type}
         if result_type == "post":
             result["post_result"] = payload
         else:
+            if "ads" in payload and isinstance(payload["ads"], list):
+                payload["ads"] = payload["ads"][:8]
+                payload["total_detected_ads"] = len(payload["ads"])
+                try:
+                    from api.orion.services.shared.ad_detection_classifier import ad_detection_classifier
+                    for ad in payload["ads"]:
+                        content_text = ad.get("content_text") or ""
+                        if content_text.strip():
+                            class_result = ad_detection_classifier.classify(content_text)
+                            ad["topic"] = class_result.topic
+                        else:
+                            ad["topic"] = "Unknown"
+                except Exception as e:
+                    print(f"[Automation] Error classifying ads: {e}", flush=True)
+                    for ad in payload["ads"]:
+                        if "topic" not in ad:
+                            ad["topic"] = "Unknown"
+                            
             result["ad_detection_result"] = payload
         return result
 
