@@ -407,15 +407,6 @@ class MediumConstants:
     JSON_PREFIX = "])}while(1);</x>"
 
 
-class SubstackConstants:
-    NAME = "Substack"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = "^[A-Za-z0-9._-]{1,64}$"
-    PROFILE_URL = "https://substack.com/@{username}"
-    GENERIC = {"substack", "substack - a new economic engine for culture"}
-    AVATAR_KEYS = ("photo_url", "avatar")
-    COVER_KEYS = ("cover_photo_url",)
-
 
 class FandomConstants:
     NAME = "Fandom"
@@ -682,6 +673,7 @@ class UnsplashConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = "^[A-Za-z0-9_]{1,60}$"
     PROFILE_URL = "https://unsplash.com/@{username}"
+    IMPERSONATE = "safari"
     GENERIC = {"page not found | unsplash", "unsplash"}
     AVATAR_KEYS = ("profile_image",)
     COVER_KEYS = ()
@@ -699,13 +691,6 @@ class PexelsConstants:
     FOLLOWERS = r'"followers_count":(\d+)'
     PHOTOS = r'"photos_count":(\d+)'
 
-
-class WikipediaConstants:
-    NAME = "Wikipedia"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[^\s/?#&:]{1,85}$"
-    PROFILE_URL = "https://en.wikipedia.org/wiki/User:{username}"
-    API_URL = "https://en.wikipedia.org/w/api.php?action=query&list=users&ususers={username}&usprop=registration|editcount|groups&format=json"
 
 
 class XINGConstants:
@@ -939,6 +924,7 @@ class SmuleConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = "^[A-Za-z0-9_.-]{1,64}$"
     PROFILE_URL = "https://www.smule.com/{username}"
+    IMPERSONATE = "safari"
     GENERIC = {"smule", "smule | page not found (404)"}
     AVATAR_KEYS = ("pic_url",)
     COVER_KEYS = ()
@@ -979,6 +965,7 @@ class EBayConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = "^[A-Za-z0-9_.*-]{1,64}$"
     PROFILE_URL = "https://www.ebay.com/usr/{username}"
+    IMPERSONATE = "safari"
     GENERIC = {"ebay", "ebay home", "error page | ebay", "security measure"}
     AVATAR_KEYS = ()
     COVER_KEYS = ()
@@ -1297,6 +1284,9 @@ class SourceForgeConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://sourceforge.net/u/{username}/profile"
+    IMPERSONATE = 'safari'
+    PRESENCE = ('Personal Tools',)
+    ABSENCE = ()
     GENERIC = set()
 
 class BloggerConstants:
@@ -1318,20 +1308,16 @@ class TripAdvisorConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://tripadvisor.com/members/{username}"
+    IMPERSONATE = "safari"
     GENERIC = set()
 
-class MyspaceConstants:
-    NAME = "Myspace"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://myspace.com/{username}"
-    GENERIC = set()
 
 class ThemeForestConstants:
     NAME = "ThemeForest"
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://themeforest.net/user/{username}"
+    IMPERSONATE = "safari"
     GENERIC = set()
 
 class WeforumConstants:
@@ -1395,6 +1381,8 @@ class AmebloConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://ameblo.jp/{username}"
+    PRESENCE = ('profile',)
+    ABSENCE = ('THROW_NOT_FOUND_EXCEPTION',)
     GENERIC = set()
 
 class HuggingFaceConstants:
@@ -1430,14 +1418,11 @@ class IStockConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.istockphoto.com/ru/portfolio/{username}"
+    IMPERSONATE = 'safari'
+    PRESENCE = ('collectionName',)
+    ABSENCE = ('subheading',)
     GENERIC = {'istock'}
 
-class PastebinConstants:
-    NAME = "Pastebin"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://pastebin.com/u/{username}"
-    GENERIC = set()
 
 class FoursquareConstants:
     NAME = "Foursquare"
@@ -1476,12 +1461,6 @@ class SmugmugConstants:
     PROFILE_URL = "https://{username}.smugmug.com/"
     GENERIC = set()
 
-class DuolingoConstants:
-    NAME = "Duolingo"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.duolingo.com/profile/{username}"
-    GENERIC = set()
 
 class UstreamConstants:
     NAME = "Ustream"
@@ -1495,6 +1474,8 @@ class WikidotConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.wikidot.com/user:info/{username}"
+    PRESENCE = ('Wikidot user since',)
+    ABSENCE = ('User does not exist.',)
     GENERIC = set()
 
 class ImageShackConstants:
@@ -1565,6 +1546,7 @@ class CodecanyonConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://codecanyon.net/user/{username}"
+    IMPERSONATE = "safari"
     GENERIC = set()
 
 class CodecademyConstants:
@@ -1623,12 +1605,6 @@ class TVTropesConstants:
     PROFILE_URL = "https://tvtropes.org/pmwiki/pmwiki.php/Tropers/{username}"
     GENERIC = set()
 
-class TistoryConstants:
-    NAME = "Tistory"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://{username}.tistory.com/"
-    GENERIC = set()
 
 class JSFiddleConstants:
     NAME = "JSFiddle"
@@ -1719,6 +1695,7 @@ class OpenCollectiveConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://opencollective.com/{username}"
+    IMPERSONATE = "safari"
     GENERIC = set()
 
 class GiantbombConstants:
@@ -1735,12 +1712,6 @@ class JAlbumNetConstants:
     PROFILE_URL = "https://{username}.jalbum.net/"
     GENERIC = set()
 
-class NewgroundsConstants:
-    NAME = "Newgrounds"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://{username}.newgrounds.com"
-    GENERIC = set()
 
 class SlidesConstants:
     NAME = "Slides"
@@ -1782,6 +1753,8 @@ class ImgflipConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://imgflip.com/user/{username}"
+    PRESENCE = ('u-username', 'user-page', 'user-title', 'user-panel', 'user-joined')
+    ABSENCE = ('\t\t<h1>404 Page Not Found</h1>\r', '<title>404 Page Not Found</title>\r', 'info-page ibox', '\t\t<p>Or maybe the <a href=', '\t\t<p>Were you looking for the <a href=')
     GENERIC = set()
 
 class HackadayConstants:
@@ -1803,6 +1776,7 @@ class Designs99Constants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://99designs.com/profiles/{username}"
+    IMPERSONATE = "edge101"
     GENERIC = set()
 
 class PeriscopeConstants:
@@ -1840,12 +1814,6 @@ class SoupConstants:
     PROFILE_URL = "https://www.soup.io/author/{username}"
     GENERIC = {'soup.io'}
 
-class FurAffinityConstants:
-    NAME = "Fur Affinity"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.furaffinity.net/gallery/{username}"
-    GENERIC = set()
 
 class ItemFixConstants:
     NAME = "ItemFix"
@@ -1882,12 +1850,6 @@ class AudiojungleConstants:
     PROFILE_URL = "https://audiojungle.net/user/{username}"
     GENERIC = set()
 
-class TinderConstants:
-    NAME = "Tinder"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.tinder.com/@{username}"
-    GENERIC = set()
 
 class DomestikaOrgConstants:
     NAME = "domestika.org"
@@ -1908,6 +1870,8 @@ class SetlistConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.setlist.fm/user/{username}"
+    PRESENCE = ('s setlist.fm | setlist.fm</title>',)
+    ABSENCE = ("Sorry, the page you requested doesn't exist",)
     GENERIC = set()
 
 class StarCitizenConstants:
@@ -2027,6 +1991,7 @@ class VideoHiveConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://videohive.net/user/{username}"
+    IMPERSONATE = "safari"
     GENERIC = set()
 
 class ClubhouseConstants:
@@ -2132,6 +2097,7 @@ class LyricsTranslateConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://lyricstranslate.com/sco/translator/{username}"
+    IMPERSONATE = "safari"
     GENERIC = set()
 
 class GuruConstants:
@@ -2261,12 +2227,6 @@ class PinkbikeConstants:
     PROFILE_URL = "https://www.pinkbike.com/u/{username}/"
     GENERIC = set()
 
-class ThechiveConstants:
-    NAME = "Thechive"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://thechive.com/author/{username}"
-    GENERIC = set()
 
 class GoldderbyConstants:
     NAME = "Goldderby"
@@ -2310,12 +2270,6 @@ class AvforumsConstants:
     PROFILE_URL = "https://www.avforums.com/members/?username={username}"
     GENERIC = set()
 
-class MobypictureConstants:
-    NAME = "Mobypicture"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.mobypicture.com/user/{username}"
-    GENERIC = set()
 
 class DLiveConstants:
     NAME = "DLive"
@@ -2371,6 +2325,8 @@ class PicturepushComConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://{username}.picturepush.com/"
+    PRESENCE = ('loginname',)
+    ABSENCE = ('.stage img',)
     GENERIC = {'photo upload and online photo albums - picturepush'}
 
 class VoicesConstants:
@@ -2518,6 +2474,8 @@ class AndroidforumsConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://androidforums.com/members/?username={username}"
+    PRESENCE = ('Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.', 'Для того, чтобы это сделать, нужно сначала войти на форум.', 'You must be logged-in to do that.', 'You must be logged in to do that.', 'memberHeader-content', 'profilePage')
+    ABSENCE = ('The requested page could not be found.', 'The specified member cannot be found. Please enter a member', 'Указанный пользователь не найден. Пожалуйста, введите другое имя.', "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.", 'Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.')
     GENERIC = set()
 
 class ComedyConstants:
@@ -2567,6 +2525,8 @@ class AntiquersConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.antiquers.com/members/?username={username}"
+    PRESENCE = ('Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.', 'Для того, чтобы это сделать, нужно сначала войти на форум.', 'You must be logged-in to do that.', 'You must be logged in to do that.', 'memberHeader-content', 'profilePage')
+    ABSENCE = ('The requested page could not be found.', 'The specified member cannot be found. Please enter a member', 'Указанный пользователь не найден. Пожалуйста, введите другое имя.', "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.", 'Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.')
     GENERIC = {'notable members | antiques board'}
 
 class BigsoccerConstants:
@@ -2653,12 +2613,6 @@ class ThoughtsComConstants:
     PROFILE_URL = "https://thoughts.com/members/{username}"
     GENERIC = {'for sale domain: thoughts.com'}
 
-class GapyearConstants:
-    NAME = "Gapyear"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.gapyear.com/members/{username}"
-    GENERIC = set()
 
 class MyinstantsConstants:
     NAME = "Myinstants"
@@ -2746,12 +2700,6 @@ class ZoomirIrConstants:
     PROFILE_URL = "https://www.zoomit.ir/user/{username}"
     GENERIC = set()
 
-class CentConstants:
-    NAME = "Cent"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://beta.cent.co/@{username}"
-    GENERIC = {'/@zzq9xkdoesnotexist42qz'}
 
 class VjudgeConstants:
     NAME = "Vjudge"
@@ -2877,6 +2825,9 @@ class PolitforumsConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.politforums.net/free/profile.php?showuser={username}"
+    IMPERSONATE = "chrome116"
+    PRESENCE = ('<title>\u041f\u0440\u043e\u0444\u0438\u043b\u044c.',)
+    ABSENCE = ('\u043f\u043e\u0436\u0430\u043b\u0443\u0439\u0441\u0442\u0430 \u0441\u0432\u044f\u0436\u0438\u0442\u0435\u0441\u044c \u0441 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u043e\u043c',)
     GENERIC = set()
 
 class IcheckmoviesConstants:
@@ -2900,12 +2851,6 @@ class MonkeytypeConstants:
     PROFILE_URL = "https://monkeytype.com/profile/{username}"
     GENERIC = {'monkeytype | a minimalistic, customizable typing test'}
 
-class E621Constants:
-    NAME = "E621"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://e621.net/users/{username}"
-    GENERIC = set()
 
 class GvectorsConstants:
     NAME = "Gvectors"
@@ -3053,6 +2998,8 @@ class Millerovo161RuConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://millerovo161.ru/index/8-0-{username}"
+    PRESENCE = ('udtlb">Пользователь:</div>', 'Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.', '<center><b>Личные данные</b>', 'Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.', '<img alt="" name="rankimg" border="0" src="/.s/rnk/', 'Гостям запрещено просматривать персональные страницы пользователей.', 'profile-section-name', 'webo4ka_dannii', 'Дата регистрации')
+    ABSENCE = ('<title>HTTP 404', 'Пользователь не найден')
     GENERIC = set()
 
 class RlocmanConstants:
@@ -3186,6 +3133,8 @@ class BlipfotoConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.blipfoto.com/{username}"
+    PRESENCE = ('biography', 'biography-full', 'profile-sidebar', 'profile-content', 'state')
+    ABSENCE = ('<title>Your photo journal | Blipfoto</title>',)
     GENERIC = set()
 
 class NitroTypeConstants:
@@ -3207,6 +3156,8 @@ class VishivalochkaRuConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://vishivalochka.ru/index/8-0-{username}"
+    PRESENCE = ('udtlb">Пользователь:</div>', 'Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.', '<center><b>Личные данные</b>', 'Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.', '<img alt="" name="rankimg" border="0" src="/.s/rnk/', 'Гостям запрещено просматривать персональные страницы пользователей.', 'profile-section-name', 'webo4ka_dannii', 'Дата регистрации')
+    ABSENCE = ('<title>HTTP 404', 'Пользователь не найден')
     GENERIC = set()
 
 class CSLordsConstants:
@@ -3272,19 +3223,7 @@ class DMOJConstants:
     PROFILE_URL = "https://dmoj.ca/user/{username}"
     GENERIC = set()
 
-class LadaVestaNetConstants:
-    NAME = "lada-vesta.net"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.lada-vesta.net/member.php?username={username}"
-    GENERIC = set()
 
-class SysadminsConstants:
-    NAME = "Sysadmins"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://sysadmins.ru/member{username}.html"
-    GENERIC = set()
 
 class JeepgarageOrgConstants:
     NAME = "jeepgarage.org"
@@ -3322,12 +3261,6 @@ class CryptoHackConstants:
     PROFILE_URL = "https://cryptohack.org/user/{username}/"
     GENERIC = {'cryptohack – a free, fun platform for learning cryptography', 'cryptohack – home'}
 
-class PiccsyConstants:
-    NAME = "Piccsy"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://{username}.piccsy.com/"
-    GENERIC = set()
 
 class Windows10forumsConstants:
     NAME = "Windows10forums"
@@ -3404,6 +3337,8 @@ class ArmtorgConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://armtorg.ru//forum/memberlist.php?username={username}"
+    PRESENCE = ('You must be logged in to do that.', './memberlist.php?mode=viewprofile')
+    ABSENCE = ('No members found for this search criterion.', 'Не найдено ни одного пользователя по заданным критериям')
     GENERIC = {'пользователи'}
 
 class RusspussRuConstants:
@@ -3434,12 +3369,6 @@ class QbnConstants:
     PROFILE_URL = "https://www.qbn.com/{username}"
     GENERIC = set()
 
-class LkforumConstants:
-    NAME = "Lkforum"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.lkforum.ru//member.php?username={username}"
-    GENERIC = set()
 
 class ClubsnapComConstants:
     NAME = "clubsnap.com"
@@ -3469,12 +3398,6 @@ class CubecraftNetConstants:
     PROFILE_URL = "https://www.cubecraft.net/members/?username={username}"
     GENERIC = {'notable members', 'notable members | cubecraft games'}
 
-class TvGamesConstants:
-    NAME = "Tv-games"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://tv-games.ru//forum/member.php?username={username}"
-    GENERIC = set()
 
 class SniperforumsComConstants:
     NAME = "sniperforums.com"
@@ -3483,12 +3406,6 @@ class SniperforumsComConstants:
     PROFILE_URL = "https://sniperforums.com/members/?username={username}"
     GENERIC = set()
 
-class IzobilRuConstants:
-    NAME = "izobil.ru"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://izobil.ru/index/8-0-{username}"
-    GENERIC = set()
 
 class GoldroyalConstants:
     NAME = "Goldroyal"
@@ -3532,12 +3449,6 @@ class ThelionConstants:
     PROFILE_URL = "https://www.thelion.com/bin/profile.cgi?c=s&ru_name={username}"
     GENERIC = {'thelion.com - user'}
 
-class XShakerConstants:
-    NAME = "XShaker"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.xshaker.net/{username}.html"
-    GENERIC = set()
 
 class NucastleCoUkConstants:
     NAME = "nucastle.co.uk"
@@ -3567,12 +3478,6 @@ class DatingRuConstants:
     PROFILE_URL = "https://dating.ru/{username}"
     GENERIC = set()
 
-class VolgogradForumConstants:
-    NAME = "Volgograd Forum"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.forum-volgograd.ru/members/?username={username}"
-    GENERIC = set()
 
 class TigerfanComConstants:
     NAME = "tigerfan.com"
@@ -3588,12 +3493,6 @@ class ImpalaforumsComConstants:
     PROFILE_URL = "https://impalaforums.com/members/?username={username}"
     GENERIC = set()
 
-class ForumJizniConstants:
-    NAME = "ForumJizni"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.forumjizni.ru/member.php?username={username}"
-    GENERIC = {'форум общения больных людей. неизлечимых болезней нет!'}
 
 class XgmGuruConstants:
     NAME = "xgm.guru"
@@ -3609,12 +3508,6 @@ class TexasguntalkConstants:
     PROFILE_URL = "https://www.texasguntalk.com/members/?username={username}"
     GENERIC = {'notable members', 'notable members | texas gun talk - the premier texas gun forum'}
 
-class PolitikforumConstants:
-    NAME = "Politikforum"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://www.politikforum.ru//member.php?username={username}"
-    GENERIC = {'политический форум о политических событиях в россии, украине, странах бывшего ссср.'}
 
 class TruthbookConstants:
     NAME = "Truthbook"
@@ -3623,12 +3516,6 @@ class TruthbookConstants:
     PROFILE_URL = "https://truthbook.com/forum/memberlist.php?username={username}"
     GENERIC = set()
 
-class DefenceForumIndiaConstants:
-    NAME = "DefenceForumIndia"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://defenceforumindia.com//members/?username={username}"
-    GENERIC = set()
 
 class ForumsDromRuConstants:
     NAME = "forums.drom.ru"
@@ -3642,6 +3529,8 @@ class AntiqueBottlesConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.antique-bottles.net/members/?username={username}"
+    PRESENCE = ('Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.', 'Для того, чтобы это сделать, нужно сначала войти на форум.', 'You must be logged-in to do that.', 'You must be logged in to do that.', 'memberHeader-content', 'profilePage')
+    ABSENCE = ('The requested page could not be found.', 'The specified member cannot be found. Please enter a member', 'Указанный пользователь не найден. Пожалуйста, введите другое имя.', "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.", 'Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.')
     GENERIC = set()
 
 class RidemonkeyComConstants:
@@ -3677,6 +3566,7 @@ class RussianFIConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.russian.fi//forum/member.php?username={username}"
+    IMPERSONATE = "safari"
     GENERIC = {'финляндия по-русски'}
 
 class XtratimeOrgConstants:
@@ -3705,6 +3595,8 @@ class ThebuddyforumConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://www.thebuddyforum.com/members/?username={username}"
+    PRESENCE = ('Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.', 'Для того, чтобы это сделать, нужно сначала войти на форум.', 'You must be logged-in to do that.', 'You must be logged in to do that.', 'memberHeader-content', 'profilePage')
+    ABSENCE = ('The requested page could not be found.', 'The specified member cannot be found. Please enter a member', 'Указанный пользователь не найден. Пожалуйста, введите другое имя.', "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.", 'Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.')
     GENERIC = set()
 
 class VauxhallownersnetworkCoUkConstants:
@@ -3714,12 +3606,6 @@ class VauxhallownersnetworkCoUkConstants:
     PROFILE_URL = "https://www.vauxhallownersnetwork.co.uk/members/?username={username}"
     GENERIC = set()
 
-class ErogenClubConstants:
-    NAME = "Erogen.club"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://erogen.club/members/?username={username}"
-    GENERIC = {'полезные пользователи', 'полезные пользователи | клуб «эроген». секс-форум erogen.'}
 
 class MineplexComConstants:
     NAME = "mineplex.com"
@@ -3728,26 +3614,7 @@ class MineplexComConstants:
     PROFILE_URL = "https://www.mineplex.com/members/?username={username}"
     GENERIC = set()
 
-class CodersRankConstants:
-    NAME = "Coders Rank"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://profile.codersrank.io/user/{username}/"
-    GENERIC = {"zzq9xkdoesnotexist42qz's codersrank profile"}
 
-class WorldofplayersConstants:
-    NAME = "Worldofplayers"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://worldofplayers.ru/members/?username={username}"
-    GENERIC = set()
-
-class N123rfConstants:
-    NAME = "123rf"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://ru.123rf.com/profile_{username}"
-    GENERIC = set()
 
 class N2ndcareersCommunityDiscourseGroupConstants:
     NAME = "2ndcareers-community.discourse.group"
@@ -4574,13 +4441,6 @@ class CommunityBrainMapOrgConstants:
     API_URL = "https://community.brain-map.org/u/{username}.json"
     GENERIC = set()
 
-class CommunityBraveComConstants:
-    NAME = "community.brave.com"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://community.brave.com/u/{username}"
-    API_URL = "https://community.brave.com/u/{username}.json"
-    GENERIC = set()
 
 class CommunityBrevoComConstants:
     NAME = "community.brevo.com"
@@ -6886,6 +6746,7 @@ class StudfileConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://studfile.net/users/{username}/"
+    IMPERSONATE = "safari"
     GENERIC = set()
 
 class IllustratorsConstants:
@@ -7602,12 +7463,6 @@ class MipedConstants:
     PROFILE_URL = "https://miped.ru/user/{username}"
     GENERIC = set()
 
-class RadiomedConstants:
-    NAME = "Radiomed"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://radiomed.ru/users/{username}"
-    GENERIC = set()
 
 class SchlockConstants:
     NAME = "Schlock"
@@ -11360,14 +11215,6 @@ class RuslangxpUcozOrgConstants:
     ABSENCE = ('<title>HTTP 404', 'Пользователь не найден')
     GENERIC = set()
 
-class MirTesenConstants:
-    NAME = "MirTesen"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://mirtesen.ru/people/{username}/profile"
-    PRESENCE = ('<span>Люди</span>',)
-    ABSENCE = ('По Вашему запросу ничего не найдено',)
-    GENERIC = set()
 
 class HuntingKareliaRuConstants:
     NAME = "hunting.karelia.ru"
@@ -12125,14 +11972,6 @@ class W3challsConstants:
     ABSENCE = ('<title>404 Page not found – W3Challs Hacking Challenges</title>',)
     GENERIC = set()
 
-class AdmireMeConstants:
-    NAME = "Admire Me"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://admireme.vip/{username}"
-    PRESENCE = ()
-    ABSENCE = ('Page Not Found',)
-    GENERIC = set()
 
 class NhlConstants:
     NAME = "Nhl"
@@ -12584,14 +12423,6 @@ class ScoutwikiConstants:
     ABSENCE = ('is not registered',)
     GENERIC = set()
 
-class SexforumWsConstants:
-    NAME = "Sexforum.ws"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "http://sexforum.ws/members/?username={username}"
-    PRESENCE = ('Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.', 'Для того, чтобы это сделать, нужно сначала войти на форум.', 'You must be logged-in to do that.', 'You must be logged in to do that.', 'memberHeader-content', 'profilePage')
-    ABSENCE = ('The requested page could not be found.', 'The specified member cannot be found. Please enter a member', 'Указанный пользователь не найден. Пожалуйста, введите другое имя.', "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.", 'Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.')
-    GENERIC = set()
 
 class TanukiPlConstants:
     NAME = "Tanuki.pl"
@@ -12783,14 +12614,6 @@ class LithotherapyConstants:
     ABSENCE = ('Подходящих тем или сообщений не найдено.',)
     GENERIC = set()
 
-class ZbiornikComConstants:
-    NAME = "Zbiornik.com"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "https://mini.zbiornik.com/{username}"
-    PRESENCE = ('INFO',)
-    ABSENCE = ('Szukaj',)
-    GENERIC = set()
 
 class MoscherbRuConstants:
     NAME = "moscherb.ru"
@@ -13251,14 +13074,6 @@ class CentrSpektrRuConstants:
     ABSENCE = ('<title>HTTP 404', 'Пользователь не найден')
     GENERIC = set()
 
-class JapanesedollsRuConstants:
-    NAME = "japanesedolls.ru"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "http://japanesedolls.ru/index/8-0-{username}"
-    PRESENCE = ('udtlb">Пользователь:</div>', 'Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.', '<center><b>Личные данные</b>', 'Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.', '<img alt="" name="rankimg" border="0" src="/.s/rnk/', 'Гостям запрещено просматривать персональные страницы пользователей.', 'profile-section-name', 'webo4ka_dannii', 'Дата регистрации')
-    ABSENCE = ('<title>HTTP 404', 'Пользователь не найден')
-    GENERIC = set()
 
 class Ofc65RuConstants:
     NAME = "ofc65.ru"
@@ -13512,14 +13327,6 @@ class ZapgameRuConstants:
     ABSENCE = ('<title>HTTP 404', 'Пользователь не найден')
     GENERIC = set()
 
-class OnanizmClubConstants:
-    NAME = "onanizm.club"
-    CRAWL_TYPE = "normal"
-    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
-    PROFILE_URL = "http://onanizm.club/members/?username={username}"
-    PRESENCE = ('Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.', 'Для того, чтобы это сделать, нужно сначала войти на форум.', 'You must be logged-in to do that.', 'You must be logged in to do that.', 'memberHeader-content', 'profilePage')
-    ABSENCE = ('The requested page could not be found.', 'The specified member cannot be found. Please enter a member', 'Указанный пользователь не найден. Пожалуйста, введите другое имя.', "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.", 'Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.')
-    GENERIC = set()
 
 class NiflheimTopConstants:
     NAME = "niflheim.top"
@@ -13920,5 +13727,19 @@ class JimdoConstants:
     CRAWL_TYPE = "normal"
     GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
     PROFILE_URL = "https://{username}.jimdosite.com"
+    GENERIC = set()
+
+class WikipediaConstants:
+    NAME = "Wikipedia"
+    CRAWL_TYPE = "normal"
+    GRAMMAR = r"^[^\s/?#&:]{1,85}$"
+    PROFILE_URL = "https://en.wikipedia.org/wiki/User:{username}"
+    API_URL = "https://en.wikipedia.org/w/api.php?action=query&list=users&ususers={username}&usprop=registration|editcount|groups&format=json"
+
+class DuolingoConstants:
+    NAME = "Duolingo"
+    CRAWL_TYPE = "normal"
+    GRAMMAR = r"^[A-Za-z0-9._@-]{1,80}$"
+    PROFILE_URL = "https://www.duolingo.com/profile/{username}"
     GENERIC = set()
 

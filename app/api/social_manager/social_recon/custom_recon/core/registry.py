@@ -37,7 +37,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.gitlab as gi
 import api.social_manager.social_recon.custom_recon.platforms_probe.hackernews as hackernews
 import api.social_manager.social_recon.custom_recon.platforms_probe.producthunt as producthunt
 import api.social_manager.social_recon.custom_recon.platforms_probe.medium as medium
-import api.social_manager.social_recon.custom_recon.platforms_probe.substack as substack
 import api.social_manager.social_recon.custom_recon.platforms_probe.fandom as fandom
 import api.social_manager.social_recon.custom_recon.platforms_probe.steam as steam
 import api.social_manager.social_recon.custom_recon.platforms_probe.roblox as roblox
@@ -66,7 +65,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.dailymotion 
 import api.social_manager.social_recon.custom_recon.platforms_probe.giphy as giphy
 import api.social_manager.social_recon.custom_recon.platforms_probe.unsplash as unsplash
 import api.social_manager.social_recon.custom_recon.platforms_probe.pexels as pexels
-import api.social_manager.social_recon.custom_recon.platforms_probe.wikipedia as wikipedia
 import api.social_manager.social_recon.custom_recon.platforms_probe.xing as xing
 import api.social_manager.social_recon.custom_recon.platforms_probe.wellfound as wellfound
 import api.social_manager.social_recon.custom_recon.platforms_probe.habr as habr
@@ -140,7 +138,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.sourceforge 
 import api.social_manager.social_recon.custom_recon.platforms_probe.blogger as blogger
 import api.social_manager.social_recon.custom_recon.platforms_probe.bloggerbloggercom as bloggerbloggercom
 import api.social_manager.social_recon.custom_recon.platforms_probe.tripadvisor as tripadvisor
-import api.social_manager.social_recon.custom_recon.platforms_probe.myspace as myspace
 import api.social_manager.social_recon.custom_recon.platforms_probe.themeforest as themeforest
 import api.social_manager.social_recon.custom_recon.platforms_probe.weforum as weforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.freepik as freepik
@@ -156,13 +153,11 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.laracast as 
 import api.social_manager.social_recon.custom_recon.platforms_probe.bitbucket as bitbucket
 import api.social_manager.social_recon.custom_recon.platforms_probe.upwork as upwork
 import api.social_manager.social_recon.custom_recon.platforms_probe.istock as istock
-import api.social_manager.social_recon.custom_recon.platforms_probe.pastebin as pastebin
 import api.social_manager.social_recon.custom_recon.platforms_probe.foursquare as foursquare
 import api.social_manager.social_recon.custom_recon.platforms_probe.discogs as discogs
 import api.social_manager.social_recon.custom_recon.platforms_probe.kofi as kofi
 import api.social_manager.social_recon.custom_recon.platforms_probe.rottentomatoes as rottentomatoes
 import api.social_manager.social_recon.custom_recon.platforms_probe.smugmug as smugmug
-import api.social_manager.social_recon.custom_recon.platforms_probe.duolingo as duolingo
 import api.social_manager.social_recon.custom_recon.platforms_probe.ustream as ustream
 import api.social_manager.social_recon.custom_recon.platforms_probe.wikidot as wikidot
 import api.social_manager.social_recon.custom_recon.platforms_probe.imageshack as imageshack
@@ -183,7 +178,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.speakerdeck 
 import api.social_manager.social_recon.custom_recon.platforms_probe.nextcloudforum as nextcloudforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.max as max
 import api.social_manager.social_recon.custom_recon.platforms_probe.tvtropes as tvtropes
-import api.social_manager.social_recon.custom_recon.platforms_probe.tistory as tistory
 import api.social_manager.social_recon.custom_recon.platforms_probe.jsfiddle as jsfiddle
 import api.social_manager.social_recon.custom_recon.platforms_probe.gamesradar as gamesradar
 import api.social_manager.social_recon.custom_recon.platforms_probe.geocaching as geocaching
@@ -199,7 +193,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.ctan as ctan
 import api.social_manager.social_recon.custom_recon.platforms_probe.opencollective as opencollective
 import api.social_manager.social_recon.custom_recon.platforms_probe.giantbomb as giantbomb
 import api.social_manager.social_recon.custom_recon.platforms_probe.jalbumnet as jalbumnet
-import api.social_manager.social_recon.custom_recon.platforms_probe.newgrounds as newgrounds
 import api.social_manager.social_recon.custom_recon.platforms_probe.slides as slides
 import api.social_manager.social_recon.custom_recon.platforms_probe.ultimateguitar as ultimateguitar
 import api.social_manager.social_recon.custom_recon.platforms_probe.contently as contently
@@ -214,13 +207,11 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.freesound as
 import api.social_manager.social_recon.custom_recon.platforms_probe.metalarchives as metalarchives
 import api.social_manager.social_recon.custom_recon.platforms_probe.kongregate as kongregate
 import api.social_manager.social_recon.custom_recon.platforms_probe.soup as soup
-import api.social_manager.social_recon.custom_recon.platforms_probe.furaffinity as furaffinity
 import api.social_manager.social_recon.custom_recon.platforms_probe.itemfix as itemfix
 import api.social_manager.social_recon.custom_recon.platforms_probe.nintendolife as nintendolife
 import api.social_manager.social_recon.custom_recon.platforms_probe.carbonmade as carbonmade
 import api.social_manager.social_recon.custom_recon.platforms_probe.moddb as moddb
 import api.social_manager.social_recon.custom_recon.platforms_probe.audiojungle as audiojungle
-import api.social_manager.social_recon.custom_recon.platforms_probe.tinder as tinder
 import api.social_manager.social_recon.custom_recon.platforms_probe.domestikaorg as domestikaorg
 import api.social_manager.social_recon.custom_recon.platforms_probe.noblogs as noblogs
 import api.social_manager.social_recon.custom_recon.platforms_probe.setlist as setlist
@@ -273,14 +264,12 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.paragraph as
 import api.social_manager.social_recon.custom_recon.platforms_probe.notabugorg as notabugorg
 import api.social_manager.social_recon.custom_recon.platforms_probe.mydramalist as mydramalist
 import api.social_manager.social_recon.custom_recon.platforms_probe.pinkbike as pinkbike
-import api.social_manager.social_recon.custom_recon.platforms_probe.thechive as thechive
 import api.social_manager.social_recon.custom_recon.platforms_probe.goldderby as goldderby
 import api.social_manager.social_recon.custom_recon.platforms_probe.meetme as meetme
 import api.social_manager.social_recon.custom_recon.platforms_probe.flyertalk as flyertalk
 import api.social_manager.social_recon.custom_recon.platforms_probe.gbatempnet as gbatempnet
 import api.social_manager.social_recon.custom_recon.platforms_probe.brusheezy as brusheezy
 import api.social_manager.social_recon.custom_recon.platforms_probe.avforums as avforums
-import api.social_manager.social_recon.custom_recon.platforms_probe.mobypicture as mobypicture
 import api.social_manager.social_recon.custom_recon.platforms_probe.dlive as dlive
 import api.social_manager.social_recon.custom_recon.platforms_probe.trueachievements as trueachievements
 import api.social_manager.social_recon.custom_recon.platforms_probe.physicsforums as physicsforums
@@ -329,7 +318,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.weblancer as
 import api.social_manager.social_recon.custom_recon.platforms_probe.sugoidesu as sugoidesu
 import api.social_manager.social_recon.custom_recon.platforms_probe.profiru as profiru
 import api.social_manager.social_recon.custom_recon.platforms_probe.thoughtscom as thoughtscom
-import api.social_manager.social_recon.custom_recon.platforms_probe.gapyear as gapyear
 import api.social_manager.social_recon.custom_recon.platforms_probe.myinstants as myinstants
 import api.social_manager.social_recon.custom_recon.platforms_probe.smokingmeatforumscom as smokingmeatforumscom
 import api.social_manager.social_recon.custom_recon.platforms_probe.reibert as reibert
@@ -342,7 +330,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.ethresear as
 import api.social_manager.social_recon.custom_recon.platforms_probe.homebrewtalkcom as homebrewtalkcom
 import api.social_manager.social_recon.custom_recon.platforms_probe.lemmyworld as lemmyworld
 import api.social_manager.social_recon.custom_recon.platforms_probe.zoomirir as zoomirir
-import api.social_manager.social_recon.custom_recon.platforms_probe.cent as cent
 import api.social_manager.social_recon.custom_recon.platforms_probe.vjudge as vjudge
 import api.social_manager.social_recon.custom_recon.platforms_probe.thesimsresource as thesimsresource
 import api.social_manager.social_recon.custom_recon.platforms_probe.vgtimesgames as vgtimesgames
@@ -364,7 +351,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.politforums 
 import api.social_manager.social_recon.custom_recon.platforms_probe.icheckmovies as icheckmovies
 import api.social_manager.social_recon.custom_recon.platforms_probe.crevado as crevado
 import api.social_manager.social_recon.custom_recon.platforms_probe.monkeytype as monkeytype
-import api.social_manager.social_recon.custom_recon.platforms_probe.e621 as e621
 import api.social_manager.social_recon.custom_recon.platforms_probe.gvectors as gvectors
 import api.social_manager.social_recon.custom_recon.platforms_probe.rollitup as rollitup
 import api.social_manager.social_recon.custom_recon.platforms_probe.riveapp as riveapp
@@ -417,14 +403,11 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.mirstalkerar
 import api.social_manager.social_recon.custom_recon.platforms_probe.machelp as machelp
 import api.social_manager.social_recon.custom_recon.platforms_probe.flashflashrevolution as flashflashrevolution
 import api.social_manager.social_recon.custom_recon.platforms_probe.dmoj as dmoj
-import api.social_manager.social_recon.custom_recon.platforms_probe.ladavestanet as ladavestanet
-import api.social_manager.social_recon.custom_recon.platforms_probe.sysadmins as sysadmins
 import api.social_manager.social_recon.custom_recon.platforms_probe.jeepgarageorg as jeepgarageorg
 import api.social_manager.social_recon.custom_recon.platforms_probe.n4gameforum as n4gameforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.spells8 as spells8
 import api.social_manager.social_recon.custom_recon.platforms_probe.n101010pl as n101010pl
 import api.social_manager.social_recon.custom_recon.platforms_probe.cryptohack as cryptohack
-import api.social_manager.social_recon.custom_recon.platforms_probe.piccsy as piccsy
 import api.social_manager.social_recon.custom_recon.platforms_probe.windows10forums as windows10forums
 import api.social_manager.social_recon.custom_recon.platforms_probe.ifishnet as ifishnet
 import api.social_manager.social_recon.custom_recon.platforms_probe.swedroidse as swedroidse
@@ -440,34 +423,26 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.russpussru a
 import api.social_manager.social_recon.custom_recon.platforms_probe.vtwinforumcom as vtwinforumcom
 import api.social_manager.social_recon.custom_recon.platforms_probe.fanficslandiacom as fanficslandiacom
 import api.social_manager.social_recon.custom_recon.platforms_probe.qbn as qbn
-import api.social_manager.social_recon.custom_recon.platforms_probe.lkforum as lkforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.clubsnapcom as clubsnapcom
 import api.social_manager.social_recon.custom_recon.platforms_probe.wolpy as wolpy
 import api.social_manager.social_recon.custom_recon.platforms_probe.warframemarket as warframemarket
 import api.social_manager.social_recon.custom_recon.platforms_probe.cubecraftnet as cubecraftnet
-import api.social_manager.social_recon.custom_recon.platforms_probe.tvgames as tvgames
 import api.social_manager.social_recon.custom_recon.platforms_probe.sniperforumscom as sniperforumscom
-import api.social_manager.social_recon.custom_recon.platforms_probe.izobilru as izobilru
 import api.social_manager.social_recon.custom_recon.platforms_probe.goldroyal as goldroyal
 import api.social_manager.social_recon.custom_recon.platforms_probe.fcrubin as fcrubin
 import api.social_manager.social_recon.custom_recon.platforms_probe.oakleyforumcom as oakleyforumcom
 import api.social_manager.social_recon.custom_recon.platforms_probe.hunting as hunting
 import api.social_manager.social_recon.custom_recon.platforms_probe.uvelir as uvelir
 import api.social_manager.social_recon.custom_recon.platforms_probe.thelion as thelion
-import api.social_manager.social_recon.custom_recon.platforms_probe.xshaker as xshaker
 import api.social_manager.social_recon.custom_recon.platforms_probe.nucastlecouk as nucastlecouk
 import api.social_manager.social_recon.custom_recon.platforms_probe.realmeye as realmeye
 import api.social_manager.social_recon.custom_recon.platforms_probe.hitmanforum as hitmanforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.datingru as datingru
-import api.social_manager.social_recon.custom_recon.platforms_probe.volgogradforum as volgogradforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.tigerfancom as tigerfancom
 import api.social_manager.social_recon.custom_recon.platforms_probe.impalaforumscom as impalaforumscom
-import api.social_manager.social_recon.custom_recon.platforms_probe.forumjizni as forumjizni
 import api.social_manager.social_recon.custom_recon.platforms_probe.xgmguru as xgmguru
 import api.social_manager.social_recon.custom_recon.platforms_probe.texasguntalk as texasguntalk
-import api.social_manager.social_recon.custom_recon.platforms_probe.politikforum as politikforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.truthbook as truthbook
-import api.social_manager.social_recon.custom_recon.platforms_probe.defenceforumindia as defenceforumindia
 import api.social_manager.social_recon.custom_recon.platforms_probe.forumsdromru as forumsdromru
 import api.social_manager.social_recon.custom_recon.platforms_probe.antiquebottles as antiquebottles
 import api.social_manager.social_recon.custom_recon.platforms_probe.ridemonkeycom as ridemonkeycom
@@ -480,11 +455,7 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.nikoncafecom
 import api.social_manager.social_recon.custom_recon.platforms_probe.cowboyszonecom as cowboyszonecom
 import api.social_manager.social_recon.custom_recon.platforms_probe.thebuddyforum as thebuddyforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.vauxhallownersnetworkcouk as vauxhallownersnetworkcouk
-import api.social_manager.social_recon.custom_recon.platforms_probe.erogenclub as erogenclub
 import api.social_manager.social_recon.custom_recon.platforms_probe.mineplexcom as mineplexcom
-import api.social_manager.social_recon.custom_recon.platforms_probe.codersrank as codersrank
-import api.social_manager.social_recon.custom_recon.platforms_probe.worldofplayers as worldofplayers
-import api.social_manager.social_recon.custom_recon.platforms_probe.n123rf as n123rf
 import api.social_manager.social_recon.custom_recon.platforms_probe.n2ndcareerscommunitydiscoursegroup as n2ndcareerscommunitydiscoursegroup
 import api.social_manager.social_recon.custom_recon.platforms_probe.n810videocom as n810videocom
 import api.social_manager.social_recon.custom_recon.platforms_probe.n8wayruncom as n8wayruncom
@@ -590,7 +561,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.communityblo
 import api.social_manager.social_recon.custom_recon.platforms_probe.communitybloomreachcom as communitybloomreachcom
 import api.social_manager.social_recon.custom_recon.platforms_probe.communityblynkcc as communityblynkcc
 import api.social_manager.social_recon.custom_recon.platforms_probe.communitybrainmaporg as communitybrainmaporg
-import api.social_manager.social_recon.custom_recon.platforms_probe.communitybravecom as communitybravecom
 import api.social_manager.social_recon.custom_recon.platforms_probe.communitybrevocom as communitybrevocom
 import api.social_manager.social_recon.custom_recon.platforms_probe.communitybrewwcom as communitybrewwcom
 import api.social_manager.social_recon.custom_recon.platforms_probe.communitybrightpatterncom as communitybrightpatterncom
@@ -992,7 +962,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.partyvibe as
 import api.social_manager.social_recon.custom_recon.platforms_probe.rigczclub as rigczclub
 import api.social_manager.social_recon.custom_recon.platforms_probe.rcloneforum as rcloneforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.miped as miped
-import api.social_manager.social_recon.custom_recon.platforms_probe.radiomed as radiomed
 import api.social_manager.social_recon.custom_recon.platforms_probe.schlock as schlock
 import api.social_manager.social_recon.custom_recon.platforms_probe.soobshestva as soobshestva
 import api.social_manager.social_recon.custom_recon.platforms_probe.swapd as swapd
@@ -1430,7 +1399,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.pmpkbirskuco
 import api.social_manager.social_recon.custom_recon.platforms_probe.csruucozorg as csruucozorg
 import api.social_manager.social_recon.custom_recon.platforms_probe.w2lgucozorg as w2lgucozorg
 import api.social_manager.social_recon.custom_recon.platforms_probe.ruslangxpucozorg as ruslangxpucozorg
-import api.social_manager.social_recon.custom_recon.platforms_probe.mirtesen as mirtesen
 import api.social_manager.social_recon.custom_recon.platforms_probe.huntingkareliaru as huntingkareliaru
 import api.social_manager.social_recon.custom_recon.platforms_probe.manifoldmarkets as manifoldmarkets
 import api.social_manager.social_recon.custom_recon.platforms_probe.valinorcombr as valinorcombr
@@ -1515,7 +1483,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.caduser as c
 import api.social_manager.social_recon.custom_recon.platforms_probe.samesoundru as samesoundru
 import api.social_manager.social_recon.custom_recon.platforms_probe.fishingsib as fishingsib
 import api.social_manager.social_recon.custom_recon.platforms_probe.w3challs as w3challs
-import api.social_manager.social_recon.custom_recon.platforms_probe.admireme as admireme
 import api.social_manager.social_recon.custom_recon.platforms_probe.nhl as nhl
 import api.social_manager.social_recon.custom_recon.platforms_probe.pobedishru as pobedishru
 import api.social_manager.social_recon.custom_recon.platforms_probe.vezha as vezha
@@ -1566,7 +1533,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.rngf as rngf
 import api.social_manager.social_recon.custom_recon.platforms_probe.rasslabyxa as rasslabyxa
 import api.social_manager.social_recon.custom_recon.platforms_probe.reincarnationforum as reincarnationforum
 import api.social_manager.social_recon.custom_recon.platforms_probe.scoutwiki as scoutwiki
-import api.social_manager.social_recon.custom_recon.platforms_probe.sexforumws as sexforumws
 import api.social_manager.social_recon.custom_recon.platforms_probe.tanukipl as tanukipl
 import api.social_manager.social_recon.custom_recon.platforms_probe.tetrio as tetrio
 import api.social_manager.social_recon.custom_recon.platforms_probe.tunefind as tunefind
@@ -1588,7 +1554,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.szerokikadrp
 import api.social_manager.social_recon.custom_recon.platforms_probe.izmailonlinecom as izmailonlinecom
 import api.social_manager.social_recon.custom_recon.platforms_probe.markweinguitarlessonscom as markweinguitarlessonscom
 import api.social_manager.social_recon.custom_recon.platforms_probe.lithotherapy as lithotherapy
-import api.social_manager.social_recon.custom_recon.platforms_probe.zbiornikcom as zbiornikcom
 import api.social_manager.social_recon.custom_recon.platforms_probe.moscherbru as moscherbru
 import api.social_manager.social_recon.custom_recon.platforms_probe.nfclubru as nfclubru
 import api.social_manager.social_recon.custom_recon.platforms_probe.odonvvru as odonvvru
@@ -1640,7 +1605,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.israelrentin
 import api.social_manager.social_recon.custom_recon.platforms_probe.markszenprogsru as markszenprogsru
 import api.social_manager.social_recon.custom_recon.platforms_probe.laserwar48ru as laserwar48ru
 import api.social_manager.social_recon.custom_recon.platforms_probe.centrspektrru as centrspektrru
-import api.social_manager.social_recon.custom_recon.platforms_probe.japanesedollsru as japanesedollsru
 import api.social_manager.social_recon.custom_recon.platforms_probe.ofc65ru as ofc65ru
 import api.social_manager.social_recon.custom_recon.platforms_probe.v3deru as v3deru
 import api.social_manager.social_recon.custom_recon.platforms_probe.xn80aqkf5cbxnp1ai as xn80aqkf5cbxnp1ai
@@ -1669,7 +1633,6 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.metrologikar
 import api.social_manager.social_recon.custom_recon.platforms_probe.mednolitru as mednolitru
 import api.social_manager.social_recon.custom_recon.platforms_probe.mikeleloconteru as mikeleloconteru
 import api.social_manager.social_recon.custom_recon.platforms_probe.zapgameru as zapgameru
-import api.social_manager.social_recon.custom_recon.platforms_probe.onanizmclub as onanizmclub
 import api.social_manager.social_recon.custom_recon.platforms_probe.niflheimtop as niflheimtop
 import api.social_manager.social_recon.custom_recon.platforms_probe.tottenhamhotspurru as tottenhamhotspurru
 import api.social_manager.social_recon.custom_recon.platforms_probe.communitygozenhostcom as communitygozenhostcom
@@ -1716,6 +1679,8 @@ import api.social_manager.social_recon.custom_recon.platforms_probe.contactinbio
 import api.social_manager.social_recon.custom_recon.platforms_probe.omglol as omglol
 import api.social_manager.social_recon.custom_recon.platforms_probe.xanga as xanga
 import api.social_manager.social_recon.custom_recon.platforms_probe.jimdo as jimdo
+import api.social_manager.social_recon.custom_recon.platforms_probe.wikipedia as wikipedia
+import api.social_manager.social_recon.custom_recon.platforms_probe.duolingo as duolingo
 from api.social_manager.social_recon.constants.custom_recon_constants import RegistryConstants
 
 platforms: dict[str, ModuleType] = {
@@ -1756,7 +1721,6 @@ platforms: dict[str, ModuleType] = {
     "hackernews": hackernews,
     "producthunt": producthunt,
     "medium": medium,
-    "substack": substack,
     "fandom": fandom,
     "steam": steam,
     "roblox": roblox,
@@ -1785,7 +1749,6 @@ platforms: dict[str, ModuleType] = {
     "giphy": giphy,
     "unsplash": unsplash,
     "pexels": pexels,
-    "wikipedia": wikipedia,
     "xing": xing,
     "wellfound": wellfound,
     "habr": habr,
@@ -1859,7 +1822,6 @@ platforms: dict[str, ModuleType] = {
     "blogger": blogger,
     "bloggerbloggercom": bloggerbloggercom,
     "tripadvisor": tripadvisor,
-    "myspace": myspace,
     "themeforest": themeforest,
     "weforum": weforum,
     "freepik": freepik,
@@ -1875,13 +1837,11 @@ platforms: dict[str, ModuleType] = {
     "bitbucket": bitbucket,
     "upwork": upwork,
     "istock": istock,
-    "pastebin": pastebin,
     "foursquare": foursquare,
     "discogs": discogs,
     "kofi": kofi,
     "rottentomatoes": rottentomatoes,
     "smugmug": smugmug,
-    "duolingo": duolingo,
     "ustream": ustream,
     "wikidot": wikidot,
     "imageshack": imageshack,
@@ -1902,7 +1862,6 @@ platforms: dict[str, ModuleType] = {
     "nextcloudforum": nextcloudforum,
     "max": max,
     "tvtropes": tvtropes,
-    "tistory": tistory,
     "jsfiddle": jsfiddle,
     "gamesradar": gamesradar,
     "geocaching": geocaching,
@@ -1918,7 +1877,6 @@ platforms: dict[str, ModuleType] = {
     "opencollective": opencollective,
     "giantbomb": giantbomb,
     "jalbumnet": jalbumnet,
-    "newgrounds": newgrounds,
     "slides": slides,
     "ultimateguitar": ultimateguitar,
     "contently": contently,
@@ -1933,13 +1891,11 @@ platforms: dict[str, ModuleType] = {
     "metalarchives": metalarchives,
     "kongregate": kongregate,
     "soup": soup,
-    "furaffinity": furaffinity,
     "itemfix": itemfix,
     "nintendolife": nintendolife,
     "carbonmade": carbonmade,
     "moddb": moddb,
     "audiojungle": audiojungle,
-    "tinder": tinder,
     "domestikaorg": domestikaorg,
     "noblogs": noblogs,
     "setlist": setlist,
@@ -1992,14 +1948,12 @@ platforms: dict[str, ModuleType] = {
     "notabugorg": notabugorg,
     "mydramalist": mydramalist,
     "pinkbike": pinkbike,
-    "thechive": thechive,
     "goldderby": goldderby,
     "meetme": meetme,
     "flyertalk": flyertalk,
     "gbatempnet": gbatempnet,
     "brusheezy": brusheezy,
     "avforums": avforums,
-    "mobypicture": mobypicture,
     "dlive": dlive,
     "trueachievements": trueachievements,
     "physicsforums": physicsforums,
@@ -2048,7 +2002,6 @@ platforms: dict[str, ModuleType] = {
     "sugoidesu": sugoidesu,
     "profiru": profiru,
     "thoughtscom": thoughtscom,
-    "gapyear": gapyear,
     "myinstants": myinstants,
     "smokingmeatforumscom": smokingmeatforumscom,
     "reibert": reibert,
@@ -2061,7 +2014,6 @@ platforms: dict[str, ModuleType] = {
     "homebrewtalkcom": homebrewtalkcom,
     "lemmyworld": lemmyworld,
     "zoomirir": zoomirir,
-    "cent": cent,
     "vjudge": vjudge,
     "thesimsresource": thesimsresource,
     "vgtimesgames": vgtimesgames,
@@ -2083,7 +2035,6 @@ platforms: dict[str, ModuleType] = {
     "icheckmovies": icheckmovies,
     "crevado": crevado,
     "monkeytype": monkeytype,
-    "e621": e621,
     "gvectors": gvectors,
     "rollitup": rollitup,
     "riveapp": riveapp,
@@ -2136,14 +2087,11 @@ platforms: dict[str, ModuleType] = {
     "machelp": machelp,
     "flashflashrevolution": flashflashrevolution,
     "dmoj": dmoj,
-    "ladavestanet": ladavestanet,
-    "sysadmins": sysadmins,
     "jeepgarageorg": jeepgarageorg,
     "n4gameforum": n4gameforum,
     "spells8": spells8,
     "n101010pl": n101010pl,
     "cryptohack": cryptohack,
-    "piccsy": piccsy,
     "windows10forums": windows10forums,
     "ifishnet": ifishnet,
     "swedroidse": swedroidse,
@@ -2159,34 +2107,26 @@ platforms: dict[str, ModuleType] = {
     "vtwinforumcom": vtwinforumcom,
     "fanficslandiacom": fanficslandiacom,
     "qbn": qbn,
-    "lkforum": lkforum,
     "clubsnapcom": clubsnapcom,
     "wolpy": wolpy,
     "warframemarket": warframemarket,
     "cubecraftnet": cubecraftnet,
-    "tvgames": tvgames,
     "sniperforumscom": sniperforumscom,
-    "izobilru": izobilru,
     "goldroyal": goldroyal,
     "fcrubin": fcrubin,
     "oakleyforumcom": oakleyforumcom,
     "hunting": hunting,
     "uvelir": uvelir,
     "thelion": thelion,
-    "xshaker": xshaker,
     "nucastlecouk": nucastlecouk,
     "realmeye": realmeye,
     "hitmanforum": hitmanforum,
     "datingru": datingru,
-    "volgogradforum": volgogradforum,
     "tigerfancom": tigerfancom,
     "impalaforumscom": impalaforumscom,
-    "forumjizni": forumjizni,
     "xgmguru": xgmguru,
     "texasguntalk": texasguntalk,
-    "politikforum": politikforum,
     "truthbook": truthbook,
-    "defenceforumindia": defenceforumindia,
     "forumsdromru": forumsdromru,
     "antiquebottles": antiquebottles,
     "ridemonkeycom": ridemonkeycom,
@@ -2199,11 +2139,7 @@ platforms: dict[str, ModuleType] = {
     "cowboyszonecom": cowboyszonecom,
     "thebuddyforum": thebuddyforum,
     "vauxhallownersnetworkcouk": vauxhallownersnetworkcouk,
-    "erogenclub": erogenclub,
     "mineplexcom": mineplexcom,
-    "codersrank": codersrank,
-    "worldofplayers": worldofplayers,
-    "123rf": n123rf,
     "2ndcareers-community.discourse.group": n2ndcareerscommunitydiscoursegroup,
     "810video.com": n810videocom,
     "8wayrun.com": n8wayruncom,
@@ -2309,7 +2245,6 @@ platforms: dict[str, ModuleType] = {
     "community.bloomreach.com": communitybloomreachcom,
     "community.blynk.cc": communityblynkcc,
     "community.brain-map.org": communitybrainmaporg,
-    "community.brave.com": communitybravecom,
     "community.brevo.com": communitybrevocom,
     "community.breww.com": communitybrewwcom,
     "community.brightpattern.com": communitybrightpatterncom,
@@ -2711,7 +2646,6 @@ platforms: dict[str, ModuleType] = {
     "rigcz.club": rigczclub,
     "rcloneforum": rcloneforum,
     "miped": miped,
-    "radiomed": radiomed,
     "schlock": schlock,
     "soobshestva": soobshestva,
     "swapd": swapd,
@@ -3149,7 +3083,6 @@ platforms: dict[str, ModuleType] = {
     "cs-ru.ucoz.org": csruucozorg,
     "w2l-g.ucoz.org": w2lgucozorg,
     "ruslangxp.ucoz.org": ruslangxpucozorg,
-    "mirtesen": mirtesen,
     "hunting.karelia.ru": huntingkareliaru,
     "manifoldmarkets": manifoldmarkets,
     "valinor.com.br": valinorcombr,
@@ -3234,7 +3167,6 @@ platforms: dict[str, ModuleType] = {
     "samesound.ru": samesoundru,
     "fishingsib": fishingsib,
     "w3challs": w3challs,
-    "admire me": admireme,
     "nhl": nhl,
     "pobedish.ru": pobedishru,
     "vezha": vezha,
@@ -3285,7 +3217,6 @@ platforms: dict[str, ModuleType] = {
     "rasslabyxa": rasslabyxa,
     "reincarnationforum": reincarnationforum,
     "scoutwiki": scoutwiki,
-    "sexforum.ws": sexforumws,
     "tanuki.pl": tanukipl,
     "tetr.io": tetrio,
     "tunefind": tunefind,
@@ -3307,7 +3238,6 @@ platforms: dict[str, ModuleType] = {
     "izmailonline.com": izmailonlinecom,
     "markweinguitarlessons.com": markweinguitarlessonscom,
     "lithotherapy": lithotherapy,
-    "zbiornik.com": zbiornikcom,
     "moscherb.ru": moscherbru,
     "nf-club.ru": nfclubru,
     "odonvv.ru": odonvvru,
@@ -3359,7 +3289,6 @@ platforms: dict[str, ModuleType] = {
     "mark.szenprogs.ru": markszenprogsru,
     "laserwar48.ru": laserwar48ru,
     "centr-spektr.ru": centrspektrru,
-    "japanesedolls.ru": japanesedollsru,
     "ofc65.ru": ofc65ru,
     "v3de.ru": v3deru,
     "xn--80aqkf5cb.xn--p1ai": xn80aqkf5cbxnp1ai,
@@ -3388,7 +3317,6 @@ platforms: dict[str, ModuleType] = {
     "mednolit.ru": mednolitru,
     "mikele-loconte.ru": mikeleloconteru,
     "zapgame.ru": zapgameru,
-    "onanizm.club": onanizmclub,
     "niflheim.top": niflheimtop,
     "tottenhamhotspur.ru": tottenhamhotspurru,
     "community.gozenhost.com": communitygozenhostcom,
@@ -3435,6 +3363,8 @@ platforms: dict[str, ModuleType] = {
     "omg.lol": omglol,
     "xanga": xanga,
     "jimdo": jimdo,
+    "wikipedia": wikipedia,
+    "duolingo": duolingo,
 }
 
 

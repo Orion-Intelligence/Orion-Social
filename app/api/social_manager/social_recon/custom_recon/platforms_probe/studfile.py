@@ -1,3 +1,4 @@
+import api.social_manager.social_recon.custom_recon.core.http_client as http_client
 import api.social_manager.social_recon.custom_recon.core.parse as parse
 from api.social_manager.social_recon.constants.custom_recon_constants import VerdictConstants
 from api.social_manager.social_recon.constants.platform_constants import StudfileConstants
@@ -7,6 +8,10 @@ constants = StudfileConstants
 
 def probe_url(username: str) -> str:
     return StudfileConstants.PROFILE_URL.format(username=username)
+
+
+def fetch(username: str) -> tuple[int, str, str]:
+    return http_client.fetch(probe_url(username), impersonate=StudfileConstants.IMPERSONATE)
 
 
 def evaluate(status: int, body: str, final_url: str) -> tuple[str, dict]:

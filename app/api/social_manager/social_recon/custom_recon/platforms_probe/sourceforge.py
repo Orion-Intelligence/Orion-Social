@@ -1,3 +1,4 @@
+import api.social_manager.social_recon.custom_recon.core.http_client as http_client
 import api.social_manager.social_recon.custom_recon.core.parse as parse
 from api.social_manager.social_recon.constants.custom_recon_constants import VerdictConstants
 from api.social_manager.social_recon.constants.platform_constants import SourceForgeConstants
@@ -9,13 +10,21 @@ def probe_url(username: str) -> str:
     return SourceForgeConstants.PROFILE_URL.format(username=username)
 
 
+
+def fetch(username: str) -> tuple[int, str, str]:
+    return http_client.fetch(probe_url(username), impersonate=SourceForgeConstants.IMPERSONATE)
+
 def evaluate(status: int, body: str, final_url: str) -> tuple[str, dict]:
     if status in (404, 410):
         return VerdictConstants.ABSENT, {}
-    if status != 200:
-        return VerdictConstants.UNKNOWN, {}
-    heading = parse.title(body)
-    if not heading or heading.casefold() in getattr(SourceForgeConstants, "GENERIC", set()):
+    absence = getattr(SourceForgeConstants, "ABSENCE", ())
+    if absence and any(marker in body for marker in absence):
+        return VerdictConstants.ABSENT, {}
+    presence = getattr(SourceForgeConstants, "PRESENCE", ())
+    if presence:
+        if not any(marker in body for marker in presence):
+            return VerdictConstants.UNKNOWN, {}
+    elif status != 200:
         return VerdictConstants.UNKNOWN, {}
     info = parse.social_info(body, getattr(SourceForgeConstants, "AVATAR_KEYS", ()), getattr(SourceForgeConstants, "COVER_KEYS", ()))
     person = parse.ld_entity(body, "Person", "ProfilePage")
@@ -30,10 +39,7 @@ def evaluate(status: int, body: str, final_url: str) -> tuple[str, dict]:
         info["display_name"] = parse.clean(info["display_name"])
     if info.get("description"):
         info["description"] = parse.clean(info["description"])
-    if not any(info.get(key) for key in ("display_name", "avatar", "description")):
-        return VerdictConstants.UNKNOWN, {}
     return VerdictConstants.EXISTS, {key: value for key, value in info.items() if value}
-
 ROUTES = (
     ("projects/(?P<id>[^/]+)(?:/.*)?", "page"),
     ("u/(?P<id>[^/]+)(?:/.*)?", "profile"),
