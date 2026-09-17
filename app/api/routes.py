@@ -5,8 +5,9 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, BackgroundTasks
 
-from api.orion.model.social_request_model import DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest, DuckDuckGoUsernamesRequest, HateSpeechRequest, SocialReconRequest
+from api.orion.model.social_request_model import DuckDuckGoImagesRequest, DuckDuckGoMetadataRequest, DuckDuckGoUsernamesRequest, HateSpeechRequest, AdDetectionRequest, SocialReconRequest, SocialAutomationAdMonitorRequest, SocialAutomationPostRequest, SocialAutomationHateSpeechMonitorRequest
 from api.orion.services.shared.hate_speech_classifier import HateSpeechResult, hate_speech_classifier
+from api.orion.services.shared.ad_detection_classifier import AdDetectionResult, ad_detection_classifier
 from api.orion.services.shared.env_handler import env_handler
 from api.orion.services.shared.request_context_helper import request_context_helper
 from api.social_manager.social_enums import SOCIAL_REQUEST_COMMANDS
@@ -22,6 +23,10 @@ class SocialRoutes:
         self.router.add_api_route("/social/online/images", self.online_images, methods=["POST"])
         self.router.add_api_route("/social/metadata", self.metadata, methods=["POST"])
         self.router.add_api_route("/social/hate-speech", self.classify_hate_speech, methods=["POST"], response_model=HateSpeechResult)
+        self.router.add_api_route("/social/automation/post", self.trigger_post, methods=["POST"])
+        self.router.add_api_route("/social/automation/ad-monitor", self.trigger_ad_monitor, methods=["POST"])
+        self.router.add_api_route("/social/automation/hate-speech-monitor", self.trigger_hate_speech_monitor, methods=["POST"])
+        self.router.add_api_route("/social/ad-detection", self.classify_ad_detection, methods=["POST"], response_model=AdDetectionResult)
 
     async def require_internal_request(self, request: Request) -> None:
         expected = env_handler.get_instance().env("ORION_SOCIAL_INTERNAL_TOKEN", "").strip()
@@ -65,4 +70,22 @@ class SocialRoutes:
 
     async def classify_hate_speech(self, payload: HateSpeechRequest) -> HateSpeechResult:
         return await asyncio.to_thread(hate_speech_classifier.classify, payload.text)
+
+    async def trigger_post(self, request: Request, payload: SocialAutomationPostRequest) -> Any:
+        job_id = f"automation_post:{payload.profile_id}:{payload.run_id}"
+        data = request_context_helper.with_request_context({"job_id": job_id, "user_id": payload.user_id, "profile_id": payload.profile_id, "platform": payload.platform, "text": payload.text, "image_url": payload.image_url or "", "session_state": payload.session_state, "is_manual": payload.is_manual}, request)
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_AUTOMATION_POST, data)
+
+    async def trigger_ad_monitor(self, request: Request, payload: SocialAutomationAdMonitorRequest) -> Any:
+        job_id = f"automation_ad_detection:{payload.profile_id}:{payload.run_id}"
+        data = request_context_helper.with_request_context({"job_id": job_id, "user_id": payload.user_id, "profile_id": payload.profile_id, "platform": payload.platform, "session_state": payload.session_state, "is_manual": payload.is_manual}, request)
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_AUTOMATION_AD_MONITOR, data)
+
+    async def trigger_hate_speech_monitor(self, request: Request, payload: SocialAutomationHateSpeechMonitorRequest) -> Any:
+        job_id = f"automation_hate_speech:{payload.profile_id}:{payload.run_id}"
+        data = request_context_helper.with_request_context({"job_id": job_id, "user_id": payload.user_id, "profile_id": payload.profile_id, "platform": payload.platform, "profile_url": payload.profile_url, "post_count": payload.post_count, "session_state": payload.session_state, "is_manual": payload.is_manual}, request)
+        return await self.orion.social_trigger(job_id, SOCIAL_REQUEST_COMMANDS.S_AUTOMATION_HATE_SPEECH_MONITOR, data)
+
+    async def classify_ad_detection(self, payload: AdDetectionRequest) -> AdDetectionResult:
+        return await asyncio.to_thread(ad_detection_classifier.classify, payload.text)
 

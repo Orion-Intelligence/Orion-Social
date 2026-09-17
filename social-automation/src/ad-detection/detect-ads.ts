@@ -54,6 +54,7 @@ function parseArgs(argv: string[]): DetectArgs {
 
 async function main() {
   const { platform, sessionFile, resultFile } = parseArgs(process.argv);
+  (global as any).RESULT_FILE = resultFile;
 
   let result: AdDetectionResult;
   if (platform === 'x' || platform === 'twitter') {

@@ -21,6 +21,15 @@ class HateSpeechRequest(BaseModel):
         return value.strip() if isinstance(value, str) else value
 
 
+class AdDetectionRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=10000)
+
+    @field_validator("text", mode="before")
+    @classmethod
+    def strip_text(cls, value: Optional[str]) -> Optional[str]:
+        return value.strip() if isinstance(value, str) else value
+
+
 class DuckDuckGoUsernamesRequest(BaseModel):
     username: str = Field(..., min_length=1)
     platform: Optional[str] = Field(default=None)
@@ -52,3 +61,34 @@ class DuckDuckGoMetadataRequest(BaseModel):
         if value is None:
             return None
         return value.lower()
+
+
+class SocialAutomationPostRequest(BaseModel):
+    run_id: str = Field(..., min_length=1)
+    user_id: str = Field(..., min_length=1)
+    profile_id: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1)
+    session_state: dict
+    image_url: Optional[str] = Field(default=None)
+    is_manual: bool = False
+
+
+class SocialAutomationAdMonitorRequest(BaseModel):
+    run_id: str = Field(..., min_length=1)
+    user_id: str = Field(..., min_length=1)
+    profile_id: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+    session_state: dict
+    is_manual: bool = False
+
+
+class SocialAutomationHateSpeechMonitorRequest(BaseModel):
+    run_id: str = Field(..., min_length=1)
+    user_id: str = Field(..., min_length=1)
+    profile_id: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+    profile_url: str = Field(..., min_length=1)
+    post_count: int = Field(default=50)
+    session_state: dict
+    is_manual: bool = False

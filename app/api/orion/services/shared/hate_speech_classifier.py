@@ -62,7 +62,7 @@ class HateSpeechClassifier:
                     model=self.model_name, 
                     tokenizer=self.model_name,
                     device=-1, 
-                    return_all_scores=True,
+                    top_k=None,
                     truncation=True,
                     max_length=512
                 )
@@ -105,7 +105,13 @@ class HateSpeechClassifier:
                 
             future = self.executor.submit(self.classifier, text)
             try:
-                results = future.result(timeout=self.timeout)[0]
+                raw_results = future.result(timeout=self.timeout)
+                if isinstance(raw_results, list) and len(raw_results) > 0 and isinstance(raw_results[0], list):
+                    results = raw_results[0]
+                elif isinstance(raw_results, list):
+                    results = raw_results
+                else:
+                    results = [raw_results]
             except concurrent.futures.TimeoutError:
                 logging.error(json.dumps({
                     "event": "inference_timeout",

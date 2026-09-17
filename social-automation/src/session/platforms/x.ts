@@ -35,10 +35,13 @@ export class XPlatform implements SocialPlatform {
       });
 
       return authenticated;
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'TimeoutError') {
+        return false;
+      }
       try {
         const url = page.url();
-        if (url.includes('/i/flow/login') || url.includes('/login')) {
+        if (url.includes('/i/flow/login') || url.includes('/login') || url === 'https://x.com/' || url === 'https://x.com') {
           return false;
         }
       } catch {

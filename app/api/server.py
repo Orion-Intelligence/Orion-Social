@@ -8,7 +8,6 @@ from starlette.middleware.cors import CORSMiddleware
 from api.orion.orion_controller import orion_controller
 from api.orion.request_manager.queue_monitor import queue_monitor
 from api.routes import SocialRoutes
-from api.extension_manager.extension_manager_routes import ExtensionManagerRoutes
 
 
 class APIService:
@@ -29,13 +28,13 @@ class APIService:
         routes = SocialRoutes(self.orion)
         self.app.include_router(routes.router)
         
-        extension_manager = ExtensionManagerRoutes(self.orion)
-        self.app.include_router(extension_manager.router)
 
         @self.app.get("/health")
         async def health_check():
             try:
                 from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
+                from api.orion.services.shared.ad_detection_classifier import ad_detection_classifier
+                
                 hate_speech_status = {
                     "initialized": getattr(hate_speech_classifier, "_initialized", False),
                     "model": getattr(hate_speech_classifier, "model_name", "unknown"),
@@ -43,29 +42,41 @@ class APIService:
                     "hate_threshold": getattr(hate_speech_classifier, "hate_threshold", 0.5),
                     "offensive_threshold": getattr(hate_speech_classifier, "offensive_threshold", 0.5)
                 }
+                
+                ad_detection_status = {
+                    "initialized": getattr(ad_detection_classifier, "_initialized", False),
+                    "model": getattr(ad_detection_classifier, "model_name", "unknown"),
+                    "classifier_loaded": getattr(ad_detection_classifier, "classifier", None) is not None,
+                    "ad_threshold": getattr(ad_detection_classifier, "ad_threshold", 0.5)
+                }
             except Exception as e:
                 hate_speech_status = {"status": "error", "message": str(e)}
+                ad_detection_status = {"status": "error", "message": str(e)}
                 
             return {
                 "status": "healthy",
-                "hate_speech_classifier": hate_speech_status
+                "hate_speech_classifier": hate_speech_status,
+                "ad_detection_classifier": ad_detection_status
             }
 
     @asynccontextmanager
     async def lifespan(self, _: FastAPI):
         from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
+        from api.orion.services.shared.ad_detection_classifier import ad_detection_classifier
 
-        model_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        model_executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
         running_loop = asyncio.get_running_loop()
         monitor_task = asyncio.create_task(self.qmonitor.run())
-        model_future = running_loop.run_in_executor(model_executor, hate_speech_classifier.load)
+        hate_speech_future = running_loop.run_in_executor(model_executor, hate_speech_classifier.load)
+        ad_detection_future = running_loop.run_in_executor(model_executor, ad_detection_classifier.load)
 
         try:
             yield
         finally:
             monitor_task.cancel()
-            model_future.cancel()
-            await asyncio.gather(monitor_task, model_future, return_exceptions=True)
+            hate_speech_future.cancel()
+            ad_detection_future.cancel()
+            await asyncio.gather(monitor_task, hate_speech_future, ad_detection_future, return_exceptions=True)
             model_executor.shutdown(wait=False, cancel_futures=True)
 
 
