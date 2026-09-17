@@ -14,6 +14,9 @@ AD_DETECTION_SCRIPTS = {
     "x": "social:detect-ads",
     "instagram": "social:detect-ig-ads",
 }
+HATE_SPEECH_SCRIPTS = {
+    "x": "social:hate-speech",
+}
 
 
 class automation_handler:
@@ -74,6 +77,34 @@ class automation_handler:
         finally:
             self._cleanup([session_file, result_file])
 
+    def run_hate_speech_monitor(self, data: dict, job_id: str) -> dict:
+        session_state = data.get("session_state")
+        platform = str(data.get("platform") or "").strip().lower()
+        profile_url = str(data.get("profile_url") or "").strip()
+        post_count = str(data.get("post_count") or "50")
+
+        script = HATE_SPEECH_SCRIPTS.get(platform)
+        if script is None:
+            raise ValueError(f"Hate speech monitoring is not supported for platform '{platform}'")
+
+        session_file = self._write_session_file(session_state)
+        result_file = self._new_result_file()
+
+        cmd_args = [
+            "run", script, "--",
+            "--platform", platform,
+            "--profile-url", profile_url,
+            "--post-count", post_count,
+            "--session-file", session_file,
+            "--result-file", result_file,
+        ]
+
+        try:
+            self._run_automation(cmd_args, job_id)
+            return self._build_result(result_file, "hate_speech", data)
+        finally:
+            self._cleanup([session_file, result_file])
+
     def _run_automation(self, cmd_args: list, job_id: str) -> None:
         self._progress.update(job_id, 10, "starting automation")
 
@@ -104,7 +135,7 @@ class automation_handler:
         result = {"user_id": user_id, "profile_id": profile_id, "result_type": result_type}
         if result_type == "post":
             result["post_result"] = payload
-        else:
+        elif result_type == "ad_detection":
             if "ads" in payload and isinstance(payload["ads"], list):
                 payload["ads"] = payload["ads"][:8]
                 payload["total_detected_ads"] = len(payload["ads"])
@@ -124,6 +155,29 @@ class automation_handler:
                             ad["topic"] = "Unknown"
                             
             result["ad_detection_result"] = payload
+        elif result_type == "hate_speech":
+            if "posts" in payload and isinstance(payload["posts"], list):
+                try:
+                    from api.orion.services.shared.hate_speech_classifier import hate_speech_classifier
+                    for post in payload["posts"]:
+                        content_text = post.get("content_text") or ""
+                        if content_text.strip():
+                            class_result = hate_speech_classifier.classify(content_text)
+                            post["is_hate_speech"] = class_result.is_hate_speech
+                            post["label"] = class_result.label
+                        else:
+                            post["is_hate_speech"] = False
+                            post["label"] = "safe"
+                except Exception as e:
+                    print(f"[Automation] Error classifying hate speech: {e}", flush=True)
+                    for post in payload["posts"]:
+                        if "is_hate_speech" not in post:
+                            post["is_hate_speech"] = False
+                            post["label"] = "unknown"
+                
+                payload["hate_posts_count"] = sum(1 for p in payload.get("posts", []) if p.get("is_hate_speech"))
+                
+            result["hate_speech_result"] = payload
         return result
 
     @staticmethod

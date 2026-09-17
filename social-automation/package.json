@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "social:post": "tsx src/publish/post.ts",
     "social:detect-ads": "tsx src/ad-detection/detect-ads.ts",
+    "social:hate-speech": "tsx src/hate-speech/detect-hate-speech.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/ --ext .ts"

@@ -81,3 +81,14 @@ class SocialAutomationAdMonitorRequest(BaseModel):
     platform: str = Field(..., min_length=1)
     session_state: dict
     is_manual: bool = False
+
+
+class SocialAutomationHateSpeechMonitorRequest(BaseModel):
+    run_id: str = Field(..., min_length=1)
+    user_id: str = Field(..., min_length=1)
+    profile_id: str = Field(..., min_length=1)
+    platform: str = Field(..., min_length=1)
+    profile_url: str = Field(..., min_length=1)
+    post_count: int = Field(default=50)
+    session_state: dict
+    is_manual: bool = False

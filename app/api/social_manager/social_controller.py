@@ -136,4 +136,14 @@ class social_controller:
                 self._progress.error(self.job_id, str(exc))
                 raise
 
+        if command == SOCIAL_REQUEST_COMMANDS.S_AUTOMATION_HATE_SPEECH_MONITOR:
+            self.init_job(self._clean_str(data.get("job_id")))
+            try:
+                result = {"status": "success", "platform": "automation_hate_speech", "data": self._automation.run_hate_speech_monitor(data, self.job_id)}
+                self._progress.done(self.job_id, result)
+                return result
+            except Exception as exc:
+                self._progress.error(self.job_id, str(exc))
+                raise
+
         return None
