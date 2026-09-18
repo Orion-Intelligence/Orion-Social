@@ -14,4 +14,4 @@ PySocks
 PicImageSearch
 tldextract
 transformers
-playwright
+playwright==1.62.0
