@@ -10,13 +10,12 @@ import httpx
 from api.orion.request_manager.progress_controller import progress_controller
 
 AUTOMATION_CWD = "/app/social-automation"
-AD_DETECTION_SCRIPTS = {
-    "x": "social:detect-ads",
-    "instagram": "social:detect-ig-ads",
-}
-HATE_SPEECH_SCRIPTS = {
-    "x": "social:hate-speech",
-}
+AD_DETECTION_PLATFORMS = {"x", "instagram", "facebook", "reddit", "pinterest", "youtube", "tiktok", "threads", "quora", "okru", "patreon", "hashnode", "behance", "linkedin", "mewe"}
+AD_DETECTION_SCRIPTS = {platform: "social:detect-ads" for platform in AD_DETECTION_PLATFORMS}
+HATE_SPEECH_PLATFORMS = {"x", "instagram", "facebook", "reddit", "pinterest", "youtube", "tiktok", "threads", "quora", "okru", "patreon", "hashnode", "behance", "linkedin", "mewe"}
+HATE_SPEECH_SCRIPTS = {platform: "social:hate-speech" for platform in HATE_SPEECH_PLATFORMS}
+IMAGE_REQUIRED_PLATFORMS = {"instagram", "tiktok", "pinterest", "behance"}
+GENERIC_POST_IMAGE = os.path.join(AUTOMATION_CWD, "assets", "generic-post.jpg")
 
 
 class automation_handler:
@@ -41,7 +40,11 @@ class automation_handler:
             "--result-file", result_file,
         ]
 
-        if image_url:
+        if platform.lower() in IMAGE_REQUIRED_PLATFORMS:
+            generic_image = self._generic_image()
+            if generic_image:
+                cmd_args.extend(["--image", generic_image])
+        elif image_url:
             image_file = self._download_image(image_url)
             if image_file:
                 temp_files.append(image_file)
@@ -194,23 +197,35 @@ class automation_handler:
         return result_file.name
 
     @staticmethod
+    def _generic_image() -> str:
+        return GENERIC_POST_IMAGE if os.path.exists(GENERIC_POST_IMAGE) else ""
+
+    @staticmethod
     def _download_image(image_url: str) -> str:
-        image_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
-        image_file.close()
+        urls = [image_url]
+        if image_url and "picsum.photos" not in image_url:
+            urls.append("https://picsum.photos/640/480")
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        try:
-            with httpx.Client(follow_redirects=True, headers=headers) as client:
-                response = client.get(image_url, timeout=15.0)
-            if response.status_code != 200:
-                print(f"[Automation] Failed to download image {image_url}, status {response.status_code}", flush=True)
-                os.unlink(image_file.name)
-                return ""
-            with open(image_file.name, "wb") as handle:
-                handle.write(response.content)
-            return image_file.name
-        except Exception as exc:
-            print(f"[Automation] Failed to download image {image_url}: {exc}", flush=True)
-            return ""
+        for url in urls:
+            for attempt in range(3):
+                image_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+                image_file.close()
+                try:
+                    with httpx.Client(follow_redirects=True, headers=headers) as client:
+                        response = client.get(url, timeout=30.0)
+                    if response.status_code == 200 and response.content:
+                        with open(image_file.name, "wb") as handle:
+                            handle.write(response.content)
+                        return image_file.name
+                    os.unlink(image_file.name)
+                    print(f"[Automation] Image download {url} status {response.status_code} (attempt {attempt + 1})", flush=True)
+                except Exception as exc:
+                    try:
+                        os.unlink(image_file.name)
+                    except OSError:
+                        pass
+                    print(f"[Automation] Image download {url} failed (attempt {attempt + 1}): {exc}", flush=True)
+        return ""
 
     @staticmethod
     def _cleanup(paths: list) -> None:

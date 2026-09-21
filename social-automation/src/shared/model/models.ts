@@ -18,10 +18,10 @@ export interface SocialPlatform {
   isAuthenticated(page: Page, navigate?: boolean): Promise<boolean>;
 }
 
-export type SocialPlatformName = 'facebook' | 'x' | 'instagram' | 'linkedin';
+export type SocialPlatformName = 'facebook' | 'x' | 'instagram' | 'linkedin' | 'threads' | 'reddit' | 'pinterest' | 'youtube' | 'tiktok' | 'quora' | 'okru' | 'patreon' | 'hashnode' | 'behance' | 'mewe';
 
 export const PLATFORM_NAMES: readonly SocialPlatformName[] = Object.freeze([
-  'facebook', 'x', 'instagram', 'linkedin',
+  'facebook', 'x', 'instagram', 'linkedin', 'threads', 'reddit', 'pinterest', 'youtube', 'tiktok', 'quora', 'okru', 'patreon', 'hashnode', 'behance', 'mewe',
 ] as const);
 
 export function isPlatformName(value: string): value is SocialPlatformName {

@@ -141,6 +141,13 @@ async function main(): Promise<void> {
     session_expired: false,
   };
 
+  if (platforms.some((platform) => ['hashnode', 'reddit', 'mewe', 'behance'].includes(platform.toLowerCase()))) {
+    postResult.error = true;
+    postResult.error_reason = 'not supported';
+    writeResult(resultFile, postResult);
+    process.exit(1);
+  }
+
   try {
     const results = await publisher.publish(post, { dryRun, sessionFile });
 

@@ -77,10 +77,17 @@ export class FacebookAdapter implements SocialPlatformAdapter {
     }
 
     try {
-      await page.waitForSelector(
+      const composerOpened = await page.waitForSelector(
         '[role="dialog"] [role="textbox"], [aria-label="Create a post"] [role="textbox"]',
         { state: 'visible', timeout: 10_000 },
-      );
+      ).then(() => true).catch(() => false);
+      if (!composerOpened) {
+        await page.locator('div[role="button"]:has-text("on your mind")').first().click({ timeout: 10_000 });
+        await page.waitForSelector(
+          '[role="dialog"] [role="textbox"], [aria-label="Create a post"] [role="textbox"]',
+          { state: 'visible', timeout: 15_000 },
+        );
+      }
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
       throw new ComposerError(this.platform, detail);

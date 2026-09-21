@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs';
-import { chromium } from 'playwright';
+import { chromium, firefox } from 'playwright';
 import type { Browser, BrowserContext } from 'playwright';
 
 import { Config } from '../shared/config.js';
@@ -15,8 +15,11 @@ import { DEFAULT_USER_AGENT } from './constants/constants.js';
 
 async function launchBrowser(platformName: string, options: { headless: boolean }): Promise<Browser> {
   try {
-    const args = platformName.toLowerCase() === 'x' 
-      ? ['--disable-blink-features=AutomationControlled'] 
+    if (Config.browser === 'firefox') {
+      return await firefox.launch({ headless: options.headless });
+    }
+    const args = platformName.toLowerCase() === 'x'
+      ? ['--disable-blink-features=AutomationControlled']
       : [];
 
     return await chromium.launch({
@@ -55,11 +58,15 @@ export async function getSocialContext(platformName: string, _userId: string = '
 
 
   const content = fs.readFileSync(sessionPath, 'utf-8');
-  let cookies = JSON.parse(content);
+  const state = JSON.parse(content);
+  let cookies = state;
   if (!Array.isArray(cookies)) {
     if (cookies && Array.isArray(cookies.cookies)) cookies = cookies.cookies;
     else throw new Error('Invalid cookie format');
   }
+  const userAgent = typeof state?.userAgent === 'string' && state.userAgent.trim() ? state.userAgent.trim() : DEFAULT_USER_AGENT;
+  const localStorageEntries: Record<string, string> = state?.localStorage && typeof state.localStorage === 'object' ? state.localStorage : {};
+  const storageOrigin = typeof state?.origin === 'string' ? state.origin : '';
   
   const sanitizedCookies = (cookies as Array<Record<string, unknown>>).map((c) => {
     const cookie: Record<string, unknown> = { ...c };
@@ -80,10 +87,19 @@ export async function getSocialContext(platformName: string, _userId: string = '
 
   const browser = await launchBrowser(platform.name, { headless: Config.headless });
   const context = await browser.newContext({
-    viewport: null,
-    userAgent: DEFAULT_USER_AGENT
+    viewport: { width: 1366, height: 900 },
+    userAgent,
   });
   await context.addCookies(sanitizedCookies as unknown as Parameters<typeof context.addCookies>[0]);
+  if (storageOrigin && Object.keys(localStorageEntries).length > 0) {
+    await context.addInitScript(({ origin, entries }: { origin: string; entries: Record<string, string> }) => {
+      if (window.location.origin !== origin || window.localStorage.getItem('__orion_restored__')) return;
+      for (const [key, value] of Object.entries(entries)) {
+        try { window.localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); } catch { /* storage may be unavailable */ }
+      }
+      window.localStorage.setItem('__orion_restored__', '1');
+    }, { origin: storageOrigin, entries: localStorageEntries });
+  }
 
   const originalClose = context.close.bind(context);
   context.close = async () => {

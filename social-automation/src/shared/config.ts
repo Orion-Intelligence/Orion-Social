@@ -12,6 +12,8 @@ export const Config = Object.freeze({
 
   headless: (process.env['ORION_SOCIAL_HEADLESS'] ?? 'true').toLowerCase() === 'true',
 
+  browser: (process.env['ORION_SOCIAL_BROWSER'] ?? 'chromium').toLowerCase() === 'firefox' ? 'firefox' : 'chromium',
+
 });
 
 export type SocialConfig = typeof Config;

@@ -93,8 +93,8 @@ export class InstagramAdapter implements SocialPlatformAdapter {
       const images = post.images ?? [];
 
       if (images.length > 0) {
-        const fileInput = page.locator('[role="dialog"] input[type="file"]').first();
-        await fileInput.waitFor({ state: 'attached', timeout: 5_000 });
+        const fileInput = page.locator('[role="dialog"] input[type="file"], input[type="file"][accept*="image"]').first();
+        await fileInput.waitFor({ state: 'attached', timeout: 10_000 });
         await fileInput.setInputFiles([...images]);
 
         await page.waitForTimeout(3_000);
@@ -135,15 +135,20 @@ export class InstagramAdapter implements SocialPlatformAdapter {
 
   async publishPost(page: Page): Promise<void> {
     try {
-      const shareButton = page.locator(
-        '[role="dialog"] button:has-text("Share"), ' +
-        '[role="dialog"] [role="button"]:has-text("Share")',
-      ).first();
+      const shareButton = page.locator('[role="dialog"]').getByRole('button', { name: 'Share', exact: true }).first();
 
-      await shareButton.waitFor({ state: 'visible', timeout: 5_000 });
-      await shareButton.click();
+      await shareButton.waitFor({ state: 'visible', timeout: 30_000 });
+      try {
+        await shareButton.click({ timeout: 10_000 });
+      } catch {
+        await shareButton.click({ force: true });
+      }
 
-      await page.waitForTimeout(5_000);
+      await page.waitForFunction(() => {
+        const shared = Array.from(document.querySelectorAll('span, div, h2, h3')).some(el => (el.textContent || '').trim() === 'Post shared' || (el.textContent || '').trim() === 'Your post has been shared.');
+        return shared || document.querySelector('[role="dialog"]') === null;
+      }, undefined, { timeout: 90_000 }).catch(() => {});
+      await page.waitForTimeout(2_000);
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
       throw new PublishError(this.platform, detail);
@@ -155,10 +160,14 @@ export class InstagramAdapter implements SocialPlatformAdapter {
       
       await page.waitForTimeout(2_000);
 
-      const sharedText = await page.locator('text="Post shared"').isVisible().catch(() => false);
+      const sharedText = await page.getByText('Post shared', { exact: true }).first().isVisible().catch(() => false)
+        || await page.getByText('Your post has been shared.', { exact: true }).first().isVisible().catch(() => false);
       const dialogGone = !(await page.locator('[role="dialog"]').isVisible().catch(() => true));
 
       const success = sharedText || dialogGone;
+      if (sharedText) {
+        await page.locator('[role="dialog"] button:has-text("Done")').first().click({ timeout: 3_000 }).catch(() => {});
+      }
 
       const postUrl = await page.evaluate(() => {
         const links = document.querySelectorAll('a[href*="/p/"]');
