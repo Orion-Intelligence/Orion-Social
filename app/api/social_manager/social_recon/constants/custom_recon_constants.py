@@ -73,3 +73,11 @@ class OnlineSearchConstants:
     QUERY = "site:{target}"
     MAX_RESULTS = 10
     BACKENDS = ("auto", "yahoo", "brave")
+
+
+class RetryConstants:
+    TOP_PLATFORMS = {
+        "YouTube", "X", "Instagram", "Facebook", "TikTok", "Reddit", "Pinterest", "LinkedIn",
+        "Twitch", "Snapchat", "Discord", "Tumblr", "Patreon", "GitHub", "Vimeo", "VK",
+        "Mastodon", "Spotify", "SoundCloud", "Medium"
+    }
