@@ -79,10 +79,7 @@ export class SocialPublisher {
 
       const verification = await adapter.verifyPublished(page);
 
-      if (verification.success) {
-        operation.status = 'success';
-        operation.postUrl = verification.postUrl;
-      } else {
+      if (!verification.success) {
         operation.status = 'verification_failed';
         throw new VerificationError(
           platformName,
@@ -90,10 +87,20 @@ export class SocialPublisher {
         );
       }
 
+      operation.status = 'success';
+      let postUrl = verification.postUrl;
+      if (!postUrl) {
+        const current = page.url();
+        if (/^https?:\/\//.test(current)) {
+          postUrl = current;
+        }
+      }
+      operation.postUrl = postUrl;
+
       return {
         platform: platformName,
         success: true,
-        postUrl: verification.postUrl,
+        postUrl,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);

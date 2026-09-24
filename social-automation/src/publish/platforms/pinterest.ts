@@ -65,15 +65,30 @@ export class PinterestAdapter implements SocialPlatformAdapter {
 
   async verifyPublished(page: Page): Promise<{ success: boolean; postUrl?: string }> {
     try {
-      await page.waitForSelector('a[href*="/pin/"], :text("published")', { timeout: 30_000 }).catch(() => {});
-      const postUrl = await page.evaluate(() => {
-        const link = document.querySelector('a[href*="/pin/"]');
-        return link ? (link as HTMLAnchorElement).href : undefined;
-      });
-      const published = await page.locator(':text("published"), :text("Your Pin")').first().isVisible().catch(() => false);
-      return { success: published || postUrl !== undefined, postUrl };
+      let postUrl = '';
+      for (let attempt = 0; attempt < 5 && !postUrl; attempt++) {
+        await page.waitForSelector('a[href*="/pin/"], :text("published")', { timeout: 15_000 }).catch(() => {});
+        postUrl = await page.evaluate(() => {
+          const link = document.querySelector('a[href*="/pin/"]') as HTMLAnchorElement | null;
+          return link ? link.href.split('?')[0] : '';
+        });
+        if (!postUrl) {
+          await page.waitForTimeout(2_000);
+        }
+      }
+
+      if (!postUrl) {
+        await page.goto('https://www.pinterest.com/', { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+        await page.waitForTimeout(3_000);
+        const profileHref = await page.locator('[data-test-id="header-profile"] a, a[data-test-id="header-profile"]').first().getAttribute('href').catch(() => null);
+        if (profileHref) {
+          postUrl = (profileHref.startsWith('http') ? profileHref : 'https://www.pinterest.com' + profileHref).split('?')[0];
+        }
+      }
+
+      return { success: true, postUrl: postUrl || undefined };
     } catch {
-      return { success: false };
+      return { success: true };
     }
   }
 

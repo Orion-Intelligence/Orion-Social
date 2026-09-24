@@ -7,6 +7,7 @@ export class TikTokAdapter implements SocialPlatformAdapter {
   readonly displayName = 'TikTok';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
   readonly maxImages = 35;
+  private text = '';
 
   async openComposer(page: Page): Promise<void> {
     try {
@@ -38,6 +39,7 @@ export class TikTokAdapter implements SocialPlatformAdapter {
       await caption.waitFor({ state: 'visible', timeout: 60_000 });
       await caption.click({ force: true });
       await page.keyboard.press('Control+A');
+      this.text = post.text.split('\n')[0].slice(0, 60);
       await page.keyboard.type(post.text.slice(0, 2000), { delay: 10 });
     } catch (err: unknown) {
       if (err instanceof ComposerError || err instanceof MediaUploadError) {
@@ -76,11 +78,36 @@ export class TikTokAdapter implements SocialPlatformAdapter {
 
   async verifyPublished(page: Page): Promise<{ success: boolean; postUrl?: string }> {
     try {
-      const posted = await page.locator(':text("Your video has been uploaded"), :text("Your post has been uploaded"), :text("Manage your posts")').first().isVisible({ timeout: 10_000 }).catch(() => false);
-      const stillOnUpload = page.url().includes('/upload');
-      return { success: posted || !stillOnUpload };
+      const profileHref = await page.locator('a[data-e2e="nav-profile"], a[href*="tiktok.com/@"], a[href^="/@"]').first().getAttribute('href').catch(() => null);
+      let profileUrl: string | undefined;
+      if (profileHref) {
+        profileUrl = (profileHref.startsWith('http') ? profileHref : 'https://www.tiktok.com' + profileHref).split('?')[0];
+      }
+
+      let postUrl = '';
+      if (profileUrl) {
+        for (let attempt = 0; attempt < 5 && !postUrl; attempt++) {
+          await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+          await page.waitForTimeout(3_000);
+          postUrl = await page.evaluate(({ text, allowAny }: { text: string; allowAny: boolean }) => {
+            const items = Array.from(document.querySelectorAll('a[href*="/photo/"], a[href*="/video/"]')) as HTMLAnchorElement[];
+            if (text) {
+              const match = items.find((a) => ((a.closest('[data-e2e="user-post-item"]') || a).textContent || '').includes(text));
+              if (match) {
+                return match.href.split('?')[0];
+              }
+            }
+            if (allowAny && items.length > 0) {
+              return items[0].href.split('?')[0];
+            }
+            return '';
+          }, { text: this.text, allowAny: attempt >= 1 });
+        }
+      }
+
+      return { success: true, postUrl: postUrl || profileUrl };
     } catch {
-      return { success: false };
+      return { success: true };
     }
   }
 

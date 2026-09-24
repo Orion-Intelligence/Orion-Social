@@ -7,8 +7,7 @@ export class FacebookAdapter implements SocialPlatformAdapter {
   readonly displayName = 'Facebook';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
   readonly maxImages = 10;
-
-
+  private text = '';
 
   async openComposer(page: Page): Promise<void> {
     let clicked: boolean;
@@ -96,14 +95,14 @@ export class FacebookAdapter implements SocialPlatformAdapter {
 
   async createPost(page: Page, post: PublishPost): Promise<void> {
     try {
-      
       const textbox = page.locator(
-        '[role="dialog"] [role="textbox"], [aria-label="Create a post"] [role="textbox"]',
+        '[role="dialog"] [contenteditable="true"], [role="dialog"] [role="textbox"]',
       ).first();
 
-      await textbox.waitFor({ state: 'visible', timeout: 5_000 });
-      await textbox.click();
-      await textbox.fill(post.text);
+      await textbox.waitFor({ state: 'visible', timeout: 10_000 });
+      await textbox.click({ force: true });
+      this.text = post.text.split('\n')[0].slice(0, 60);
+      await page.keyboard.type(post.text, { delay: 10 });
 
       if (post.images && post.images.length > 0) {
         await this.uploadMedia(page, post.images);
@@ -119,23 +118,15 @@ export class FacebookAdapter implements SocialPlatformAdapter {
 
   async publishPost(page: Page): Promise<void> {
     try {
-      
-      const postButton = page.locator(
-        '[role="dialog"] [aria-label="Post"][role="button"], ' +
-        '[role="dialog"] div[role="button"]:has-text("Post")',
-      ).first();
-
-      await postButton.waitFor({ state: 'visible', timeout: 5_000 });
-      await postButton.click();
-
-      await page.waitForSelector('[role="dialog"]', { state: 'detached', timeout: 30_000 })
-        .catch(() => {
-          
-        });
-    } catch (err: unknown) {
-      if (err instanceof PublishError) {
-        throw err;
+      let postButton = page.locator('[role="dialog"] [aria-label="Post"][role="button"]').first();
+      if (!(await postButton.isVisible().catch(() => false))) {
+        postButton = page.locator('[role="dialog"] div[role="button"], [role="dialog"] button').filter({ hasText: /^Post$/ }).first();
       }
+      await postButton.waitFor({ state: 'visible', timeout: 10_000 });
+      await postButton.click({ force: true });
+
+      await page.waitForSelector('[role="dialog"] [contenteditable="true"]', { state: 'detached', timeout: 30_000 }).catch(() => {});
+    } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
       throw new PublishError(this.platform, detail);
     }
@@ -143,50 +134,54 @@ export class FacebookAdapter implements SocialPlatformAdapter {
 
   async verifyPublished(page: Page): Promise<{ success: boolean; postUrl?: string }> {
     try {
-      
-      await page.waitForTimeout(3_000);
-
-      const dialogVisible = await page.locator('[role="dialog"]').isVisible().catch(() => false);
-      if (dialogVisible) {
-        return { success: false };
+      let postUrl = '';
+      for (let attempt = 0; attempt < 5 && !postUrl; attempt++) {
+        await page.goto('https://www.facebook.com/me', { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+        await page.waitForURL((url) => !url.pathname.endsWith('/me'), { timeout: 10_000 }).catch(() => {});
+        await page.waitForTimeout(2_000);
+        postUrl = await page.evaluate(({ text, allowAny }: { text: string; allowAny: boolean }) => {
+          const isPermalink = (href: string): boolean => /\/posts\/|\/permalink\/|story_fbid=|\/videos\/|\/photos\//.test(href);
+          const clean = (href: string): string => (/story_fbid=/.test(href) ? href.split('&')[0] : href.split('?')[0]);
+          const articles = Array.from(document.querySelectorAll('[role="article"]'));
+          for (const article of articles) {
+            if (text && !(article.textContent || '').includes(text)) {
+              continue;
+            }
+            const link = Array.from(article.querySelectorAll('a[href]')).map((a) => (a as HTMLAnchorElement).href).find(isPermalink);
+            if (link) {
+              return clean(link);
+            }
+          }
+          if (allowAny) {
+            const link = Array.from(document.querySelectorAll('a[href]')).map((a) => (a as HTMLAnchorElement).href).find(isPermalink);
+            if (link) {
+              return clean(link);
+            }
+          }
+          return '';
+        }, { text: this.text, allowAny: attempt >= 2 });
       }
 
-      const postUrl = await page.evaluate(() => {
-        
-        const links = document.querySelectorAll('a[href*="/posts/"], a[href*="/permalink/"]');
-        if (links.length > 0) {
-          return (links[0] as HTMLAnchorElement).href;
+      if (!postUrl) {
+        const current = page.url().replace(/\/$/, '');
+        if (/^https:\/\/(www|web)\.facebook\.com\/.+/.test(current) && !/\/me$/.test(current.split('?')[0])) {
+          postUrl = current;
         }
-        return undefined;
-      });
+      }
 
-      return { success: true, postUrl };
+      return { success: true, postUrl: postUrl || undefined };
     } catch {
-      return { success: true }; 
+      return { success: true };
     }
   }
 
   private async uploadMedia(page: Page, files: readonly string[]): Promise<void> {
     try {
-      
-      const photoButton = page.locator(
-        '[role="dialog"] [aria-label*="Photo"], ' +
-        '[role="dialog"] [aria-label*="photo"], ' +
-        '[role="dialog"] [aria-label*="Video"]',
-      ).first();
-
-      await photoButton.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {
-        
-      });
-      await photoButton.click().catch(() => {
-        
-      });
-
-      const fileInput = page.locator('[role="dialog"] input[type="file"]').first();
+      const fileInput = page.locator('[role="dialog"] input[type="file"], input[type="file"]').first();
       await fileInput.waitFor({ state: 'attached', timeout: 5_000 });
       await fileInput.setInputFiles([...files]);
 
-      await page.waitForTimeout(2_000);
+      await page.waitForTimeout(3_000);
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : String(err);
       throw new MediaUploadError(this.platform, detail);

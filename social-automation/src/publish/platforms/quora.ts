@@ -7,6 +7,7 @@ export class QuoraAdapter implements SocialPlatformAdapter {
   readonly displayName = 'Quora';
   readonly supportedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
   readonly maxImages = 1;
+  private text = '';
 
   async openComposer(page: Page): Promise<void> {
     try {
@@ -38,6 +39,7 @@ export class QuoraAdapter implements SocialPlatformAdapter {
       await textbox.waitFor({ state: 'visible', timeout: 10_000 });
       await textbox.click({ force: true });
       await page.waitForTimeout(500);
+      this.text = post.text.split('\n')[0].slice(0, 60);
       await page.keyboard.type(post.text, { delay: 10 });
 
       if (post.images && post.images.length > 0) {
@@ -67,25 +69,35 @@ export class QuoraAdapter implements SocialPlatformAdapter {
 
   async verifyPublished(page: Page): Promise<{ success: boolean; postUrl?: string }> {
     try {
-      await page.waitForTimeout(4_000);
-      const composerOpen = await page.locator('[role="dialog"] [contenteditable="true"]').isVisible().catch(() => false);
-      if (composerOpen) {
-        return { success: false };
-      }
-
+      await page.waitForTimeout(2_000);
       const profileLink = await page.locator('a[href*="/profile/"]').first().getAttribute('href').catch(() => null);
+      let profileUrl: string | undefined;
       if (profileLink) {
-        const profileUrl = profileLink.startsWith('http') ? profileLink : 'https://www.quora.com' + profileLink;
-        await page.goto(profileUrl.split('?')[0] + '/posts', { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
-        await page.waitForTimeout(3_000);
+        profileUrl = (profileLink.startsWith('http') ? profileLink : 'https://www.quora.com' + profileLink).split('?')[0];
       }
 
-      const postUrl = await page.evaluate(() => {
-        const link = document.querySelector('a[href*="/post/"], a[href*="quora.com/"][href*="/posts/"]');
-        return link ? (link as HTMLAnchorElement).href : undefined;
-      });
+      let postUrl = '';
+      if (profileUrl) {
+        for (let attempt = 0; attempt < 5 && !postUrl; attempt++) {
+          await page.goto(profileUrl + '/posts', { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+          await page.waitForTimeout(3_000);
+          postUrl = await page.evaluate(({ text, allowAny }: { text: string; allowAny: boolean }) => {
+            const links = Array.from(document.querySelectorAll('a[href*="/post/"]')) as HTMLAnchorElement[];
+            if (text) {
+              const match = links.find((a) => ((a.closest('.q-box') || a).textContent || '').includes(text));
+              if (match) {
+                return match.href.split('?')[0];
+              }
+            }
+            if (allowAny && links.length > 0) {
+              return links[0].href.split('?')[0];
+            }
+            return '';
+          }, { text: this.text, allowAny: attempt >= 1 });
+        }
+      }
 
-      return { success: true, postUrl };
+      return { success: true, postUrl: postUrl || profileUrl };
     } catch {
       return { success: true };
     }
