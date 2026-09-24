@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import api.social_manager.social_recon.custom_recon.core.http_client as http_client
 import api.social_manager.social_recon.custom_recon.core.parse as parse
 import api.social_manager.social_recon.custom_recon.core.registry as registry
-from api.social_manager.social_recon.constants.custom_recon_constants import CrawlConstants, HttpClientConstants, VerdictConstants
+from api.social_manager.social_recon.constants.custom_recon_constants import CrawlConstants, HttpClientConstants, VerdictConstants, RetryConstants
 from api.social_manager.social_recon.custom_recon.core.verdict import ProfileCheck
 from api.social_manager.social_recon.helper import helper
 from api.social_manager.social_recon.normalizer import normalizer
@@ -72,33 +72,33 @@ class custom_recon:
         if transport_member is not None and not callable(transport_member):
             return cls._store(key, ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason="fetch is not callable"))
         transport = cast(Transport | None, transport_member)
-        try:
-            if transport is not None:
-                status, body, final_url = transport(username)
-            else:
-                probe_url_member = getattr(module, "probe_url", None)
-                if not callable(probe_url_member):
-                    return cls._store(key, ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason="probe_url is not callable"))
-                probe_url = cast(ProbeUrlBuilder, probe_url_member)
-                status, body, final_url = cls._fetch(module, probe_url(username), getattr(module.constants, "MAX_BYTES", HttpClientConstants.MAX_BYTES))
-        except Exception as exc:
-            return cls._store(key, ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason=f"request failed: {type(exc).__name__}"))
-        if status == 0:
-            return cls._store(key, ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason="request failed"))
-
-        evaluate_member = getattr(module, "evaluate", None)
-        if not callable(evaluate_member):
-            return cls._store(key, ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason="evaluate is not callable", status_code=status, final_url=final_url))
-        evaluate = cast(Evaluator, evaluate_member)
-        try:
-            verdict, info = evaluate(status, body, final_url)
-        except Exception:
-            verdict, info = VerdictConstants.UNKNOWN, {}
-        target_type = info.pop("target_type", "profile") if isinstance(info, dict) else "profile"
-
-        return cls._store(
-            key,
-            ProfileCheck(
+        
+        def _attempt() -> ProfileCheck:
+            try:
+                if transport is not None:
+                    status, body, final_url = transport(username)
+                else:
+                    probe_url_member = getattr(module, "probe_url", None)
+                    if not callable(probe_url_member):
+                        return ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason="probe_url is not callable")
+                    probe_url = cast(ProbeUrlBuilder, probe_url_member)
+                    status, body, final_url = cls._fetch(module, probe_url(username), getattr(module.constants, "MAX_BYTES", HttpClientConstants.MAX_BYTES))
+            except Exception as exc:
+                return ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason=f"request failed: {type(exc).__name__}")
+            if status == 0:
+                return ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason="request failed")
+    
+            evaluate_member = getattr(module, "evaluate", None)
+            if not callable(evaluate_member):
+                return ProfileCheck(module.constants.NAME, username, VerdictConstants.UNKNOWN, url, reason="evaluate is not callable", status_code=status, final_url=final_url)
+            evaluate = cast(Evaluator, evaluate_member)
+            try:
+                verdict, info = evaluate(status, body, final_url)
+            except Exception:
+                verdict, info = VerdictConstants.UNKNOWN, {}
+            target_type = info.pop("target_type", "profile") if isinstance(info, dict) else "profile"
+    
+            return ProfileCheck(
                 module.constants.NAME,
                 username,
                 verdict,
@@ -108,8 +108,14 @@ class custom_recon:
                 status_code=status,
                 final_url=final_url,
                 target_type=target_type,
-            ),
-        )
+            )
+
+        result = _attempt()
+        if result.verdict != VerdictConstants.EXISTS and module.constants.NAME in RetryConstants.TOP_PLATFORMS:
+            time.sleep(15)
+            result = _attempt()
+
+        return cls._store(key, result)
 
     @classmethod
     def _route(cls, url: str) -> tuple[ModuleType, str, str, str] | None:
